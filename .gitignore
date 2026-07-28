@@ -1,0 +1,24 @@
+# Node
+node_modules/
+mobile/node_modules/
+
+# Build outputs
+dist/
+mobile/.expo/
+mobile/.expo-shared/
+mobile/android/
+mobile/ios/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env
+.env
+mobile/.env
+
+# OS
+.DS_Store
+Thumbs.db
+node_modules

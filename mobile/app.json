@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Lumen Liturgia",
+    "slug": "lumen-liturgia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android"],
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.lumen.liturgia",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "Lumen envia lembretes diarios para leitura da liturgia."
+      }
+    },
+    "android": {
+      "package": "br.com.lumen.liturgia",
+      "versionCode": 1,
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#1E5C35"
+      }
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-notifications"
+    ],
+    "extra": {
+      "apiBaseUrl": "http://10.0.2.2:3333"
+    }
+  }
+}
