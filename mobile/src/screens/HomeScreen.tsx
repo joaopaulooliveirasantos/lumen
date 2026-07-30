@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -8,22 +7,12 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { ReflectionSection } from "../components/ReflectionSection";
-import { formatIsoDate, formatReadableDate, getMonthCalendarDays, MONTH_NAMES_PT } from "../services/date";
+import { formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
+import { shadeColor } from "../services/color";
 import type { DailyLiturgyPayload } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
-import type { UserSettings } from "../types/settings";
 
 const DAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
-
-function shadeColor(hex: string, percent: number): string {
-  const num = parseInt(hex.replace("#", ""), 16);
-  const amount = Math.round(2.55 * percent);
-  const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-  const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
-  const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-}
 
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -82,41 +71,15 @@ function ReadingCalendar({
   theme: ThemePalette;
 }) {
   const today = formatIsoDate(new Date());
-  const todayDate = new Date(`${today}T00:00:00`);
-  const [viewYear, setViewYear] = useState(todayDate.getFullYear());
-  const [viewMonth, setViewMonth] = useState(todayDate.getMonth() + 1);
-
-  const cells = getMonthCalendarDays(viewYear, viewMonth);
+  const weekDays = getWeekDays(today);
   const readSet = new Set(readDays);
-  const monthPrefix = `${viewYear}-${String(viewMonth).padStart(2, "0")}`;
-  const readThisMonth = readDays.filter((d) => d.startsWith(monthPrefix)).length;
-
-  function prevMonth() {
-    if (viewMonth === 1) { setViewYear((y) => y - 1); setViewMonth(12); }
-    else setViewMonth((m) => m - 1);
-  }
-  function nextMonth() {
-    if (viewMonth === 12) { setViewYear((y) => y + 1); setViewMonth(1); }
-    else setViewMonth((m) => m + 1);
-  }
+  const readThisWeek = weekDays.filter((d) => readSet.has(d)).length;
 
   return (
     <View style={[calStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
       <Text allowFontScaling style={[calStyles.sectionTitle, { color: theme.titleText }]}>
-        Frequencia de Leitura
+        Progresso da Liturgia
       </Text>
-
-      <View style={calStyles.navRow}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Mes anterior" onPress={prevMonth} style={calStyles.navBtn}>
-          <Text style={[calStyles.navText, { color: theme.accent }]}>{"‹"}</Text>
-        </Pressable>
-        <Text allowFontScaling style={[calStyles.monthTitle, { color: theme.titleText }]}>
-          {MONTH_NAMES_PT[viewMonth - 1]} {viewYear}
-        </Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="Proximo mes" onPress={nextMonth} style={calStyles.navBtn}>
-          <Text style={[calStyles.navText, { color: theme.accent }]}>{"›"}</Text>
-        </Pressable>
-      </View>
 
       <View style={calStyles.dayLabelsRow}>
         {DAY_LABELS_SHORT.map((d, i) => (
@@ -125,8 +88,7 @@ function ReadingCalendar({
       </View>
 
       <View style={calStyles.grid}>
-        {cells.map((cell, idx) => {
-          if (!cell) return <View key={`e-${idx}`} style={calStyles.cell} />;
+        {weekDays.map((cell) => {
           const isRead = readSet.has(cell);
           const isToday = cell === today;
           const dayNum = cell.slice(8);
@@ -156,8 +118,59 @@ function ReadingCalendar({
       </View>
 
       <Text allowFontScaling style={[calStyles.summary, { color: theme.mutedText }]}>
-        {readThisMonth} {readThisMonth === 1 ? "leitura concluida" : "leituras concluidas"} em {MONTH_NAMES_PT[viewMonth - 1]}
+        {readThisWeek} de 7 leituras concluidas esta semana
       </Text>
+    </View>
+  );
+}
+
+function TodayLiturgySummary({
+  payload,
+  theme,
+  onContinueReading,
+}: {
+  payload: DailyLiturgyPayload;
+  theme: ThemePalette;
+  onContinueReading: () => void;
+}) {
+  const excerpt =
+    payload.evangelho.texto.length > 140
+      ? `${payload.evangelho.texto.slice(0, 140).trim()}…`
+      : payload.evangelho.texto;
+
+  return (
+    <View style={[summaryStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+      <Text allowFontScaling style={[summaryStyles.label, { color: theme.mutedText }]}>
+        Liturgia de Hoje
+      </Text>
+      <Text
+        allowFontScaling
+        numberOfLines={2}
+        style={[summaryStyles.title, { color: theme.titleText }]}
+      >
+        {payload.liturgia}
+      </Text>
+      <Text allowFontScaling style={[summaryStyles.gospelRef, { color: theme.accent }]}>
+        Evangelho: {payload.evangelho.referencia}
+      </Text>
+      <Text
+        allowFontScaling
+        numberOfLines={3}
+        style={[summaryStyles.excerpt, { color: theme.bodyText }]}
+      >
+        {excerpt}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Continuar lendo a liturgia de hoje"
+        style={summaryStyles.linkRow}
+        onPress={onContinueReading}
+      >
+        <Text allowFontScaling style={[summaryStyles.linkText, { color: theme.accent }]}>
+          Continuar lendo
+        </Text>
+        <Text style={[summaryStyles.linkArrow, { color: theme.accent }]}>{"→"}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -169,9 +182,9 @@ type Props = {
   error: string | null;
   offlineSource: boolean;
   theme: ThemePalette;
-  settings: UserSettings;
   readDays: string[];
   onRetry: () => void;
+  onContinueReading: () => void;
 };
 
 export function HomeScreen({
@@ -181,9 +194,9 @@ export function HomeScreen({
   error,
   offlineSource,
   theme,
-  settings,
   readDays,
   onRetry,
+  onContinueReading,
 }: Props) {
   return (
     <ScrollView
@@ -200,11 +213,15 @@ export function HomeScreen({
       <View style={styles.body}>
         <ReadingCalendar readDays={readDays} theme={theme} />
 
+        {!loading && payload ? (
+          <TodayLiturgySummary payload={payload} theme={theme} onContinueReading={onContinueReading} />
+        ) : null}
+
         {loading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color={theme.accent} />
             <Text allowFontScaling style={[styles.loadingText, { color: theme.mutedText }]}>
-              Carregando reflexao...
+              Atualizando dados do dia...
             </Text>
           </View>
         ) : null}
@@ -223,19 +240,6 @@ export function HomeScreen({
             </Pressable>
           </View>
         ) : null}
-
-        {!loading && payload ? (
-          <ReflectionSection
-            reflection={payload.reflexao}
-            fontScale={settings.fontScale}
-            cardColor={theme.cardBackground}
-            borderColor={theme.border}
-            titleColor={theme.titleText}
-            bodyColor={theme.bodyText}
-            mutedColor={theme.mutedText}
-            accentColor={theme.accent}
-          />
-        ) : null}
       </View>
     </ScrollView>
   );
@@ -247,11 +251,11 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 14, paddingTop: 14 },
   hero: {
     alignItems: "center",
-    paddingTop: 34,
-    paddingBottom: 26,
+    paddingTop: 22,
+    paddingBottom: 18,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -262,7 +266,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "stretch",
-    marginBottom: 10,
+    marginBottom: 6,
   },
   heroOrnamentLine: {
     flex: 1,
@@ -270,33 +274,33 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.45)",
   },
   heroCross: {
-    fontSize: 22,
+    fontSize: 18,
     color: "#F3D98B",
     marginHorizontal: 10,
   },
   heroTitle: {
-    fontSize: 34,
+    fontSize: 26,
     fontWeight: "900",
     color: "#FFFFFF",
-    letterSpacing: 6,
+    letterSpacing: 5,
   },
   heroSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontStyle: "italic",
     color: "rgba(255,255,255,0.85)",
     letterSpacing: 1,
-    marginTop: 4,
+    marginTop: 3,
   },
   heroDivider: {
-    width: 56,
+    width: 48,
     height: 2,
     borderRadius: 1,
     backgroundColor: "#F3D98B",
-    marginTop: 16,
-    marginBottom: 12,
+    marginTop: 10,
+    marginBottom: 8,
   },
   heroDate: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
     color: "rgba(255,255,255,0.92)",
     textAlign: "center",
@@ -305,9 +309,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "center",
-    marginTop: 14,
+    marginTop: 10,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.16)",
     borderWidth: 1,
@@ -326,7 +330,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   heroOffline: {
-    marginTop: 10,
+    marginTop: 8,
     fontSize: 11,
     fontStyle: "italic",
     color: "#FFF3C4",
@@ -368,27 +372,6 @@ const calStyles = StyleSheet.create({
     fontWeight: "700",
     marginBottom: 12,
   },
-  navRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  navBtn: {
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  navText: {
-    fontSize: 22,
-    fontWeight: "700",
-    lineHeight: 26,
-  },
-  monthTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
   dayLabelsRow: {
     flexDirection: "row",
     marginBottom: 4,
@@ -417,5 +400,51 @@ const calStyles = StyleSheet.create({
     marginTop: 10,
     fontSize: 12,
     textAlign: "center",
+  },
+});
+
+const summaryStyles = StyleSheet.create({
+  container: {
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 14,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  title: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  gospelRef: {
+    marginTop: 6,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  excerpt: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  linkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: 12,
+    minHeight: 32,
+  },
+  linkText: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  linkArrow: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

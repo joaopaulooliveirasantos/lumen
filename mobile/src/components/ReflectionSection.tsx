@@ -28,11 +28,14 @@ function ReflectionSectionComponent({
     <View
       accessible
       accessibilityRole="summary"
-      accessibilityLabel={`Reflexao do dia. Autor ${reflection.autor}`}
+      accessibilityLabel={`Homilia. ${reflection.titulo}. Autor ${reflection.autor}`}
       style={[styles.card, { backgroundColor: cardColor, borderColor }]}
     >
-      <Text allowFontScaling style={[styles.title, { color: titleColor, fontSize: 16 * fontScale }]}> 
-        Reflexao do Dia
+      <Text allowFontScaling style={[styles.title, { color: titleColor, fontSize: 16 * fontScale }]}>
+        Homilía
+      </Text>
+      <Text allowFontScaling style={[styles.commentTitle, { color: titleColor, fontSize: 15 * fontScale }]}>
+        {reflection.titulo}
       </Text>
       <Text allowFontScaling style={[styles.author, { color: mutedColor, fontSize: 14 * fontScale }]}>
         {reflection.autor}
@@ -43,6 +46,11 @@ function ReflectionSectionComponent({
       >
         {reflection.texto}
       </Text>
+      {reflection.fonte ? (
+        <Text allowFontScaling style={[styles.source, { color: mutedColor, fontSize: 12 * fontScale }]}>
+          {reflection.fonte}
+        </Text>
+      ) : null}
       {reflection.audioUrl ? (
         <AudioPlayer
           audioUrl={reflection.audioUrl}
@@ -71,11 +79,20 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: "700",
   },
+  commentTitle: {
+    marginTop: 10,
+    fontWeight: "700",
+  },
   author: {
     marginTop: 4,
+    fontStyle: "italic",
   },
   text: {
     marginTop: 10,
+  },
+  source: {
+    marginTop: 8,
+    fontStyle: "italic",
   },
   audio: {
     marginTop: 10,

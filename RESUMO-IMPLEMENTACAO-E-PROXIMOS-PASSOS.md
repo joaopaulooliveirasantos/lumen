@@ -12,14 +12,14 @@ Este documento resume o que foi implementado nas Fases 1, 2, 3 e 4 do roadmap, c
 - Endpoint principal: `GET /api/liturgia?date=YYYY-MM-DD`.
 - Integracao com fonte liturgica Evangelizo (Reader v2).
 - Parser e normalizacao de payload para formato consumivel pelo app.
-- Integracao de reflexoes via RSS.
+- Integracao da homilia via Evangelizo (comment_t/comment_a/comment_s/comment).
 - Validacao de schema dos dados de saida.
 - Testes automatizados com Vitest.
 
 ### Arquivos-chave
 - `src/serverless/getDailyLiturgy.ts`
 - `src/integrations/liturgyClient.ts`
-- `src/integrations/reflectionRssClient.ts`
+- `src/integrations/evangelizoCommentClient.ts`
 - `src/services/dailyLiturgyService.ts`
 - `tests/*.test.ts`
 - `.env.example`

@@ -11,7 +11,9 @@ export interface PsalmBlock {
 }
 
 export interface ReflectionBlock {
+  titulo: string;
   autor: string;
+  fonte: string;
   texto: string;
   audioUrl: string | null;
 }

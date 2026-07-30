@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { ThemePalette } from "../types/theme";
 
-export type TabName = "home" | "liturgia" | "biblia" | "configuracoes" | "perfil";
+export type TabName = "home" | "liturgia" | "biblia" | "oracoes" | "perfil";
 
 type TabItem = {
   name: TabName;
@@ -14,7 +14,7 @@ const TABS: TabItem[] = [
   { name: "home", label: "Home", icon: "⛪" },
   { name: "liturgia", label: "Liturgia Diaria", icon: "📖" },
   { name: "biblia", label: "Bíblia", icon: "✝️" },
-  { name: "configuracoes", label: "Configuracoes", icon: "⚙️" },
+  { name: "oracoes", label: "Orações", icon: "🙏" },
   { name: "perfil", label: "Perfil", icon: "👤" },
 ];
 

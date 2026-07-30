@@ -13,7 +13,9 @@ export const psalmSchema = z.object({
 });
 
 export const reflectionSchema = z.object({
+  titulo: z.string().min(1),
   autor: z.string().min(1),
+  fonte: z.string(),
   texto: z.string().min(1),
   audioUrl: z.string().url().nullable(),
 });

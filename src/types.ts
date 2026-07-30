@@ -11,7 +11,9 @@ export interface PsalmBlock {
 }
 
 export interface ReflectionBlock {
+  titulo: string;
   autor: string;
+  fonte: string;
   texto: string;
   audioUrl: string | null;
 }
@@ -27,10 +29,9 @@ export interface DailyLiturgyPayload {
   reflexao: ReflectionBlock;
 }
 
-export interface ReflectionCandidate {
-  title: string;
-  description: string;
-  pubDate: string | null;
-  link: string | null;
-  audioUrl: string | null;
+export interface CommentaryCandidate {
+  titulo: string;
+  autor: string;
+  fonte: string;
+  texto: string;
 }

@@ -3,11 +3,12 @@ import { Alert, StyleSheet, View } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { BottomTabBar, type TabName } from "./src/components/BottomTabBar";
+import { LoadingScreen } from "./src/components/LoadingScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { LiturgyScreen } from "./src/screens/LiturgyScreen";
-import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { BibleScreen } from "./src/screens/BibleScreen";
+import { PrayersScreen } from "./src/screens/PrayersScreen";
 import { fetchDailyLiturgy } from "./src/services/api";
 import { addDays, formatIsoDate } from "./src/services/date";
 import { disableDailyReminder, scheduleDailyReminder } from "./src/services/notifications";
@@ -208,9 +209,12 @@ export default function App() {
             error={error}
             offlineSource={offlineSource}
             theme={theme}
-            settings={settings}
             readDays={readDays}
             onRetry={() => void loadDate(selectedDate)}
+            onContinueReading={() => {
+              setSelectedDate(formatIsoDate(new Date()));
+              setActiveTab("liturgia");
+            }}
           />
         );
       case "liturgia":
@@ -226,11 +230,15 @@ export default function App() {
             onAmen={() => void handleAmen()}
           />
         );
-      case "configuracoes":
+      case "biblia":
+        return <BibleScreen theme={theme} settings={settings} />;
+      case "oracoes":
+        return <PrayersScreen theme={theme} settings={settings} />;
+      case "perfil":
         return (
-          <SettingsScreen
-            settings={settings}
+          <ProfileScreen
             theme={theme}
+            settings={settings}
             onUpdateFontScale={updateFontScale}
             onUpdateReadingMode={updateReadingMode}
             onReminderTimeChange={(value) =>
@@ -240,11 +248,16 @@ export default function App() {
             onDisableReminder={() => void disableReminder()}
           />
         );
-      case "biblia":
-        return <BibleScreen theme={theme} settings={settings} />;
-      case "perfil":
-        return <ProfileScreen theme={theme} />;
     }
+  }
+
+  if (!settingsReady) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar style="light" />
+        <LoadingScreen message="Preparando sua leitura..." />
+      </SafeAreaProvider>
+    );
   }
 
   return (

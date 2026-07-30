@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { LoadingScreen } from "../components/LoadingScreen";
 import { ReadingSection } from "../components/ReadingSection";
+import { ReflectionSection } from "../components/ReflectionSection";
 import { addDays, formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
 import type { DailyLiturgyPayload } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
@@ -8,7 +10,7 @@ import type { UserSettings } from "../types/settings";
 
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-type ReadingTabKey = "leitura1" | "salmo" | "leitura2" | "evangelho";
+type ReadingTabKey = "leitura1" | "salmo" | "leitura2" | "evangelho" | "homilia";
 
 type Props = {
   selectedDate: string;
@@ -155,14 +157,7 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
   }, [selectedDate]);
 
   if (loading) {
-    return (
-      <View style={styles.loadingBox}>
-        <ActivityIndicator size="large" color={theme.accent} />
-        <Text allowFontScaling style={[styles.loadingText, { color: theme.mutedText }]}>
-          Carregando leituras...
-        </Text>
-      </View>
-    );
+    return <LoadingScreen accent={theme.accent} message="Carregando as leituras do dia..." />;
   }
 
   if (!payload) {
@@ -180,6 +175,7 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
     { key: "salmo", label: "Salmo" },
     ...(payload.segundaLeitura ? [{ key: "leitura2" as const, label: "2ª Leitura" }] : []),
     { key: "evangelho", label: "Evangelho" },
+    { key: "homilia", label: "Homilía" },
   ];
 
   const currentTab = tabs.some((tab) => tab.key === activeReadingTab) ? activeReadingTab : "leitura1";
@@ -299,6 +295,19 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
             accentColor={theme.accent}
           />
         ) : null}
+
+        {currentTab === "homilia" ? (
+          <ReflectionSection
+            reflection={payload.reflexao}
+            fontScale={settings.fontScale}
+            cardColor={theme.cardBackground}
+            borderColor={theme.border}
+            titleColor={theme.titleText}
+            bodyColor={theme.bodyText}
+            mutedColor={theme.mutedText}
+            accentColor={theme.accent}
+          />
+        ) : null}
       </ScrollView>
 
       <View style={[styles.footer, { backgroundColor: theme.appBackground, borderTopColor: theme.border }]}>
@@ -318,14 +327,6 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
 }
 
 const styles = StyleSheet.create({
-  loadingBox: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingText: {
-    marginTop: 8,
-  },
   emptyBox: {
     flex: 1,
     alignItems: "center",

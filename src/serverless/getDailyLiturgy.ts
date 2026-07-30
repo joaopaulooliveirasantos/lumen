@@ -1,5 +1,5 @@
 import { LiturgyClient } from "../integrations/liturgyClient";
-import { ReflectionRssClient } from "../integrations/reflectionRssClient";
+import { EvangelizoCommentClient } from "../integrations/evangelizoCommentClient";
 import { DailyLiturgyService } from "../services/dailyLiturgyService";
 import { isValidIsoDate } from "../utils/date";
 
@@ -32,7 +32,7 @@ export async function getDailyLiturgy(request: RequestLike): Promise<ServerlessR
     };
   }
 
-  const service = new DailyLiturgyService(new LiturgyClient(), new ReflectionRssClient());
+  const service = new DailyLiturgyService(new LiturgyClient(), new EvangelizoCommentClient());
 
   try {
     const payload = await service.getDailyPayload(date);

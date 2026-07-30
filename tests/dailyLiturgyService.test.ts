@@ -29,11 +29,10 @@ describe("DailyLiturgyService", () => {
 
     const reflectionClient = {
       getByDate: async () => ({
-        title: "Padre Exemplo",
-        description: "Reflexao do evangelho do dia",
-        pubDate: "Tue, 28 Jul 2026",
-        link: null,
-        audioUrl: "https://cdn.exemplo.com/audio.mp3",
+        titulo: "Imitar a paciencia do Senhor",
+        autor: "Santo Agostinho",
+        fonte: "«A fe e as obras», caps. 3-5",
+        texto: "Homilia do evangelho do dia",
       }),
     };
 
@@ -41,8 +40,11 @@ describe("DailyLiturgyService", () => {
     const result = await service.getDailyPayload("2026-07-28");
 
     expect(result.cor).toBe("Verde");
-    expect(result.reflexao.autor).toBe("Padre Exemplo");
-    expect(result.reflexao.audioUrl).toBe("https://cdn.exemplo.com/audio.mp3");
+    expect(result.reflexao.titulo).toBe("Imitar a paciencia do Senhor");
+    expect(result.reflexao.autor).toBe("Santo Agostinho");
+    expect(result.reflexao.fonte).toBe("«A fe e as obras», caps. 3-5");
+    expect(result.reflexao.texto).toBe("Homilia do evangelho do dia");
+    expect(result.reflexao.audioUrl).toBeNull();
   });
 
   it("lanca erro com liturgia incompleta", async () => {

@@ -1,7 +1,7 @@
 import { dailyLiturgySchema } from "../schema";
 import type { DailyLiturgyPayload, ReadingBlock } from "../types";
 import type { LiturgyClient } from "../integrations/liturgyClient";
-import type { ReflectionRssClient } from "../integrations/reflectionRssClient";
+import type { EvangelizoCommentClient } from "../integrations/evangelizoCommentClient";
 
 function pickString(source: Record<string, unknown>, keys: string[], fallback = ""): string {
   for (const key of keys) {
@@ -49,7 +49,7 @@ function safeRecord(value: unknown): Record<string, unknown> {
 export class DailyLiturgyService {
   constructor(
     private readonly liturgyClient: Pick<LiturgyClient, "getByDate">,
-    private readonly reflectionClient: Pick<ReflectionRssClient, "getByDate">,
+    private readonly reflectionClient: Pick<EvangelizoCommentClient, "getByDate">,
   ) {}
 
   async getDailyPayload(isoDate: string): Promise<DailyLiturgyPayload> {
@@ -94,18 +94,23 @@ export class DailyLiturgyService {
       segundaLeitura,
       evangelho,
       reflexao: {
+        titulo: pickString(
+          safeRecord(root.reflexao),
+          ["titulo"],
+          reflectionCandidate?.titulo || "Homilia do dia",
+        ),
         autor: pickString(
           safeRecord(root.reflexao),
           ["autor"],
-          reflectionCandidate?.title || "Fonte externa",
+          reflectionCandidate?.autor || "Fonte externa",
         ),
+        fonte: pickString(safeRecord(root.reflexao), ["fonte"], reflectionCandidate?.fonte || ""),
         texto: pickString(
           safeRecord(root.reflexao),
           ["texto"],
-          reflectionCandidate?.description || "Reflexao indisponivel para esta data.",
+          reflectionCandidate?.texto || "Homilia indisponivel para esta data.",
         ),
-        audioUrl:
-          pickString(safeRecord(root.reflexao), ["audioUrl"]) || reflectionCandidate?.audioUrl || null,
+        audioUrl: pickString(safeRecord(root.reflexao), ["audioUrl"]) || null,
       },
     };
 

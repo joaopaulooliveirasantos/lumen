@@ -3,30 +3,28 @@
 ## O que foi implementado
 - Middleware serverless em Node.js + TypeScript
 - Integracao com API externa de liturgia via template de URL
-- Parser de feed RSS para reflexoes e audio
+- Cliente do comentario/homilia do Evangelizo (type=comment_t/comment_a/comment_s/comment)
 - Endpoint REST para consumo do app mobile
 - Suite de testes automatizados com Vitest
 
 ## Estrutura principal
 - src/integrations/liturgyClient.ts: cliente HTTP da fonte de liturgia
-- src/integrations/reflectionRssClient.ts: parser e selecao de reflexao por data
-- src/services/dailyLiturgyService.ts: consolidacao liturgia + reflexao
+- src/integrations/evangelizoCommentClient.ts: busca titulo, autor, fonte e texto da homilia
+- src/services/dailyLiturgyService.ts: consolidacao liturgia + homilia
 - src/serverless/getDailyLiturgy.ts: handler serverless principal
 - src/devServer.ts: servidor local para desenvolvimento
 - api/liturgia.ts: adaptador para deploy em Vercel
 
 ## Configuracao de ambiente
 Copie as variaveis de .env.example para seu ambiente:
-- LITURGY_API_URL_TEMPLATE (fonte principal Evangelizo)
+- LITURGY_API_URL_TEMPLATE (fonte principal Evangelizo, tambem usada para a homilia)
 - EVANGELIZO_LANG
 - EVANGELIZO_CONTENT (opcional)
-- REFLECTION_RSS_URL
 
 Exemplo:
 LITURGY_API_URL_TEMPLATE=https://feed.evangelizo.org/v2/reader.php
 EVANGELIZO_LANG=PT
 EVANGELIZO_CONTENT=GSP
-REFLECTION_RSS_URL=https://www.vaticannews.va/pt.rss.xml
 
 Observacao sobre data: o backend recebe YYYY-MM-DD no endpoint e converte automaticamente para YYYYMMDD ao consultar o Evangelizo.
 
@@ -48,7 +46,7 @@ Retorna JSON no formato:
 - salmo
 - segundaLeitura (ou null)
 - evangelho
-- reflexao (autor, texto, audioUrl)
+- reflexao (titulo, autor, fonte, texto, audioUrl)
 
 ### Erro de validacao (400)
 Quando date nao estiver em formato YYYY-MM-DD.
