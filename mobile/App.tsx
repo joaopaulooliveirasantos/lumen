@@ -1,24 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { ReadingSection } from "./src/components/ReadingSection";
-import { ReflectionSection } from "./src/components/ReflectionSection";
+import { BottomTabBar, type TabName } from "./src/components/BottomTabBar";
+import { HomeScreen } from "./src/screens/HomeScreen";
+import { LiturgyScreen } from "./src/screens/LiturgyScreen";
+import { SettingsScreen } from "./src/screens/SettingsScreen";
+import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { fetchDailyLiturgy } from "./src/services/api";
-import { addDays, formatIsoDate, formatReadableDate } from "./src/services/date";
+import { addDays, formatIsoDate } from "./src/services/date";
 import { disableDailyReminder, scheduleDailyReminder } from "./src/services/notifications";
 import { getDailyCache, initCache, saveDailyCache } from "./src/storage/liturgyCache";
+import { getReadDays, markDayAsRead } from "./src/storage/readingHistory";
 import { loadUserSettings, saveUserSettings } from "./src/storage/userSettings";
 import type { DailyLiturgyPayload } from "./src/types/liturgy";
+import type { ThemePalette } from "./src/types/theme";
 import { defaultUserSettings, type ReadingMode, type UserSettings } from "./src/types/settings";
 
 function liturgicColorHex(color: string): string {
@@ -29,18 +25,6 @@ function liturgicColorHex(color: string): string {
   if (normalized.includes("rosa")) return "#AD1457";
   return "#2E7D32";
 }
-
-type ThemePalette = {
-  appBackground: string;
-  cardBackground: string;
-  border: string;
-  titleText: string;
-  bodyText: string;
-  mutedText: string;
-  buttonText: string;
-  buttonBackground: string;
-  accent: string;
-};
 
 function getThemePalette(mode: ReadingMode, accent: string): ThemePalette {
   if (mode === "escuro") {
@@ -97,6 +81,7 @@ function clampFontScale(value: number): number {
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<TabName>("home");
   const [selectedDate, setSelectedDate] = useState<string>(formatIsoDate(new Date()));
   const [payload, setPayload] = useState<DailyLiturgyPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -104,6 +89,7 @@ export default function App() {
   const [offlineSource, setOfflineSource] = useState<boolean>(false);
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
   const [settingsReady, setSettingsReady] = useState(false);
+  const [readDays, setReadDays] = useState<string[]>([]);
 
   const accentColor = useMemo(() => {
     if (!payload) return "#2E7D32";
@@ -115,20 +101,17 @@ export default function App() {
     [accentColor, settings.readingMode],
   );
 
-  const modeLabel: Record<ReadingMode, string> = {
-    claro: "Claro",
-    escuro: "Escuro",
-    sepia: "Sepia",
-  };
-
   useEffect(() => {
     async function bootstrap(): Promise<void> {
       await initCache();
-      const loadedSettings = await loadUserSettings();
+      const [loadedSettings, loadedReadDays] = await Promise.all([
+        loadUserSettings(),
+        getReadDays(),
+      ]);
       setSettings(loadedSettings);
+      setReadDays(loadedReadDays);
       setSettingsReady(true);
     }
-
     void bootstrap();
   }, []);
 
@@ -137,10 +120,7 @@ export default function App() {
   }, [selectedDate]);
 
   useEffect(() => {
-    if (!settingsReady) {
-      return;
-    }
-
+    if (!settingsReady) return;
     void saveUserSettings(settings);
   }, [settings, settingsReady]);
 
@@ -151,18 +131,16 @@ export default function App() {
           const daily = await fetchDailyLiturgy(date);
           await saveDailyCache(date, daily);
         } catch {
-          // Prefetch failures are non-blocking for current daily reading.
+          // non-blocking
         }
       },
     );
-
     await Promise.all(tasks);
   }
 
   async function loadDate(date: string): Promise<void> {
     setLoading(true);
     setError(null);
-
     try {
       const online = await fetchDailyLiturgy(date);
       setPayload(online);
@@ -188,302 +166,94 @@ export default function App() {
   }
 
   function updateFontScale(delta: number): void {
-    setSettings((previous) => ({
-      ...previous,
-      fontScale: clampFontScale(previous.fontScale + delta),
-    }));
+    setSettings((prev) => ({ ...prev, fontScale: clampFontScale(prev.fontScale + delta) }));
   }
 
   function updateReadingMode(mode: ReadingMode): void {
-    setSettings((previous) => ({
-      ...previous,
-      readingMode: mode,
-    }));
+    setSettings((prev) => ({ ...prev, readingMode: mode }));
   }
 
   async function enableReminder(): Promise<void> {
     const validTime = normalizeReminderTime(settings.reminderTime);
     const ok = await scheduleDailyReminder(validTime);
-
     if (!ok) {
       Alert.alert("Permissao ou horario invalido", "Use o formato HH:MM e permita notificacoes.");
       return;
     }
-
-    setSettings((previous) => ({
-      ...previous,
-      reminderEnabled: true,
-      reminderTime: validTime,
-    }));
+    setSettings((prev) => ({ ...prev, reminderEnabled: true, reminderTime: validTime }));
     Alert.alert("Lembrete configurado", `Notificacao diaria ativa as ${validTime}.`);
   }
 
   async function disableReminder(): Promise<void> {
     await disableDailyReminder();
-    setSettings((previous) => ({
-      ...previous,
-      reminderEnabled: false,
-    }));
+    setSettings((prev) => ({ ...prev, reminderEnabled: false }));
     Alert.alert("Lembrete desativado", "As notificacoes diarias foram canceladas.");
   }
 
+  async function handleAmen(): Promise<void> {
+    const updated = await markDayAsRead(selectedDate);
+    setReadDays(updated);
+    Alert.alert("Am\u00e9m!", "Leitura da liturgia conclu\u00edda.");
+  }
+
+  function renderScreen() {
+    switch (activeTab) {
+      case "home":
+        return (
+          <HomeScreen
+            selectedDate={selectedDate}
+            payload={payload}
+            loading={loading}
+            error={error}
+            offlineSource={offlineSource}
+            theme={theme}
+            settings={settings}
+            readDays={readDays}
+            onRetry={() => void loadDate(selectedDate)}
+          />
+        );
+      case "liturgia":
+        return (
+          <LiturgyScreen
+            selectedDate={selectedDate}
+            payload={payload}
+            loading={loading}
+            theme={theme}
+            settings={settings}
+            isRead={readDays.includes(selectedDate)}
+            onSelectDate={(date) => setSelectedDate(date)}
+            onAmen={() => void handleAmen()}
+          />
+        );
+      case "configuracoes":
+        return (
+          <SettingsScreen
+            settings={settings}
+            theme={theme}
+            onUpdateFontScale={updateFontScale}
+            onUpdateReadingMode={updateReadingMode}
+            onReminderTimeChange={(value) =>
+              setSettings((prev) => ({ ...prev, reminderTime: value }))
+            }
+            onEnableReminder={() => void enableReminder()}
+            onDisableReminder={() => void disableReminder()}
+          />
+        );
+      case "perfil":
+        return <ProfileScreen theme={theme} />;
+    }
+  }
+
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.appBackground }]}>
-      <StatusBar style={settings.readingMode === "escuro" ? "light" : "dark"} />
-      <View style={styles.container}>
-        <View style={[styles.headerCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-          <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]}>Lumen Liturgia Diaria</Text>
-          <Text allowFontScaling style={[styles.headerDate, { color: theme.mutedText }]}>
-            {formatReadableDate(selectedDate)}
-          </Text>
-          <Text allowFontScaling style={[styles.headerTag, { color: theme.accent }]}>
-            Cor liturgica: {payload?.cor ?? "-"}
-          </Text>
-
-          <View style={styles.controlsRow}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Ir para o dia anterior"
-              style={[styles.button, { backgroundColor: theme.buttonBackground }]}
-              onPress={() => setSelectedDate(addDays(selectedDate, -1))}
-            >
-              <Text allowFontScaling style={[styles.buttonText, { color: theme.buttonText }]}>
-                Dia anterior
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Ir para o proximo dia"
-              style={[styles.button, { backgroundColor: theme.buttonBackground }]}
-              onPress={() => setSelectedDate(addDays(selectedDate, 1))}
-            >
-              <Text allowFontScaling style={[styles.buttonText, { color: theme.buttonText }]}>
-                Proximo dia
-              </Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.settingsRow}>
-            <Text allowFontScaling style={[styles.settingsLabel, { color: theme.titleText }]}>Fonte</Text>
-            <View style={styles.settingsActions}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Diminuir tamanho da fonte"
-                style={[styles.smallButton, { borderColor: theme.accent }]}
-                onPress={() => updateFontScale(-0.1)}
-              >
-                <Text allowFontScaling style={[styles.smallButtonText, { color: theme.accent }]}>A-</Text>
-              </Pressable>
-              <Text allowFontScaling style={[styles.fontScaleValue, { color: theme.mutedText }]}>
-                {(settings.fontScale * 100).toFixed(0)}%
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Aumentar tamanho da fonte"
-                style={[styles.smallButton, { borderColor: theme.accent }]}
-                onPress={() => updateFontScale(0.1)}
-              >
-                <Text allowFontScaling style={[styles.smallButtonText, { color: theme.accent }]}>A+</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          <View style={styles.settingsModesRow}>
-            {(Object.keys(modeLabel) as ReadingMode[]).map((mode) => {
-              const selected = settings.readingMode === mode;
-              return (
-                <Pressable
-                  key={mode}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Ativar modo ${modeLabel[mode]}`}
-                  style={[
-                    styles.modeButton,
-                    {
-                      borderColor: theme.accent,
-                      backgroundColor: selected ? theme.accent : "transparent",
-                    },
-                  ]}
-                  onPress={() => updateReadingMode(mode)}
-                >
-                  <Text
-                    allowFontScaling
-                    style={{
-                      color: selected ? "#FFFFFF" : theme.accent,
-                      fontWeight: "700",
-                    }}
-                  >
-                    {modeLabel[mode]}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <View style={styles.reminderRow}>
-            <TextInput
-              accessibilityLabel="Horario do lembrete diario"
-              accessibilityHint="Digite no formato HH:MM"
-              value={settings.reminderTime}
-              onChangeText={(value) =>
-                setSettings((previous) => ({
-                  ...previous,
-                  reminderTime: value,
-                }))
-              }
-              placeholder="07:00"
-              keyboardType="numbers-and-punctuation"
-              style={[
-                styles.timeInput,
-                {
-                  borderColor: theme.border,
-                  color: theme.titleText,
-                  backgroundColor: theme.cardBackground,
-                },
-              ]}
-            />
-            {settings.reminderEnabled ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Desativar lembrete diario"
-                style={[styles.reminderButton, { backgroundColor: "#9B1C1C" }]}
-                onPress={() => void disableReminder()}
-              >
-                <Text allowFontScaling style={styles.buttonText}>Desativar lembrete</Text>
-              </Pressable>
-            ) : (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Ativar lembrete diario"
-                style={[styles.reminderButton, { backgroundColor: theme.buttonBackground }]}
-                onPress={() => void enableReminder()}
-              >
-                <Text allowFontScaling style={[styles.buttonText, { color: theme.buttonText }]}> 
-                  Ativar lembrete
-                </Text>
-              </Pressable>
-            )}
-          </View>
-
-          {offlineSource ? (
-            <Text style={[styles.offlineInfo, { color: theme.accent }]}>Exibindo conteudo salvo offline.</Text>
-          ) : null}
+    <SafeAreaProvider>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.appBackground }]} edges={["top"]}>
+        <StatusBar style={settings.readingMode === "escuro" ? "light" : "dark"} />
+        <View style={styles.content}>
+          {renderScreen()}
         </View>
-
-        {loading ? (
-          <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color={theme.accent} />
-            <Text allowFontScaling style={[styles.loadingText, { color: theme.mutedText }]}>Carregando liturgia...</Text>
-          </View>
-        ) : null}
-
-        {!loading && error ? (
-          <View style={styles.errorBox}>
-            <Text allowFontScaling style={styles.errorTitle}>Nao foi possivel carregar.</Text>
-            <Text allowFontScaling style={styles.errorText}>{error}</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Tentar carregar novamente"
-              style={styles.retryButton}
-              onPress={() => void loadDate(selectedDate)}
-            >
-              <Text allowFontScaling style={styles.retryText}>Tentar novamente</Text>
-            </Pressable>
-          </View>
-        ) : null}
-
-        {!loading && payload ? (
-          <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-            <View
-              style={[
-                styles.liturgicBanner,
-                {
-                  borderLeftColor: theme.accent,
-                  backgroundColor: theme.cardBackground,
-                  borderTopColor: theme.border,
-                  borderRightColor: theme.border,
-                  borderBottomColor: theme.border,
-                },
-              ]}
-            >
-              <Text
-                allowFontScaling
-                style={[styles.liturgicTitle, { color: theme.titleText, fontSize: 15 * settings.fontScale }]}
-              >
-                {payload.liturgia}
-              </Text>
-            </View>
-
-            <ReadingSection
-              title="Primeira Leitura"
-              reading={payload.primeiraLeitura}
-              fontScale={settings.fontScale}
-              cardColor={theme.cardBackground}
-              borderColor={theme.border}
-              titleColor={theme.titleText}
-              bodyColor={theme.bodyText}
-              accentColor={theme.accent}
-            />
-
-            <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}> 
-              <Text allowFontScaling style={[styles.cardTitle, { color: theme.titleText, fontSize: 16 * settings.fontScale }]}> 
-                Salmo Responsorial
-              </Text>
-              <Text allowFontScaling style={[styles.psalmRefrain, { color: theme.accent, fontSize: 15 * settings.fontScale }]}> 
-                {payload.salmo.refrao}
-              </Text>
-              <Text
-                allowFontScaling
-                style={[
-                  styles.cardText,
-                  {
-                    color: theme.bodyText,
-                    fontSize: 15 * settings.fontScale,
-                    lineHeight: 24 * settings.fontScale,
-                  },
-                ]}
-              >
-                {payload.salmo.texto}
-              </Text>
-            </View>
-
-            {payload.segundaLeitura ? (
-              <ReadingSection
-                title="Segunda Leitura"
-                reading={payload.segundaLeitura}
-                fontScale={settings.fontScale}
-                cardColor={theme.cardBackground}
-                borderColor={theme.border}
-                titleColor={theme.titleText}
-                bodyColor={theme.bodyText}
-                accentColor={theme.accent}
-              />
-            ) : null}
-
-            <ReadingSection
-              title="Evangelho"
-              reading={payload.evangelho}
-              fontScale={settings.fontScale}
-              cardColor={theme.cardBackground}
-              borderColor={theme.border}
-              titleColor={theme.titleText}
-              bodyColor={theme.bodyText}
-              accentColor={theme.accent}
-            />
-
-            <ReflectionSection
-              reflection={payload.reflexao}
-              fontScale={settings.fontScale}
-              cardColor={theme.cardBackground}
-              borderColor={theme.border}
-              titleColor={theme.titleText}
-              bodyColor={theme.bodyText}
-              mutedColor={theme.mutedText}
-              accentColor={theme.accent}
-            />
-          </ScrollView>
-        ) : null}
-      </View>
-    </SafeAreaView>
+        <BottomTabBar activeTab={activeTab} onTabPress={setActiveTab} theme={theme} />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -491,188 +261,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  container: {
+  content: {
     flex: 1,
-    paddingHorizontal: 14,
-  },
-  headerCard: {
-    marginTop: 10,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  headerDate: {
-    marginTop: 6,
-    fontSize: 14,
-    textTransform: "capitalize",
-  },
-  headerTag: {
-    marginTop: 6,
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  controlsRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    gap: 8,
-  },
-  button: {
-    flex: 1,
-    minHeight: 44,
-    paddingVertical: 10,
-    justifyContent: "center",
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  settingsRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  settingsLabel: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  settingsActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  smallButton: {
-    borderRadius: 8,
-    borderWidth: 1,
-    minHeight: 36,
-    minWidth: 36,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  smallButtonText: {
-    fontWeight: "700",
-  },
-  fontScaleValue: {
-    minWidth: 48,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  settingsModesRow: {
-    marginTop: 10,
-    flexDirection: "row",
-    gap: 8,
-  },
-  modeButton: {
-    borderWidth: 1,
-    borderRadius: 8,
-    minHeight: 36,
-    justifyContent: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  reminderRow: {
-    marginTop: 12,
-    flexDirection: "row",
-    gap: 8,
-    alignItems: "center",
-  },
-  timeInput: {
-    width: 80,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    fontWeight: "600",
-  },
-  reminderButton: {
-    flex: 1,
-    borderRadius: 8,
-    minHeight: 44,
-    justifyContent: "center",
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  offlineInfo: {
-    marginTop: 10,
-    fontSize: 12,
-  },
-  loadingBox: {
-    marginTop: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingText: {
-    marginTop: 8,
-  },
-  errorBox: {
-    marginTop: 16,
-    backgroundColor: "#FEF2F2",
-    borderRadius: 12,
-    borderColor: "#FECACA",
-    borderWidth: 1,
-    padding: 14,
-  },
-  errorTitle: {
-    color: "#7F1D1D",
-    fontWeight: "700",
-  },
-  errorText: {
-    marginTop: 6,
-    color: "#991B1B",
-  },
-  retryButton: {
-    marginTop: 10,
-    backgroundColor: "#991B1B",
-    borderRadius: 8,
-    minHeight: 44,
-    justifyContent: "center",
-    paddingVertical: 8,
-    alignItems: "center",
-  },
-  retryText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  scroll: {
-    marginTop: 14,
-  },
-  scrollContent: {
-    paddingBottom: 28,
-  },
-  liturgicBanner: {
-    borderRadius: 10,
-    borderLeftWidth: 5,
-    padding: 14,
-    marginBottom: 12,
-    borderTopWidth: 1,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-  },
-  liturgicTitle: {
-    fontWeight: "700",
-  },
-  card: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-  },
-  cardTitle: {
-    fontWeight: "700",
-  },
-  psalmRefrain: {
-    marginTop: 8,
-    fontWeight: "700",
-  },
-  cardText: {
-    marginTop: 10,
   },
 });

@@ -1,6 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Audio } from "expo-av";
+
+// expo-av is deprecated in SDK 54 — import lazily to avoid crash
+let AudioLib: typeof import("expo-av") | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  AudioLib = require("expo-av") as typeof import("expo-av");
+} catch {
+  AudioLib = null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SoundRef = any;
 
 type Props = {
   audioUrl: string;
@@ -10,69 +21,69 @@ type Props = {
 };
 
 export function AudioPlayer({ audioUrl, textColor, cardColor, accentColor }: Props) {
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const soundRef = useRef<SoundRef>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  if (!AudioLib) {
+    return (
+      <View style={[styles.container, { backgroundColor: cardColor }]}>
+        <Text allowFontScaling style={[styles.label, { color: textColor }]}>
+          Audio indisponivel neste ambiente.
+        </Text>
+      </View>
+    );
+  }
+
   useEffect(() => {
     return () => {
-      if (sound) {
-        void sound.unloadAsync();
+      if (soundRef.current) {
+        void (soundRef.current as SoundRef).unloadAsync();
       }
     };
-  }, [sound]);
+  }, []);
 
-  async function ensureSound(): Promise<Audio.Sound> {
-    if (sound) {
-      return sound;
-    }
+  async function ensureSound(): Promise<SoundRef> {
+    if (soundRef.current) return soundRef.current as SoundRef;
 
     setIsLoading(true);
-    const result = await Audio.Sound.createAsync(
+    const result = await AudioLib!.Audio.Sound.createAsync(
       { uri: audioUrl },
       { shouldPlay: false },
-      (status) => {
-        if (status.isLoaded) {
-          setIsPlaying(status.isPlaying);
-        }
+      (status: { isLoaded: boolean; isPlaying?: boolean }) => {
+        if (status.isLoaded) setIsPlaying(status.isPlaying ?? false);
       },
     );
-    setSound(result.sound);
+    soundRef.current = result.sound;
     setIsLoading(false);
-    return result.sound;
+    return result.sound as SoundRef;
   }
 
   async function togglePlayPause(): Promise<void> {
     try {
       const player = await ensureSound();
       const status = await player.getStatusAsync();
-      if (!status.isLoaded) {
-        return;
-      }
-
+      if (!status.isLoaded) return;
       if (status.isPlaying) {
         await player.pauseAsync();
-        return;
+      } else {
+        await player.playAsync();
       }
-
-      await player.playAsync();
     } catch {
       setIsPlaying(false);
     }
   }
 
   async function restartAudio(): Promise<void> {
-    if (!sound) {
-      return;
+    if (!soundRef.current) return;
+    try {
+      const status = await soundRef.current.getStatusAsync();
+      if (!status.isLoaded) return;
+      await soundRef.current.setPositionAsync(0);
+      await soundRef.current.playAsync();
+    } catch {
+      // ignore
     }
-
-    const status = await sound.getStatusAsync();
-    if (!status.isLoaded) {
-      return;
-    }
-
-    await sound.setPositionAsync(0);
-    await sound.playAsync();
   }
 
   return (
