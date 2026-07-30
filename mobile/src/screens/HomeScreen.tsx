@@ -7,13 +7,72 @@ import {
   Text,
   View,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { ReflectionSection } from "../components/ReflectionSection";
-import { formatIsoDate, getMonthCalendarDays, MONTH_NAMES_PT } from "../services/date";
+import { formatIsoDate, formatReadableDate, getMonthCalendarDays, MONTH_NAMES_PT } from "../services/date";
 import type { DailyLiturgyPayload } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
 
 const DAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
+
+function shadeColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const amount = Math.round(2.55 * percent);
+  const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
+  const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function Hero({
+  accent,
+  liturgicColor,
+  selectedDate,
+  offlineSource,
+}: {
+  accent: string;
+  liturgicColor: string | undefined;
+  selectedDate: string;
+  offlineSource: boolean;
+}) {
+  return (
+    <LinearGradient
+      colors={[shadeColor(accent, 14), accent, shadeColor(accent, -18)]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.hero}
+    >
+      <View style={styles.heroOrnamentRow}>
+        <View style={styles.heroOrnamentLine} />
+        <Text style={styles.heroCross}>✝</Text>
+        <View style={styles.heroOrnamentLine} />
+      </View>
+
+      <Text allowFontScaling style={styles.heroTitle}>LUMEN</Text>
+      <Text allowFontScaling style={styles.heroSubtitle}>Liturgia Diária ✧ Reflexões</Text>
+
+      <View style={styles.heroDivider} />
+
+      <Text allowFontScaling style={styles.heroDate}>{capitalize(formatReadableDate(selectedDate))}</Text>
+
+      {liturgicColor ? (
+        <View style={styles.heroBadge}>
+          <View style={styles.heroBadgeDot} />
+          <Text allowFontScaling style={styles.heroBadgeText}>Cor litúrgica: {liturgicColor}</Text>
+        </View>
+      ) : null}
+
+      {offlineSource ? (
+        <Text allowFontScaling style={styles.heroOffline}>Exibindo conteúdo salvo offline</Text>
+      ) : null}
+    </LinearGradient>
+  );
+}
 
 function ReadingCalendar({
   readDays,
@@ -131,80 +190,148 @@ export function HomeScreen({
       style={[styles.scroll, { backgroundColor: theme.appBackground }]}
       contentContainerStyle={styles.scrollContent}
     >
-      <View style={[styles.headerCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]}>
-          Lumen
-        </Text>
-        <Text allowFontScaling style={[styles.headerSubtitle, { color: theme.mutedText }]}>
-          Liturgia Diaria
-        </Text>
-        {offlineSource ? (
-          <Text style={[styles.offlineInfo, { color: theme.accent }]}>
-            Exibindo conteudo salvo offline.
-          </Text>
+      <Hero
+        accent={theme.accent}
+        liturgicColor={payload?.cor}
+        selectedDate={selectedDate}
+        offlineSource={offlineSource}
+      />
+
+      <View style={styles.body}>
+        <ReadingCalendar readDays={readDays} theme={theme} />
+
+        {loading ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color={theme.accent} />
+            <Text allowFontScaling style={[styles.loadingText, { color: theme.mutedText }]}>
+              Carregando reflexao...
+            </Text>
+          </View>
+        ) : null}
+
+        {!loading && error ? (
+          <View style={styles.errorBox}>
+            <Text allowFontScaling style={styles.errorTitle}>Nao foi possivel carregar.</Text>
+            <Text allowFontScaling style={styles.errorText}>{error}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Tentar carregar novamente"
+              style={styles.retryButton}
+              onPress={onRetry}
+            >
+              <Text allowFontScaling style={styles.retryText}>Tentar novamente</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {!loading && payload ? (
+          <ReflectionSection
+            reflection={payload.reflexao}
+            fontScale={settings.fontScale}
+            cardColor={theme.cardBackground}
+            borderColor={theme.border}
+            titleColor={theme.titleText}
+            bodyColor={theme.bodyText}
+            mutedColor={theme.mutedText}
+            accentColor={theme.accent}
+          />
         ) : null}
       </View>
-
-      <ReadingCalendar readDays={readDays} theme={theme} />
-
-      {loading ? (
-        <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={theme.accent} />
-          <Text allowFontScaling style={[styles.loadingText, { color: theme.mutedText }]}>
-            Carregando reflexao...
-          </Text>
-        </View>
-      ) : null}
-
-      {!loading && error ? (
-        <View style={styles.errorBox}>
-          <Text allowFontScaling style={styles.errorTitle}>Nao foi possivel carregar.</Text>
-          <Text allowFontScaling style={styles.errorText}>{error}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Tentar carregar novamente"
-            style={styles.retryButton}
-            onPress={onRetry}
-          >
-            <Text allowFontScaling style={styles.retryText}>Tentar novamente</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {!loading && payload ? (
-        <ReflectionSection
-          reflection={payload.reflexao}
-          fontScale={settings.fontScale}
-          cardColor={theme.cardBackground}
-          borderColor={theme.border}
-          titleColor={theme.titleText}
-          bodyColor={theme.bodyText}
-          mutedColor={theme.mutedText}
-          accentColor={theme.accent}
-        />
-      ) : null}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
-  scrollContent: { paddingHorizontal: 14, paddingTop: 14, paddingBottom: 28 },
-  headerCard: {
-    borderRadius: 14,
-    padding: 16,
+  scrollContent: { paddingBottom: 28 },
+  body: { paddingHorizontal: 14, paddingTop: 14 },
+  hero: {
+    alignItems: "center",
+    paddingTop: 34,
+    paddingBottom: 26,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  heroOrnamentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "stretch",
+    marginBottom: 10,
+  },
+  heroOrnamentLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.45)",
+  },
+  heroCross: {
+    fontSize: 22,
+    color: "#F3D98B",
+    marginHorizontal: 10,
+  },
+  heroTitle: {
+    fontSize: 34,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    letterSpacing: 6,
+  },
+  heroSubtitle: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: "rgba(255,255,255,0.85)",
+    letterSpacing: 1,
+    marginTop: 4,
+  },
+  heroDivider: {
+    width: 56,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: "#F3D98B",
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  heroDate: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.92)",
+    textAlign: "center",
+  },
+  heroBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    marginTop: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.16)",
     borderWidth: 1,
-    marginBottom: 14,
+    borderColor: "rgba(255,255,255,0.32)",
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "800",
+  heroBadgeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#FFFFFF",
+    marginRight: 8,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    marginTop: 2,
+  heroBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
-  offlineInfo: { marginTop: 8, fontSize: 12 },
+  heroOffline: {
+    marginTop: 10,
+    fontSize: 11,
+    fontStyle: "italic",
+    color: "#FFF3C4",
+    textAlign: "center",
+  },
   loadingBox: { marginTop: 16, alignItems: "center", justifyContent: "center" },
   loadingText: { marginTop: 8 },
   errorBox: {

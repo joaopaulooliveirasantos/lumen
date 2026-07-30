@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { ReadingSection } from "../components/ReadingSection";
 import { addDays, formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
@@ -6,6 +7,8 @@ import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
 
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+type ReadingTabKey = "leitura1" | "salmo" | "leitura2" | "evangelho";
 
 type Props = {
   selectedDate: string;
@@ -103,7 +106,54 @@ function WeekCalendar({
   );
 }
 
+function ReadingTabBar({
+  tabs,
+  active,
+  onSelect,
+  theme,
+}: {
+  tabs: { key: ReadingTabKey; label: string }[];
+  active: ReadingTabKey;
+  onSelect: (key: ReadingTabKey) => void;
+  theme: ThemePalette;
+}) {
+  return (
+    <View style={[styles.tabBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+      {tabs.map((tab) => {
+        const isActive = tab.key === active;
+        return (
+          <Pressable
+            key={tab.key}
+            accessibilityRole="button"
+            accessibilityLabel={tab.label}
+            accessibilityState={{ selected: isActive }}
+            style={[styles.tabButton, isActive && { backgroundColor: theme.accent }]}
+            onPress={() => onSelect(tab.key)}
+          >
+            <Text
+              allowFontScaling
+              numberOfLines={1}
+              style={[
+                styles.tabLabel,
+                { color: isActive ? "#FFFFFF" : theme.mutedText, fontWeight: isActive ? "700" : "600" },
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export function LiturgyScreen({ selectedDate, payload, loading, theme, settings, isRead, onSelectDate, onAmen }: Props) {
+  const [activeReadingTab, setActiveReadingTab] = useState<ReadingTabKey>("leitura1");
+
+  useEffect(() => {
+    setActiveReadingTab("leitura1");
+  }, [selectedDate]);
+
   if (loading) {
     return (
       <View style={styles.loadingBox}>
@@ -125,128 +175,145 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
     );
   }
 
+  const tabs: { key: ReadingTabKey; label: string }[] = [
+    { key: "leitura1", label: "1ª Leitura" },
+    { key: "salmo", label: "Salmo" },
+    ...(payload.segundaLeitura ? [{ key: "leitura2" as const, label: "2ª Leitura" }] : []),
+    { key: "evangelho", label: "Evangelho" },
+  ];
+
+  const currentTab = tabs.some((tab) => tab.key === activeReadingTab) ? activeReadingTab : "leitura1";
+
   return (
-    <ScrollView
-      style={[styles.scroll, { backgroundColor: theme.appBackground }]}
-      contentContainerStyle={styles.scrollContent}
-    >
-      <WeekCalendar selectedDate={selectedDate} theme={theme} onSelectDate={onSelectDate} />
+    <View style={[styles.screen, { backgroundColor: theme.appBackground }]}>
+      <View style={styles.headerArea}>
+        <WeekCalendar selectedDate={selectedDate} theme={theme} onSelectDate={onSelectDate} />
 
-      <View style={[styles.dateHeader, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <Text allowFontScaling style={[styles.dateText, { color: theme.mutedText }]}>
-          {formatReadableDate(selectedDate)}
-        </Text>
-        <View style={styles.colorRow}>
-          <View style={[styles.colorDot, { backgroundColor: theme.accent }]} />
-          <Text allowFontScaling style={[styles.colorText, { color: theme.accent }]}>
-            {payload.cor}
+        <View style={[styles.dateHeader, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          <Text allowFontScaling style={[styles.dateText, { color: theme.mutedText }]}>
+            {formatReadableDate(selectedDate)}
           </Text>
+          <View style={styles.colorRow}>
+            <View style={[styles.colorDot, { backgroundColor: theme.accent }]} />
+            <Text allowFontScaling style={[styles.colorText, { color: theme.accent }]}>
+              {payload.cor}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <View
-        style={[
-          styles.liturgicBanner,
-          {
-            borderLeftColor: theme.accent,
-            backgroundColor: theme.cardBackground,
-            borderTopColor: theme.border,
-            borderRightColor: theme.border,
-            borderBottomColor: theme.border,
-          },
-        ]}
-      >
-        <Text
-          allowFontScaling
+        <View
           style={[
-            styles.liturgicTitle,
-            { color: theme.titleText, fontSize: 15 * settings.fontScale },
-          ]}
-        >
-          {payload.liturgia}
-        </Text>
-        <Text
-          allowFontScaling
-          style={[styles.liturgicCor, { color: theme.accent, fontSize: 13 * settings.fontScale }]}
-        >
-          Cor liturgica: {payload.cor}
-        </Text>
-      </View>
-
-      <ReadingSection
-        title="Primeira Leitura"
-        reading={payload.primeiraLeitura}
-        fontScale={settings.fontScale}
-        cardColor={theme.cardBackground}
-        borderColor={theme.border}
-        titleColor={theme.titleText}
-        bodyColor={theme.bodyText}
-        accentColor={theme.accent}
-      />
-
-      <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <Text
-          allowFontScaling
-          style={[styles.cardTitle, { color: theme.titleText, fontSize: 16 * settings.fontScale }]}
-        >
-          Salmo Responsorial
-        </Text>
-        <Text
-          allowFontScaling
-          style={[styles.psalmRefrain, { color: theme.accent, fontSize: 15 * settings.fontScale }]}
-        >
-          {payload.salmo.refrao}
-        </Text>
-        <Text
-          allowFontScaling
-          style={[
-            styles.cardText,
+            styles.liturgicBanner,
             {
-              color: theme.bodyText,
-              fontSize: 15 * settings.fontScale,
-              lineHeight: 24 * settings.fontScale,
+              borderLeftColor: theme.accent,
+              backgroundColor: theme.cardBackground,
+              borderTopColor: theme.border,
+              borderRightColor: theme.border,
+              borderBottomColor: theme.border,
             },
           ]}
         >
-          {payload.salmo.texto}
-        </Text>
+          <Text
+            allowFontScaling
+            style={[
+              styles.liturgicTitle,
+              { color: theme.titleText, fontSize: 15 * settings.fontScale },
+            ]}
+          >
+            {payload.liturgia}
+          </Text>
+        </View>
+
+        <ReadingTabBar tabs={tabs} active={currentTab} onSelect={setActiveReadingTab} theme={theme} />
       </View>
 
-      {payload.segundaLeitura ? (
-        <ReadingSection
-          title="Segunda Leitura"
-          reading={payload.segundaLeitura}
-          fontScale={settings.fontScale}
-          cardColor={theme.cardBackground}
-          borderColor={theme.border}
-          titleColor={theme.titleText}
-          bodyColor={theme.bodyText}
-          accentColor={theme.accent}
-        />
-      ) : null}
-
-      <ReadingSection
-        title="Evangelho"
-        reading={payload.evangelho}
-        fontScale={settings.fontScale}
-        cardColor={theme.cardBackground}
-        borderColor={theme.border}
-        titleColor={theme.titleText}
-        bodyColor={theme.bodyText}
-        accentColor={theme.accent}
-      />
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={isRead ? "Leitura ja concluida" : "Marcar leitura como concluida"}
-        style={[styles.amenButton, { backgroundColor: theme.accent, opacity: isRead ? 0.7 : 1 }]}
-        onPress={onAmen}
+      <ScrollView
+        style={styles.tabScroll}
+        contentContainerStyle={styles.tabContent}
       >
-        <Text allowFontScaling style={styles.amenText}>
-          {isRead ? "\u2713 Am\u00e9m" : "Am\u00e9m"}
-        </Text>
-      </Pressable>
-    </ScrollView>
+        {currentTab === "leitura1" ? (
+          <ReadingSection
+            title="Primeira Leitura"
+            reading={payload.primeiraLeitura}
+            fontScale={settings.fontScale}
+            cardColor={theme.cardBackground}
+            borderColor={theme.border}
+            titleColor={theme.titleText}
+            bodyColor={theme.bodyText}
+            accentColor={theme.accent}
+          />
+        ) : null}
+
+        {currentTab === "salmo" ? (
+          <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+            <Text
+              allowFontScaling
+              style={[styles.cardTitle, { color: theme.titleText, fontSize: 16 * settings.fontScale }]}
+            >
+              Salmo Responsorial
+            </Text>
+            <Text
+              allowFontScaling
+              style={[styles.psalmRefrain, { color: theme.accent, fontSize: 15 * settings.fontScale }]}
+            >
+              {payload.salmo.refrao}
+            </Text>
+            <Text
+              allowFontScaling
+              style={[
+                styles.cardText,
+                {
+                  color: theme.bodyText,
+                  fontSize: 15 * settings.fontScale,
+                  lineHeight: 24 * settings.fontScale,
+                },
+              ]}
+            >
+              {payload.salmo.texto}
+            </Text>
+          </View>
+        ) : null}
+
+        {currentTab === "leitura2" && payload.segundaLeitura ? (
+          <ReadingSection
+            title="Segunda Leitura"
+            reading={payload.segundaLeitura}
+            fontScale={settings.fontScale}
+            cardColor={theme.cardBackground}
+            borderColor={theme.border}
+            titleColor={theme.titleText}
+            bodyColor={theme.bodyText}
+            accentColor={theme.accent}
+          />
+        ) : null}
+
+        {currentTab === "evangelho" ? (
+          <ReadingSection
+            title="Evangelho"
+            reading={payload.evangelho}
+            fontScale={settings.fontScale}
+            cardColor={theme.cardBackground}
+            borderColor={theme.border}
+            titleColor={theme.titleText}
+            bodyColor={theme.bodyText}
+            accentColor={theme.accent}
+          />
+        ) : null}
+      </ScrollView>
+
+      <View style={[styles.footer, { backgroundColor: theme.appBackground, borderTopColor: theme.border }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={isRead ? "Leitura ja concluida" : "Marcar leitura como concluida"}
+          style={[styles.amenButton, { backgroundColor: theme.accent, opacity: isRead ? 0.7 : 1 }]}
+          onPress={onAmen}
+        >
+          <Text allowFontScaling style={styles.amenText}>
+            {isRead ? "✓ Amém" : "Amém"}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -269,13 +336,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: "center",
   },
-  scroll: {
+  screen: {
     flex: 1,
   },
-  scrollContent: {
+  headerArea: {
     paddingHorizontal: 14,
     paddingTop: 14,
-    paddingBottom: 28,
+  },
+  tabScroll: {
+    flex: 1,
+  },
+  tabContent: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 20,
+  },
+  footer: {
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    paddingBottom: 12,
+    borderTopWidth: 1,
   },
   liturgicBanner: {
     borderRadius: 10,
@@ -288,10 +368,6 @@ const styles = StyleSheet.create({
   },
   liturgicTitle: {
     fontWeight: "700",
-  },
-  liturgicCor: {
-    marginTop: 4,
-    fontWeight: "600",
   },
   card: {
     borderRadius: 12,
@@ -340,8 +416,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   amenButton: {
-    marginTop: 8,
-    marginBottom: 16,
     borderRadius: 14,
     minHeight: 56,
     alignItems: "center",
@@ -404,5 +478,25 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
+  },
+  tabBar: {
+    flexDirection: "row",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 4,
+    marginBottom: 4,
+    gap: 4,
+  },
+  tabButton: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  tabLabel: {
+    fontSize: 12,
+    textAlign: "center",
   },
 });

@@ -7,6 +7,7 @@ import { HomeScreen } from "./src/screens/HomeScreen";
 import { LiturgyScreen } from "./src/screens/LiturgyScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
+import { BibleScreen } from "./src/screens/BibleScreen";
 import { fetchDailyLiturgy } from "./src/services/api";
 import { addDays, formatIsoDate } from "./src/services/date";
 import { disableDailyReminder, scheduleDailyReminder } from "./src/services/notifications";
@@ -239,6 +240,8 @@ export default function App() {
             onDisableReminder={() => void disableReminder()}
           />
         );
+      case "biblia":
+        return <BibleScreen theme={theme} settings={settings} />;
       case "perfil":
         return <ProfileScreen theme={theme} />;
     }
@@ -247,7 +250,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.appBackground }]} edges={["top"]}>
-        <StatusBar style={settings.readingMode === "escuro" ? "light" : "dark"} />
+        <StatusBar style={activeTab === "home" || settings.readingMode === "escuro" ? "light" : "dark"} />
         <View style={styles.content}>
           {renderScreen()}
         </View>
