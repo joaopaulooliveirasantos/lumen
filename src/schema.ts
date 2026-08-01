@@ -30,3 +30,8 @@ export const dailyLiturgySchema = z.object({
   evangelho: readingSchema,
   reflexao: reflectionSchema,
 });
+
+export const saintOfDaySchema = z.object({
+  data: z.string().min(1),
+  santos: z.array(z.string().min(1)),
+});

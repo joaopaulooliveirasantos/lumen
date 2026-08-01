@@ -34,3 +34,10 @@ export interface CachedDailyLiturgy {
   payload: DailyLiturgyPayload;
   updatedAt: string;
 }
+
+export interface SaintOfDayPayload {
+  data: string;
+  santos: string[];
+}
+
+export type ReadingTabKey = "leitura1" | "salmo" | "leitura2" | "evangelho" | "homilia";

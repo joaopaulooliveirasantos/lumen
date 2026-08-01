@@ -112,4 +112,22 @@ export const prayerCategories: PrayerCategory[] = [
       },
     ],
   },
+  {
+    id: "terco",
+    nome: "Orações do Terço",
+    oracoes: [
+      {
+        id: "oracao-fatima",
+        titulo: "Oração de Fátima",
+        texto:
+          "Ó meu Jesus, perdoai-nos, livrai-nos do fogo do inferno; levai as almas todas para o Céu, principalmente as que mais precisarem. Amém.",
+      },
+      {
+        id: "oracao-final-terco",
+        titulo: "Oração Final do Terço",
+        texto:
+          "Ó Deus, cujo Filho unigênito, por sua vida, morte e ressurreição, nos mereceu as recompensas da salvação eterna, concedei-nos, nós vo-lo pedimos, que, meditando estes mistérios do santíssimo Rosário da Bem-Aventurada Virgem Maria, imitemos o que encerram e alcancemos o que prometem. Por Cristo, Senhor Nosso. Amém.",
+      },
+    ],
+  },
 ];

@@ -8,14 +8,16 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { bibleTranslations } from "../data/bibleTranslations";
 import type { ThemePalette } from "../types/theme";
-import type { ReadingMode, UserSettings } from "../types/settings";
+import type { BibleTranslationId, ReadingMode, UserSettings } from "../types/settings";
 
 type Props = {
   settings: UserSettings;
   theme: ThemePalette;
   onUpdateFontScale: (delta: number) => void;
   onUpdateReadingMode: (mode: ReadingMode) => void;
+  onUpdateBibleTranslation: (translation: BibleTranslationId) => void;
   onReminderTimeChange: (value: string) => void;
   onEnableReminder: () => void;
   onDisableReminder: () => void;
@@ -32,6 +34,7 @@ export function SettingsScreen({
   theme,
   onUpdateFontScale,
   onUpdateReadingMode,
+  onUpdateBibleTranslation,
   onReminderTimeChange,
   onEnableReminder,
   onDisableReminder,
@@ -112,6 +115,44 @@ export function SettingsScreen({
         <Text allowFontScaling style={[styles.fontPreview, { color: theme.bodyText, fontSize: 15 * settings.fontScale }]}>
           Exemplo de texto com a fonte atual.
         </Text>
+      </View>
+
+      {/* Bíblia */}
+      <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <Text allowFontScaling style={[styles.sectionTitle, { color: theme.titleText }]}>
+          Bíblia
+        </Text>
+        <View style={styles.bibleList}>
+          {bibleTranslations.map((translation) => {
+            const selected = settings.bibleTranslation === translation.id;
+            return (
+              <Pressable
+                key={translation.id}
+                accessibilityRole="button"
+                accessibilityLabel={`Usar a bíblia ${translation.nome}`}
+                accessibilityState={{ selected }}
+                style={[
+                  styles.bibleRow,
+                  {
+                    borderColor: selected ? theme.accent : theme.border,
+                    borderWidth: selected ? 2 : 1,
+                  },
+                ]}
+                onPress={() => onUpdateBibleTranslation(translation.id)}
+              >
+                <View style={styles.bibleRowBody}>
+                  <Text allowFontScaling style={[styles.bibleName, { color: theme.titleText }]}>
+                    {translation.nome}
+                  </Text>
+                  <Text allowFontScaling style={[styles.bibleEditora, { color: theme.mutedText }]}>
+                    {translation.editora}
+                  </Text>
+                </View>
+                {selected ? <Text style={[styles.bibleCheck, { color: theme.accent }]}>{"✓"}</Text> : null}
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       {/* Lembrete */}
@@ -225,6 +266,32 @@ const styles = StyleSheet.create({
   fontPreview: {
     marginTop: 14,
     lineHeight: 22,
+  },
+  bibleList: {
+    gap: 8,
+  },
+  bibleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 10,
+    padding: 12,
+    minHeight: 56,
+  },
+  bibleRowBody: {
+    flex: 1,
+  },
+  bibleName: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  bibleEditora: {
+    marginTop: 2,
+    fontSize: 12,
+  },
+  bibleCheck: {
+    fontSize: 18,
+    fontWeight: "800",
+    paddingHorizontal: 4,
   },
   reminderRow: {
     flexDirection: "row",

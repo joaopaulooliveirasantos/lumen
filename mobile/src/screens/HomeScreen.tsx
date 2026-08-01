@@ -9,7 +9,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
 import { shadeColor } from "../services/color";
-import type { DailyLiturgyPayload } from "../types/liturgy";
+import type { DailyLiturgyPayload, SaintOfDayPayload } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 
 const DAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
@@ -36,25 +36,21 @@ function Hero({
       end={{ x: 1, y: 1 }}
       style={styles.hero}
     >
-      <View style={styles.heroOrnamentRow}>
-        <View style={styles.heroOrnamentLine} />
+      <View style={styles.heroTopRow}>
         <Text style={styles.heroCross}>✝</Text>
-        <View style={styles.heroOrnamentLine} />
+        <Text allowFontScaling style={styles.heroTitle}>LUMEN</Text>
       </View>
 
-      <Text allowFontScaling style={styles.heroTitle}>LUMEN</Text>
-      <Text allowFontScaling style={styles.heroSubtitle}>Liturgia Diária ✧ Reflexões</Text>
+      <View style={styles.heroInfoRow}>
+        <Text allowFontScaling style={styles.heroDate}>{capitalize(formatReadableDate(selectedDate))}</Text>
 
-      <View style={styles.heroDivider} />
-
-      <Text allowFontScaling style={styles.heroDate}>{capitalize(formatReadableDate(selectedDate))}</Text>
-
-      {liturgicColor ? (
-        <View style={styles.heroBadge}>
-          <View style={styles.heroBadgeDot} />
-          <Text allowFontScaling style={styles.heroBadgeText}>Cor litúrgica: {liturgicColor}</Text>
-        </View>
-      ) : null}
+        {liturgicColor ? (
+          <View style={styles.heroBadge}>
+            <View style={styles.heroBadgeDot} />
+            <Text allowFontScaling style={styles.heroBadgeText}>{liturgicColor}</Text>
+          </View>
+        ) : null}
+      </View>
 
       {offlineSource ? (
         <Text allowFontScaling style={styles.heroOffline}>Exibindo conteúdo salvo offline</Text>
@@ -65,61 +61,104 @@ function Hero({
 
 function ReadingCalendar({
   readDays,
+  rosaryDays,
   theme,
 }: {
   readDays: string[];
+  rosaryDays: string[];
   theme: ThemePalette;
 }) {
   const today = formatIsoDate(new Date());
   const weekDays = getWeekDays(today);
   const readSet = new Set(readDays);
+  const rosarySet = new Set(rosaryDays);
   const readThisWeek = weekDays.filter((d) => readSet.has(d)).length;
+  const rosaryThisWeek = weekDays.filter((d) => rosarySet.has(d)).length;
 
   return (
     <View style={[calStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-      <Text allowFontScaling style={[calStyles.sectionTitle, { color: theme.titleText }]}>
-        Progresso da Liturgia
-      </Text>
-
-      <View style={calStyles.dayLabelsRow}>
-        {DAY_LABELS_SHORT.map((d, i) => (
-          <Text key={i} style={[calStyles.dayLabelText, { color: theme.mutedText }]}>{d}</Text>
-        ))}
+      <View style={calStyles.headerRow}>
+        <Text allowFontScaling style={[calStyles.sectionTitle, { color: theme.titleText }]}>
+          Progresso da Liturgia
+        </Text>
+        <View style={calStyles.statsInline}>
+          <Text style={calStyles.statsIcon}>📖</Text>
+          <Text allowFontScaling style={[calStyles.statsText, { color: theme.mutedText }]}>
+            {readThisWeek}/7
+          </Text>
+          <Text style={[calStyles.statsIcon, calStyles.statsIconSpaced]}>🌹</Text>
+          <Text allowFontScaling style={[calStyles.statsText, { color: theme.mutedText }]}>
+            {rosaryThisWeek}/7
+          </Text>
+        </View>
       </View>
 
-      <View style={calStyles.grid}>
-        {weekDays.map((cell) => {
+      <View style={calStyles.strip}>
+        {weekDays.map((cell, i) => {
           const isRead = readSet.has(cell);
+          const isRosaryPrayed = rosarySet.has(cell);
           const isToday = cell === today;
-          const dayNum = cell.slice(8);
           return (
-            <View
-              key={cell}
-              style={[
-                calStyles.cell,
-                isRead && { backgroundColor: theme.accent, borderRadius: 20 },
-                isToday && !isRead && { borderWidth: 2, borderColor: theme.accent, borderRadius: 20 },
-              ]}
-            >
+            <View key={cell} style={calStyles.dayCol}>
               <Text
+                allowFontScaling
+                style={[calStyles.dayLabel, { color: isToday ? theme.accent : theme.mutedText }]}
+              >
+                {DAY_LABELS_SHORT[i]}
+              </Text>
+              <View
                 style={[
-                  calStyles.cellText,
-                  {
-                    color: isRead ? "#FFFFFF" : isToday ? theme.accent : theme.bodyText,
-                    fontWeight: isRead || isToday ? "700" : "400",
-                  },
+                  calStyles.dot,
+                  { borderColor: isRead || isToday ? theme.accent : theme.border },
+                  isRead && { backgroundColor: theme.accent },
                 ]}
               >
-                {dayNum}
-              </Text>
+                {isRosaryPrayed ? (
+                  <View
+                    style={[calStyles.dotInner, { backgroundColor: isRead ? "#FFFFFF" : theme.accent }]}
+                  />
+                ) : null}
+              </View>
             </View>
           );
         })}
       </View>
+    </View>
+  );
+}
 
-      <Text allowFontScaling style={[calStyles.summary, { color: theme.mutedText }]}>
-        {readThisWeek} de 7 leituras concluidas esta semana
-      </Text>
+function SaintOfDayCard({
+  saintOfDay,
+  loading,
+  theme,
+}: {
+  saintOfDay: SaintOfDayPayload | null;
+  loading: boolean;
+  theme: ThemePalette;
+}) {
+  if (loading || !saintOfDay || !Array.isArray(saintOfDay.santos) || saintOfDay.santos.length === 0) {
+    return null;
+  }
+
+  return (
+    <View style={[saintStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+      <View style={[saintStyles.icon, { borderColor: theme.accent }]}>
+        <Text style={saintStyles.iconText}>✦</Text>
+      </View>
+      <View style={saintStyles.body}>
+        <Text allowFontScaling style={[saintStyles.label, { color: theme.mutedText }]}>
+          Santo do Dia
+        </Text>
+        {saintOfDay.santos.map((nome, index) => (
+          <Text
+            key={`${nome}-${index}`}
+            allowFontScaling
+            style={[saintStyles.title, { color: theme.titleText }]}
+          >
+            {nome}
+          </Text>
+        ))}
+      </View>
     </View>
   );
 }
@@ -175,6 +214,30 @@ function TodayLiturgySummary({
   );
 }
 
+function RosaryEntryCard({ theme, onPress }: { theme: ThemePalette; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Rezar o terço"
+      style={[rosaryStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+      onPress={onPress}
+    >
+      <View style={[rosaryStyles.icon, { borderColor: theme.accent }]}>
+        <Text style={rosaryStyles.iconText}>🌹</Text>
+      </View>
+      <View style={rosaryStyles.body}>
+        <Text allowFontScaling style={[rosaryStyles.title, { color: theme.titleText }]}>
+          Rezar o Terço
+        </Text>
+        <Text allowFontScaling style={[rosaryStyles.subtitle, { color: theme.mutedText }]}>
+          Contemple os mistérios com Nossa Senhora
+        </Text>
+      </View>
+      <Text style={[rosaryStyles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+    </Pressable>
+  );
+}
+
 type Props = {
   selectedDate: string;
   payload: DailyLiturgyPayload | null;
@@ -183,8 +246,12 @@ type Props = {
   offlineSource: boolean;
   theme: ThemePalette;
   readDays: string[];
+  rosaryDays: string[];
+  saintOfDay: SaintOfDayPayload | null;
+  saintLoading: boolean;
   onRetry: () => void;
   onContinueReading: () => void;
+  onOpenRosary: () => void;
 };
 
 export function HomeScreen({
@@ -195,8 +262,12 @@ export function HomeScreen({
   offlineSource,
   theme,
   readDays,
+  rosaryDays,
+  saintOfDay,
+  saintLoading,
   onRetry,
   onContinueReading,
+  onOpenRosary,
 }: Props) {
   return (
     <ScrollView
@@ -211,11 +282,15 @@ export function HomeScreen({
       />
 
       <View style={styles.body}>
-        <ReadingCalendar readDays={readDays} theme={theme} />
+        <ReadingCalendar readDays={readDays} rosaryDays={rosaryDays} theme={theme} />
+
+        <SaintOfDayCard saintOfDay={saintOfDay} loading={saintLoading} theme={theme} />
 
         {!loading && payload ? (
           <TodayLiturgySummary payload={payload} theme={theme} onContinueReading={onContinueReading} />
         ) : null}
+
+        <RosaryEntryCard theme={theme} onPress={onOpenRosary} />
 
         {loading ? (
           <View style={styles.loadingBox}>
@@ -251,53 +326,39 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 14, paddingTop: 14 },
   hero: {
     alignItems: "center",
-    paddingTop: 22,
-    paddingBottom: 18,
+    paddingTop: 14,
+    paddingBottom: 12,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 6,
   },
-  heroOrnamentRow: {
+  heroTopRow: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "stretch",
-    marginBottom: 6,
-  },
-  heroOrnamentLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "rgba(255,255,255,0.45)",
+    justifyContent: "center",
   },
   heroCross: {
-    fontSize: 18,
+    fontSize: 15,
     color: "#F3D98B",
-    marginHorizontal: 10,
+    marginRight: 8,
   },
   heroTitle: {
-    fontSize: 26,
+    fontSize: 20,
     fontWeight: "900",
     color: "#FFFFFF",
-    letterSpacing: 5,
+    letterSpacing: 4,
   },
-  heroSubtitle: {
-    fontSize: 12,
-    fontStyle: "italic",
-    color: "rgba(255,255,255,0.85)",
-    letterSpacing: 1,
-    marginTop: 3,
-  },
-  heroDivider: {
-    width: 48,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: "#F3D98B",
-    marginTop: 10,
-    marginBottom: 8,
+  heroInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    marginTop: 8,
   },
   heroDate: {
     fontSize: 12,
@@ -308,24 +369,22 @@ const styles = StyleSheet.create({
   heroBadge: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "center",
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.16)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.32)",
   },
   heroBadgeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
     backgroundColor: "#FFFFFF",
-    marginRight: 8,
+    marginRight: 6,
   },
   heroBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: "#FFFFFF",
   },
@@ -364,42 +423,60 @@ const calStyles = StyleSheet.create({
   container: {
     borderRadius: 14,
     borderWidth: 1,
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     marginBottom: 14,
   },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
-  dayLabelsRow: {
+  headerRow: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  statsInline: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  statsIcon: {
+    fontSize: 11,
+  },
+  statsIconSpaced: {
+    marginLeft: 8,
+  },
+  statsText: {
+    fontSize: 11,
+    fontWeight: "700",
+    marginLeft: 3,
+  },
+  strip: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  dayCol: {
+    flex: 1,
+    alignItems: "center",
+  },
+  dayLabel: {
+    fontSize: 10,
+    fontWeight: "600",
     marginBottom: 4,
   },
-  dayLabelText: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  cell: {
-    width: `${100 / 7}%`,
-    aspectRatio: 1,
+  dot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
-    padding: 2,
   },
-  cellText: {
-    fontSize: 13,
-  },
-  summary: {
-    marginTop: 10,
-    fontSize: 12,
-    textAlign: "center",
+  dotInner: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
 });
 
@@ -447,4 +524,60 @@ const summaryStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
+});
+
+const rosaryStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 14,
+    minHeight: 64,
+  },
+  icon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  iconText: { fontSize: 20 },
+  body: { flex: 1 },
+  title: { fontSize: 15, fontWeight: "700" },
+  subtitle: { marginTop: 2, fontSize: 12 },
+  chevron: { fontSize: 20, paddingHorizontal: 4 },
+});
+
+const saintStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 14,
+    minHeight: 64,
+  },
+  icon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  iconText: { fontSize: 18 },
+  body: { flex: 1 },
+  label: {
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  title: { marginTop: 3, fontSize: 14, fontWeight: "700" },
 });

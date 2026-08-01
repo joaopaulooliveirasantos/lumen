@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SettingsScreen } from "./SettingsScreen";
 import type { ThemePalette } from "../types/theme";
-import type { ReadingMode, UserSettings } from "../types/settings";
+import type { BibleTranslationId, ReadingMode, UserSettings } from "../types/settings";
 
 type ProfileView = "perfil" | "configuracoes";
 
@@ -11,6 +11,7 @@ type Props = {
   settings: UserSettings;
   onUpdateFontScale: (delta: number) => void;
   onUpdateReadingMode: (mode: ReadingMode) => void;
+  onUpdateBibleTranslation: (translation: BibleTranslationId) => void;
   onReminderTimeChange: (value: string) => void;
   onEnableReminder: () => void;
   onDisableReminder: () => void;
@@ -21,6 +22,7 @@ export function ProfileScreen({
   settings,
   onUpdateFontScale,
   onUpdateReadingMode,
+  onUpdateBibleTranslation,
   onReminderTimeChange,
   onEnableReminder,
   onDisableReminder,
@@ -50,6 +52,7 @@ export function ProfileScreen({
           theme={theme}
           onUpdateFontScale={onUpdateFontScale}
           onUpdateReadingMode={onUpdateReadingMode}
+          onUpdateBibleTranslation={onUpdateBibleTranslation}
           onReminderTimeChange={onReminderTimeChange}
           onEnableReminder={onEnableReminder}
           onDisableReminder={onDisableReminder}

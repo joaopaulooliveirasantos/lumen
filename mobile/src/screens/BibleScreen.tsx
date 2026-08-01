@@ -12,18 +12,18 @@ import {
   View,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import type { BibleBook, BibleChapter, BibleData } from "../types/bible";
+import type { BibleBook, BibleChapter } from "../types/bible";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
 import type { VerseBookmark } from "../types/bookmark";
 import { getBookmarks, removeBookmark, updateBookmarkComment, upsertBookmarks } from "../storage/bookmarks";
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const bibleData = require("../../../biblias/ave maria/bibliaAveMaria.json") as BibleData;
+import { getBibleData } from "../services/bibleData";
 
 type ScreenView = "livros" | "capitulos" | "versiculos" | "leitura" | "marcado";
 type Testament = "antigoTestamento" | "novoTestamento";
 type TestamentTab = Testament | "marcados";
+
+const GOSPEL_BOOKS = ["São Mateus", "São Marcos", "São Lucas", "São João"];
 
 type Props = {
   theme: ThemePalette;
@@ -55,6 +55,7 @@ export function BibleScreen({ theme, settings }: Props) {
 
   const bookmarkedIds = new Set(bookmarks.map((b) => b.id));
   const testament: Testament = activeTab === "novoTestamento" ? "novoTestamento" : "antigoTestamento";
+  const bibleData = getBibleData(settings.bibleTranslation);
   const books = bibleData[testament];
 
   function selectBook(b: BibleBook) {
@@ -326,26 +327,54 @@ export function BibleScreen({ theme, settings }: Props) {
             data={books}
             keyExtractor={(item) => item.nome}
             contentContainerStyle={styles.listContent}
-            renderItem={({ item, index }) => (
-              <Pressable
-                accessibilityRole="button"
-                style={[styles.row, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
-                onPress={() => selectBook(item)}
-              >
-                <View style={[styles.rowIndex, { backgroundColor: theme.accent }]}>
-                  <Text style={styles.rowIndexText}>{index + 1}</Text>
-                </View>
-                <View style={styles.rowBody}>
-                  <Text allowFontScaling style={[styles.rowTitle, { color: theme.titleText, fontSize: 15 * fs }]}>
-                    {item.nome}
-                  </Text>
-                  <Text allowFontScaling style={[styles.rowSub, { color: theme.mutedText, fontSize: 12 * fs }]}>
-                    {item.capitulos.length} {item.capitulos.length === 1 ? "capítulo" : "capítulos"}
-                  </Text>
-                </View>
-                <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
-              </Pressable>
-            )}
+            renderItem={({ item, index }) => {
+              const isGospel = testament === "novoTestamento" && GOSPEL_BOOKS.includes(item.nome);
+              return (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={isGospel ? `${item.nome}, Evangelho` : item.nome}
+                  style={[
+                    styles.row,
+                    { backgroundColor: theme.cardBackground, borderColor: theme.border },
+                    isGospel && {
+                      borderColor: theme.accent,
+                      borderWidth: 2,
+                      backgroundColor: `${theme.accent}12`,
+                    },
+                  ]}
+                  onPress={() => selectBook(item)}
+                >
+                  <View style={[styles.rowIndex, { backgroundColor: theme.accent }]}>
+                    {isGospel ? (
+                      <Text style={styles.rowIndexCross}>✝</Text>
+                    ) : (
+                      <Text style={styles.rowIndexText}>{index + 1}</Text>
+                    )}
+                  </View>
+                  <View style={styles.rowBody}>
+                    <View style={styles.rowTitleLine}>
+                      <Text
+                        allowFontScaling
+                        style={[styles.rowTitle, { color: theme.titleText, fontSize: 15 * fs }]}
+                      >
+                        {item.nome}
+                      </Text>
+                      {isGospel ? (
+                        <View style={[styles.gospelBadge, { backgroundColor: theme.accent }]}>
+                          <Text allowFontScaling style={styles.gospelBadgeText}>
+                            Evangelho
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                    <Text allowFontScaling style={[styles.rowSub, { color: theme.mutedText, fontSize: 12 * fs }]}>
+                      {item.capitulos.length} {item.capitulos.length === 1 ? "capítulo" : "capítulos"}
+                    </Text>
+                  </View>
+                  <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+                </Pressable>
+              );
+            }}
           />
         )}
       </View>
@@ -622,8 +651,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rowIndexText: { color: "#FFFFFF", fontWeight: "700", fontSize: 13 },
+  rowIndexCross: { color: "#FFFFFF", fontWeight: "700", fontSize: 17 },
   rowBody: { flex: 1, paddingHorizontal: 12, paddingVertical: 10 },
+  rowTitleLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   rowTitle: { fontWeight: "600" },
+  gospelBadge: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  gospelBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 9,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
   rowSub: { marginTop: 2 },
   rowComment: { marginTop: 4, fontStyle: "italic" },
   chevron: { paddingHorizontal: 12, fontSize: 20 },

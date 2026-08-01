@@ -9,15 +9,22 @@ import { LiturgyScreen } from "./src/screens/LiturgyScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { BibleScreen } from "./src/screens/BibleScreen";
 import { PrayersScreen } from "./src/screens/PrayersScreen";
-import { fetchDailyLiturgy } from "./src/services/api";
+import { RosaryScreen } from "./src/screens/RosaryScreen";
+import { fetchDailyLiturgy, fetchSaintOfDay } from "./src/services/api";
 import { addDays, formatIsoDate } from "./src/services/date";
 import { disableDailyReminder, scheduleDailyReminder } from "./src/services/notifications";
 import { getDailyCache, initCache, saveDailyCache } from "./src/storage/liturgyCache";
 import { getReadDays, markDayAsRead } from "./src/storage/readingHistory";
+import { getRosaryDays, markRosaryAsPrayed } from "./src/storage/rosaryHistory";
 import { loadUserSettings, saveUserSettings } from "./src/storage/userSettings";
-import type { DailyLiturgyPayload } from "./src/types/liturgy";
+import type { DailyLiturgyPayload, SaintOfDayPayload } from "./src/types/liturgy";
 import type { ThemePalette } from "./src/types/theme";
-import { defaultUserSettings, type ReadingMode, type UserSettings } from "./src/types/settings";
+import {
+  defaultUserSettings,
+  type BibleTranslationId,
+  type ReadingMode,
+  type UserSettings,
+} from "./src/types/settings";
 
 function liturgicColorHex(color: string): string {
   const normalized = color.toLowerCase();
@@ -89,9 +96,13 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [offlineSource, setOfflineSource] = useState<boolean>(false);
+  const [saintOfDay, setSaintOfDay] = useState<SaintOfDayPayload | null>(null);
+  const [saintLoading, setSaintLoading] = useState<boolean>(true);
   const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
   const [settingsReady, setSettingsReady] = useState(false);
   const [readDays, setReadDays] = useState<string[]>([]);
+  const [rosaryDays, setRosaryDays] = useState<string[]>([]);
+  const [rosaryOpen, setRosaryOpen] = useState(false);
 
   const accentColor = useMemo(() => {
     if (!payload) return "#2E7D32";
@@ -106,12 +117,14 @@ export default function App() {
   useEffect(() => {
     async function bootstrap(): Promise<void> {
       await initCache();
-      const [loadedSettings, loadedReadDays] = await Promise.all([
+      const [loadedSettings, loadedReadDays, loadedRosaryDays] = await Promise.all([
         loadUserSettings(),
         getReadDays(),
+        getRosaryDays(),
       ]);
       setSettings(loadedSettings);
       setReadDays(loadedReadDays);
+      setRosaryDays(loadedRosaryDays);
       setSettingsReady(true);
     }
     void bootstrap();
@@ -119,6 +132,7 @@ export default function App() {
 
   useEffect(() => {
     void loadDate(selectedDate);
+    void loadSaintOfDay(selectedDate);
   }, [selectedDate]);
 
   useEffect(() => {
@@ -167,12 +181,28 @@ export default function App() {
     }
   }
 
+  async function loadSaintOfDay(date: string): Promise<void> {
+    setSaintLoading(true);
+    try {
+      const result = await fetchSaintOfDay(date);
+      setSaintOfDay(result);
+    } catch {
+      setSaintOfDay(null);
+    } finally {
+      setSaintLoading(false);
+    }
+  }
+
   function updateFontScale(delta: number): void {
     setSettings((prev) => ({ ...prev, fontScale: clampFontScale(prev.fontScale + delta) }));
   }
 
   function updateReadingMode(mode: ReadingMode): void {
     setSettings((prev) => ({ ...prev, readingMode: mode }));
+  }
+
+  function updateBibleTranslation(translation: BibleTranslationId): void {
+    setSettings((prev) => ({ ...prev, bibleTranslation: translation }));
   }
 
   async function enableReminder(): Promise<void> {
@@ -198,6 +228,11 @@ export default function App() {
     Alert.alert("Am\u00e9m!", "Leitura da liturgia conclu\u00edda.");
   }
 
+  async function handleRosaryFinished(): Promise<void> {
+    const updated = await markRosaryAsPrayed(formatIsoDate(new Date()));
+    setRosaryDays(updated);
+  }
+
   function renderScreen() {
     switch (activeTab) {
       case "home":
@@ -210,11 +245,15 @@ export default function App() {
             offlineSource={offlineSource}
             theme={theme}
             readDays={readDays}
+            rosaryDays={rosaryDays}
+            saintOfDay={saintOfDay}
+            saintLoading={saintLoading}
             onRetry={() => void loadDate(selectedDate)}
             onContinueReading={() => {
               setSelectedDate(formatIsoDate(new Date()));
               setActiveTab("liturgia");
             }}
+            onOpenRosary={() => setRosaryOpen(true)}
           />
         );
       case "liturgia":
@@ -241,6 +280,7 @@ export default function App() {
             settings={settings}
             onUpdateFontScale={updateFontScale}
             onUpdateReadingMode={updateReadingMode}
+            onUpdateBibleTranslation={updateBibleTranslation}
             onReminderTimeChange={(value) =>
               setSettings((prev) => ({ ...prev, reminderTime: value }))
             }
@@ -265,9 +305,25 @@ export default function App() {
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.appBackground }]} edges={["top"]}>
         <StatusBar style={activeTab === "home" || settings.readingMode === "escuro" ? "light" : "dark"} />
         <View style={styles.content}>
-          {renderScreen()}
+          {rosaryOpen ? (
+            <RosaryScreen
+              theme={theme}
+              settings={settings}
+              onExit={() => setRosaryOpen(false)}
+              onFinish={() => void handleRosaryFinished()}
+            />
+          ) : (
+            renderScreen()
+          )}
         </View>
-        <BottomTabBar activeTab={activeTab} onTabPress={setActiveTab} theme={theme} />
+        <BottomTabBar
+          activeTab={activeTab}
+          onTabPress={(tab) => {
+            setRosaryOpen(false);
+            setActiveTab(tab);
+          }}
+          theme={theme}
+        />
       </SafeAreaView>
     </SafeAreaProvider>
   );

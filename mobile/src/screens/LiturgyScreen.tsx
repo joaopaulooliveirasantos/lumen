@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { LiturgyPlayer } from "../components/LiturgyPlayer";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { ReadingSection } from "../components/ReadingSection";
 import { ReflectionSection } from "../components/ReflectionSection";
 import { addDays, formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
-import type { DailyLiturgyPayload } from "../types/liturgy";
+import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
 
 const DAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-type ReadingTabKey = "leitura1" | "salmo" | "leitura2" | "evangelho" | "homilia";
 
 type Props = {
   selectedDate: string;
@@ -162,10 +161,18 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
 
   if (!payload) {
     return (
-      <View style={styles.emptyBox}>
-        <Text allowFontScaling style={[styles.emptyText, { color: theme.mutedText }]}>
-          Nenhuma leitura disponivel.
-        </Text>
+      <View style={[styles.screen, { backgroundColor: theme.appBackground }]}>
+        <View style={styles.headerArea}>
+          <WeekCalendar selectedDate={selectedDate} theme={theme} onSelectDate={onSelectDate} />
+        </View>
+        <View style={styles.emptyBox}>
+          <Text allowFontScaling style={[styles.emptyText, { color: theme.titleText }]}>
+            Nenhuma leitura disponível para {formatReadableDate(selectedDate)}.
+          </Text>
+          <Text allowFontScaling style={[styles.emptyHint, { color: theme.mutedText }]}>
+            Escolha outro dia acima para continuar.
+          </Text>
+        </View>
       </View>
     );
   }
@@ -184,18 +191,6 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
     <View style={[styles.screen, { backgroundColor: theme.appBackground }]}>
       <View style={styles.headerArea}>
         <WeekCalendar selectedDate={selectedDate} theme={theme} onSelectDate={onSelectDate} />
-
-        <View style={[styles.dateHeader, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-          <Text allowFontScaling style={[styles.dateText, { color: theme.mutedText }]}>
-            {formatReadableDate(selectedDate)}
-          </Text>
-          <View style={styles.colorRow}>
-            <View style={[styles.colorDot, { backgroundColor: theme.accent }]} />
-            <Text allowFontScaling style={[styles.colorText, { color: theme.accent }]}>
-              {payload.cor}
-            </Text>
-          </View>
-        </View>
 
         <View
           style={[
@@ -221,6 +216,13 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
         </View>
 
         <ReadingTabBar tabs={tabs} active={currentTab} onSelect={setActiveReadingTab} theme={theme} />
+
+        <LiturgyPlayer
+          payload={payload}
+          theme={theme}
+          activeTrack={currentTab}
+          onTrackChange={setActiveReadingTab}
+        />
       </View>
 
       <ScrollView
@@ -314,11 +316,16 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={isRead ? "Leitura ja concluida" : "Marcar leitura como concluida"}
-          style={[styles.amenButton, { backgroundColor: theme.accent, opacity: isRead ? 0.7 : 1 }]}
+          style={[
+            styles.amenButton,
+            isRead
+              ? { backgroundColor: "transparent", borderWidth: 1.5, borderColor: theme.accent }
+              : { backgroundColor: theme.accent },
+          ]}
           onPress={onAmen}
         >
-          <Text allowFontScaling style={styles.amenText}>
-            {isRead ? "✓ Amém" : "Amém"}
+          <Text allowFontScaling style={[styles.amenText, { color: isRead ? theme.accent : "#FFFFFF" }]}>
+            {isRead ? "✓ Amém" : "🙏 Amém"}
           </Text>
         </Pressable>
       </View>
@@ -335,6 +342,12 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  emptyHint: {
+    marginTop: 6,
+    fontSize: 13,
     textAlign: "center",
   },
   screen: {
@@ -354,9 +367,10 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 14,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingTop: 6,
+    paddingBottom: 10,
     borderTopWidth: 1,
+    alignItems: "center",
   },
   liturgicBanner: {
     borderRadius: 10,
@@ -386,47 +400,19 @@ const styles = StyleSheet.create({
   cardText: {
     marginTop: 10,
   },
-  dateHeader: {
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  dateText: {
-    fontSize: 13,
-    textTransform: "capitalize",
-    flex: 1,
-    marginRight: 8,
-  },
-  colorRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  colorDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  colorText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
   amenButton: {
-    borderRadius: 14,
-    minHeight: 56,
+    alignSelf: "center",
+    borderRadius: 22,
+    minHeight: 44,
+    minWidth: 160,
+    paddingHorizontal: 28,
     alignItems: "center",
     justifyContent: "center",
   },
   amenText: {
-    color: "#FFFFFF",
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: "800",
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   calendarContainer: {
     borderRadius: 14,

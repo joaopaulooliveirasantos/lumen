@@ -35,3 +35,8 @@ export interface CommentaryCandidate {
   fonte: string;
   texto: string;
 }
+
+export interface SaintOfDayPayload {
+  data: string;
+  santos: string[];
+}
