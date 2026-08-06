@@ -74,10 +74,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setSession(data.session);
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.warn("Falha ao restaurar sessao salva, seguindo deslogado.", error);
+        setSession(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
@@ -91,7 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       return;
     }
-    void fetchProfile(session).then(setProfile);
+    fetchProfile(session)
+      .then(setProfile)
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.warn("Falha ao carregar perfil do usuario.", error);
+        setProfile(null);
+      });
   }, [session]);
 
   useEffect(() => {

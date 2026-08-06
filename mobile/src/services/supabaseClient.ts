@@ -26,11 +26,23 @@ class LargeSecureStore {
     const encrypted = await AsyncStorage.getItem(key);
     if (!encrypted) return null;
 
-    const encryptionKey = await this.getEncryptionKey(`${key}-encryption-key`);
-    const encryptedBytes = aesjs.utils.hex.toBytes(encrypted);
-    const cipher = new aesjs.ModeOfOperation.ctr(encryptionKey, new aesjs.Counter(1));
-    const decryptedBytes = cipher.decrypt(encryptedBytes);
-    return aesjs.utils.utf8.fromBytes(decryptedBytes);
+    // A chave (SecureStore) e o valor cifrado (AsyncStorage) vivem em dois
+    // sistemas de armazenamento distintos, que podem se dessincronizar entre
+    // instalacoes/reinstalacoes do app (ex: um foi limpo e o outro nao). Se a
+    // descriptografia falhar, trata como "sem sessao salva" em vez de deixar
+    // o erro propagar e travar o app na inicializacao.
+    try {
+      const encryptionKey = await this.getEncryptionKey(`${key}-encryption-key`);
+      const encryptedBytes = aesjs.utils.hex.toBytes(encrypted);
+      const cipher = new aesjs.ModeOfOperation.ctr(encryptionKey, new aesjs.Counter(1));
+      const decryptedBytes = cipher.decrypt(encryptedBytes);
+      return aesjs.utils.utf8.fromBytes(decryptedBytes);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn(`Falha ao ler item seguro "${key}", descartando.`, error);
+      await this.removeItem(key);
+      return null;
+    }
   }
 
   async setItem(key: string, value: string): Promise<void> {
