@@ -109,11 +109,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const result = await WebBrowser.openAuthSessionAsync(data.url, oauthRedirectTo);
     if (result.type !== "success" || !result.url) {
-      throw new Error("Login com Google cancelado.");
+      throw new Error(`Login com Google cancelado. [resultType=${result.type}]`);
     }
 
     const { error: sessionError } = await supabase.auth.exchangeCodeForSession(result.url);
-    if (sessionError) throw sessionError;
+    if (sessionError) {
+      const hasCode = result.url.includes("code=");
+      throw new Error(
+        `${sessionError.message} [name=${sessionError.name} status=${sessionError.status} hasCode=${hasCode}]`,
+      );
+    }
   }
 
   async function signInWithApple(): Promise<void> {
