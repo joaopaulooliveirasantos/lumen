@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SettingsScreen } from "./SettingsScreen";
+import { useAuth } from "../state/AuthContext";
 import type { ThemePalette } from "../types/theme";
 import type { BibleTranslationId, ReadingMode, UserSettings } from "../types/settings";
 
@@ -15,6 +16,7 @@ type Props = {
   onReminderTimeChange: (value: string) => void;
   onEnableReminder: () => void;
   onDisableReminder: () => void;
+  onOpenAuth: () => void;
 };
 
 export function ProfileScreen({
@@ -26,8 +28,24 @@ export function ProfileScreen({
   onReminderTimeChange,
   onEnableReminder,
   onDisableReminder,
+  onOpenAuth,
 }: Props) {
+  const { session, profile, signOut } = useAuth();
   const [view, setView] = useState<ProfileView>("perfil");
+
+  const displayName = profile?.displayName?.trim() || profile?.email || "Usuario";
+  const avatarLetter = displayName.charAt(0).toUpperCase() || "U";
+
+  async function handleSignOut(): Promise<void> {
+    try {
+      await signOut();
+    } catch (error) {
+      Alert.alert(
+        "Nao foi possivel sair",
+        error instanceof Error ? error.message : "Ocorreu um erro inesperado.",
+      );
+    }
+  }
 
   if (view === "configuracoes") {
     return (
@@ -62,68 +80,135 @@ export function ProfileScreen({
   }
 
   return (
-    <ScrollView
-      style={[styles.scroll, { backgroundColor: theme.appBackground }]}
-      contentContainerStyle={styles.content}
-    >
-      <Text allowFontScaling style={[styles.pageTitle, { color: theme.titleText }]}>
-        Perfil do Usuario
-      </Text>
-
-      <View style={[styles.avatarContainer, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
-          <Text style={styles.avatarLetter}>U</Text>
+    <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
+      <View style={[styles.header, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+        <View style={styles.backBtn}>
+          <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
         </View>
-        <Text allowFontScaling style={[styles.userName, { color: theme.titleText }]}>
-          Usuario
+        <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
+          Perfil
         </Text>
-        <Text allowFontScaling style={[styles.userSub, { color: theme.mutedText }]}>
-          Membro da comunidade Lumen
-        </Text>
+        <View style={styles.backBtn} />
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Abrir configuracoes"
-        style={[styles.menuRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
-        onPress={() => setView("configuracoes")}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
       >
-        <View style={[styles.menuIcon, { backgroundColor: theme.accent }]}>
-          <Text style={styles.menuIconText}>⚙️</Text>
+        <View style={[styles.avatarContainer, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          {session ? (
+            <>
+              <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
+                <Text style={styles.avatarLetter}>{avatarLetter}</Text>
+              </View>
+              <Text allowFontScaling style={[styles.userName, { color: theme.titleText }]}>
+                {displayName}
+              </Text>
+              {profile?.email ? (
+                <Text allowFontScaling style={[styles.userSub, { color: theme.mutedText }]}>
+                  {profile.email}
+                </Text>
+              ) : null}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Sair da conta"
+                style={styles.signOutBtn}
+                onPress={() => void handleSignOut()}
+              >
+                <Text allowFontScaling style={[styles.signOutText, { color: theme.accent }]}>
+                  Sair
+                </Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
+                <Text style={styles.avatarLetter}>?</Text>
+              </View>
+              <Text allowFontScaling style={[styles.userName, { color: theme.titleText }]}>
+                Visitante
+              </Text>
+              <Text allowFontScaling style={[styles.userSub, { color: theme.mutedText }]}>
+                Entre ou crie uma conta para salvar seu perfil
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Entrar ou criar conta"
+                style={[styles.authCta, { backgroundColor: theme.accent }]}
+                onPress={onOpenAuth}
+              >
+                <Text allowFontScaling style={styles.authCtaText}>
+                  Entrar ou criar conta
+                </Text>
+              </Pressable>
+            </>
+          )}
         </View>
-        <View style={styles.menuBody}>
-          <Text allowFontScaling style={[styles.menuTitle, { color: theme.titleText }]}>
-            Configurações
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Abrir configuracoes"
+          style={[styles.menuRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+          onPress={() => setView("configuracoes")}
+        >
+          <View style={[styles.menuIcon, { backgroundColor: theme.accent }]}>
+            <Text style={styles.menuIconText}>⚙️</Text>
+          </View>
+          <View style={styles.menuBody}>
+            <Text allowFontScaling style={[styles.menuTitle, { color: theme.titleText }]}>
+              Configurações
+            </Text>
+            <Text allowFontScaling style={[styles.menuSub, { color: theme.mutedText }]}>
+              Tema, fonte e lembrete diario
+            </Text>
+          </View>
+          <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+        </Pressable>
+
+        <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          <Text allowFontScaling style={[styles.sectionTitle, { color: theme.titleText }]}>
+            Sobre o Lumen
           </Text>
-          <Text allowFontScaling style={[styles.menuSub, { color: theme.mutedText }]}>
-            Tema, fonte e lembrete diario
+          <Text allowFontScaling style={[styles.bodyText, { color: theme.bodyText }]}>
+            Lumen e um aplicativo de liturgia diaria que traz as leituras e reflexoes do dia para voce onde estiver.
           </Text>
         </View>
-        <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
-      </Pressable>
 
-      <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <Text allowFontScaling style={[styles.sectionTitle, { color: theme.titleText }]}>
-          Sobre o Lumen
-        </Text>
-        <Text allowFontScaling style={[styles.bodyText, { color: theme.bodyText }]}>
-          Lumen e um aplicativo de liturgia diaria que traz as leituras e reflexoes do dia para voce onde estiver.
-        </Text>
-      </View>
-
-      <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <Text allowFontScaling style={[styles.sectionTitle, { color: theme.titleText }]}>
-          Versao
-        </Text>
-        <Text allowFontScaling style={[styles.bodyText, { color: theme.mutedText }]}>
-          1.0.0
-        </Text>
-      </View>
-    </ScrollView>
+        <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          <Text allowFontScaling style={[styles.sectionTitle, { color: theme.titleText }]}>
+            Versao
+          </Text>
+          <Text allowFontScaling style={[styles.bodyText, { color: theme.mutedText }]}>
+            1.0.0
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headerLogo: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: "700",
+    textAlign: "center",
+  },
   scroll: {
     flex: 1,
   },
@@ -131,11 +216,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: 18,
     paddingBottom: 28,
-  },
-  pageTitle: {
-    fontSize: 24,
-    fontWeight: "800",
-    marginBottom: 18,
   },
   avatarContainer: {
     borderRadius: 14,
@@ -164,6 +244,29 @@ const styles = StyleSheet.create({
   userSub: {
     marginTop: 4,
     fontSize: 13,
+  },
+  authCta: {
+    marginTop: 16,
+    minHeight: 44,
+    minWidth: 200,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  authCtaText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  signOutBtn: {
+    marginTop: 14,
+    minHeight: 32,
+    justifyContent: "center",
+  },
+  signOutText: {
+    fontSize: 14,
+    fontWeight: "700",
   },
   menuRow: {
     flexDirection: "row",

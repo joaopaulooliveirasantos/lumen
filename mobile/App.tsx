@@ -4,12 +4,15 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { BottomTabBar, type TabName } from "./src/components/BottomTabBar";
 import { LoadingScreen } from "./src/components/LoadingScreen";
+import { AuthProvider } from "./src/state/AuthContext";
+import { AuthScreen } from "./src/screens/AuthScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { LiturgyScreen } from "./src/screens/LiturgyScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { BibleScreen } from "./src/screens/BibleScreen";
 import { PrayersScreen } from "./src/screens/PrayersScreen";
 import { RosaryScreen } from "./src/screens/RosaryScreen";
+import { SaintStoryScreen } from "./src/screens/SaintStoryScreen";
 import { fetchDailyLiturgy, fetchSaintOfDay } from "./src/services/api";
 import { addDays, formatIsoDate } from "./src/services/date";
 import { disableDailyReminder, scheduleDailyReminder } from "./src/services/notifications";
@@ -103,6 +106,8 @@ export default function App() {
   const [readDays, setReadDays] = useState<string[]>([]);
   const [rosaryDays, setRosaryDays] = useState<string[]>([]);
   const [rosaryOpen, setRosaryOpen] = useState(false);
+  const [saintStoryOpen, setSaintStoryOpen] = useState(false);
+  const [authScreenOpen, setAuthScreenOpen] = useState(false);
 
   const accentColor = useMemo(() => {
     if (!payload) return "#2E7D32";
@@ -254,6 +259,8 @@ export default function App() {
               setActiveTab("liturgia");
             }}
             onOpenRosary={() => setRosaryOpen(true)}
+            onOpenSaintStory={() => setSaintStoryOpen(true)}
+            onSelectDate={(date) => setSelectedDate(date)}
           />
         );
       case "liturgia":
@@ -267,6 +274,7 @@ export default function App() {
             isRead={readDays.includes(selectedDate)}
             onSelectDate={(date) => setSelectedDate(date)}
             onAmen={() => void handleAmen()}
+            onUpdateFontScale={updateFontScale}
           />
         );
       case "biblia":
@@ -286,6 +294,7 @@ export default function App() {
             }
             onEnableReminder={() => void enableReminder()}
             onDisableReminder={() => void disableReminder()}
+            onOpenAuth={() => setAuthScreenOpen(true)}
           />
         );
     }
@@ -301,31 +310,44 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.appBackground }]} edges={["top"]}>
-        <StatusBar style={activeTab === "home" || settings.readingMode === "escuro" ? "light" : "dark"} />
-        <View style={styles.content}>
-          {rosaryOpen ? (
-            <RosaryScreen
-              theme={theme}
-              settings={settings}
-              onExit={() => setRosaryOpen(false)}
-              onFinish={() => void handleRosaryFinished()}
-            />
-          ) : (
-            renderScreen()
-          )}
-        </View>
-        <BottomTabBar
-          activeTab={activeTab}
-          onTabPress={(tab) => {
-            setRosaryOpen(false);
-            setActiveTab(tab);
-          }}
-          theme={theme}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <AuthProvider>
+      <SafeAreaProvider>
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.appBackground }]} edges={["top"]}>
+          <StatusBar style={activeTab === "home" || settings.readingMode === "escuro" ? "light" : "dark"} />
+          <View style={styles.content}>
+            {rosaryOpen ? (
+              <RosaryScreen
+                theme={theme}
+                settings={settings}
+                onExit={() => setRosaryOpen(false)}
+                onFinish={() => void handleRosaryFinished()}
+              />
+            ) : saintStoryOpen ? (
+              <SaintStoryScreen
+                date={selectedDate}
+                theme={theme}
+                settings={settings}
+                onExit={() => setSaintStoryOpen(false)}
+              />
+            ) : authScreenOpen ? (
+              <AuthScreen theme={theme} settings={settings} onExit={() => setAuthScreenOpen(false)} />
+            ) : (
+              renderScreen()
+            )}
+          </View>
+          <BottomTabBar
+            activeTab={activeTab}
+            onTabPress={(tab) => {
+              setRosaryOpen(false);
+              setSaintStoryOpen(false);
+              setAuthScreenOpen(false);
+              setActiveTab(tab);
+            }}
+            theme={theme}
+          />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 }
 
