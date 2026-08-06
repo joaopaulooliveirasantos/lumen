@@ -30,6 +30,15 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 const emailConfirmRedirectTo = Linking.createURL("email-confirmed");
 const oauthRedirectTo = Linking.createURL("oauth-callback");
 
+// exchangeCodeForSession espera so o valor do parametro "code", nao a URL
+// inteira — passar a URL completa faz o servidor responder 404 "invalid flow
+// state" porque ele nao reconhece a URL como um auth_code valido.
+function extractAuthCode(url: string): string | null {
+  const { queryParams } = Linking.parse(url);
+  const code = queryParams?.code;
+  return typeof code === "string" ? code : null;
+}
+
 async function fetchProfile(session: Session): Promise<UserProfile> {
   const { data } = await supabase
     .from("profiles")
@@ -74,7 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const subscription = Linking.addEventListener("url", ({ url }) => {
       if (!url.includes("email-confirmed")) return;
-      void supabase.auth.exchangeCodeForSession(url);
+      const code = extractAuthCode(url);
+      if (code) void supabase.auth.exchangeCodeForSession(code);
     });
 
     return () => subscription.remove();
@@ -109,16 +119,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const result = await WebBrowser.openAuthSessionAsync(data.url, oauthRedirectTo);
     if (result.type !== "success" || !result.url) {
-      throw new Error(`Login com Google cancelado. [resultType=${result.type}]`);
+      throw new Error("Login com Google cancelado.");
     }
 
-    const { error: sessionError } = await supabase.auth.exchangeCodeForSession(result.url);
-    if (sessionError) {
-      const hasCode = result.url.includes("code=");
-      throw new Error(
-        `${sessionError.message} [name=${sessionError.name} status=${sessionError.status} hasCode=${hasCode}]`,
-      );
-    }
+    const code = extractAuthCode(result.url);
+    if (!code) throw new Error("Resposta invalida do login com Google (sem code).");
+
+    const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+    if (sessionError) throw sessionError;
   }
 
   async function signInWithApple(): Promise<void> {
