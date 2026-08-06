@@ -11,6 +11,7 @@ type Props = {
   titleColor: string;
   bodyColor: string;
   accentColor: string;
+  closingPhrase?: string;
 };
 
 function ReadingSectionComponent({
@@ -22,6 +23,7 @@ function ReadingSectionComponent({
   titleColor,
   bodyColor,
   accentColor,
+  closingPhrase,
 }: Props) {
   return (
     <View
@@ -45,6 +47,14 @@ function ReadingSectionComponent({
       >
         {reading.texto}
       </Text>
+      {closingPhrase ? (
+        <Text
+          allowFontScaling
+          style={[styles.closingPhrase, { color: titleColor, fontSize: 15 * fontScale }]}
+        >
+          {closingPhrase}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -71,5 +81,9 @@ const styles = StyleSheet.create({
   },
   text: {
     marginTop: 10,
+  },
+  closingPhrase: {
+    marginTop: 16,
+    fontWeight: "700",
   },
 });

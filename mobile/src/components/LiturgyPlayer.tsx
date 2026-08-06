@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, Share, StyleSheet, Text, View } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
 import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
@@ -8,6 +9,7 @@ interface PlayerTrack {
   key: ReadingTabKey;
   label: string;
   text: string;
+  shareText: string;
 }
 
 const MALE_NAME_HINTS = [
@@ -52,11 +54,13 @@ function buildTracks(payload: DailyLiturgyPayload): PlayerTrack[] {
       key: "leitura1",
       label: "1ª Leitura",
       text: `Primeira leitura. ${payload.primeiraLeitura.titulo}. ${payload.primeiraLeitura.texto}`,
+      shareText: `Primeira Leitura\n${payload.primeiraLeitura.titulo}\n${payload.primeiraLeitura.referencia}\n\n${payload.primeiraLeitura.texto}`,
     },
     {
       key: "salmo",
       label: "Salmo",
       text: `Salmo responsorial. ${payload.salmo.refrao}. ${payload.salmo.texto}`,
+      shareText: `Salmo Responsorial\n${payload.salmo.referencia}\n\n${payload.salmo.refrao}\n\n${payload.salmo.texto}`,
     },
   ];
 
@@ -65,6 +69,7 @@ function buildTracks(payload: DailyLiturgyPayload): PlayerTrack[] {
       key: "leitura2",
       label: "2ª Leitura",
       text: `Segunda leitura. ${payload.segundaLeitura.titulo}. ${payload.segundaLeitura.texto}`,
+      shareText: `Segunda Leitura\n${payload.segundaLeitura.titulo}\n${payload.segundaLeitura.referencia}\n\n${payload.segundaLeitura.texto}`,
     });
   }
 
@@ -72,12 +77,16 @@ function buildTracks(payload: DailyLiturgyPayload): PlayerTrack[] {
     key: "evangelho",
     label: "Evangelho",
     text: `Evangelho. ${payload.evangelho.titulo}. ${payload.evangelho.texto}`,
+    shareText: `Evangelho\n${payload.evangelho.titulo}\n${payload.evangelho.referencia}\n\n${payload.evangelho.texto}`,
   });
 
   tracks.push({
     key: "homilia",
     label: "Homilía",
     text: `Homilía. ${payload.reflexao.titulo}. ${payload.reflexao.texto}`,
+    shareText: `Homilía\n${payload.reflexao.titulo}\n${payload.reflexao.autor}\n\n${payload.reflexao.texto}${
+      payload.reflexao.fonte ? `\n\n${payload.reflexao.fonte}` : ""
+    }`,
   });
 
   return tracks;
@@ -88,9 +97,18 @@ type Props = {
   theme: ThemePalette;
   activeTrack: ReadingTabKey;
   onTrackChange: (key: ReadingTabKey) => void;
+  fontScale: number;
+  onUpdateFontScale: (delta: number) => void;
 };
 
-export function LiturgyPlayer({ payload, theme, activeTrack, onTrackChange }: Props) {
+export function LiturgyPlayer({
+  payload,
+  theme,
+  activeTrack,
+  onTrackChange,
+  fontScale,
+  onUpdateFontScale,
+}: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [voice, setVoice] = useState<Speech.Voice | null>(null);
   const tracks = useMemo(() => buildTracks(payload), [payload]);
@@ -164,18 +182,23 @@ export function LiturgyPlayer({ payload, theme, activeTrack, onTrackChange }: Pr
   const currentIndex = tracks.findIndex((t) => t.key === activeTrack);
   const currentTrack = tracks[currentIndex];
 
+  async function handleCopy() {
+    if (!currentTrack) return;
+    await Clipboard.setStringAsync(currentTrack.shareText);
+    Alert.alert("Copiado", "Texto copiado para a área de transferência.");
+  }
+
+  async function handleShare() {
+    if (!currentTrack) return;
+    try {
+      await Share.share({ message: currentTrack.shareText });
+    } catch {
+      // usuário cancelou o compartilhamento
+    }
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-      <View style={styles.info}>
-        <Text allowFontScaling style={[styles.label, { color: theme.mutedText }]}>
-          {isPlaying ? "Ouvindo agora" : "Player de leitura"}
-        </Text>
-        <Text allowFontScaling numberOfLines={1} style={[styles.trackName, { color: theme.titleText }]}>
-          {currentTrack ? currentTrack.label : "—"}
-          {tracks.length ? `  ·  ${currentIndex + 1}/${tracks.length}` : ""}
-        </Text>
-      </View>
-
       <View style={styles.controls}>
         <Pressable
           accessibilityRole="button"
@@ -214,6 +237,56 @@ export function LiturgyPlayer({ payload, theme, activeTrack, onTrackChange }: Pr
             ⏭
           </Text>
         </Pressable>
+
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Diminuir tamanho da fonte"
+          hitSlop={6}
+          style={styles.fontButton}
+          onPress={() => onUpdateFontScale(-0.1)}
+          disabled={fontScale <= 0.9}
+        >
+          <Text style={[styles.fontButtonText, { color: fontScale <= 0.9 ? theme.border : theme.accent }]}>
+            A-
+          </Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Aumentar tamanho da fonte"
+          hitSlop={6}
+          style={styles.fontButton}
+          onPress={() => onUpdateFontScale(0.1)}
+          disabled={fontScale >= 1.5}
+        >
+          <Text style={[styles.fontButtonText, { color: fontScale >= 1.5 ? theme.border : theme.accent }]}>
+            A+
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.actions}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Copiar texto"
+          hitSlop={6}
+          style={styles.actionButton}
+          onPress={() => void handleCopy()}
+        >
+          <Text style={[styles.actionIcon, { color: theme.accent }]}>📋</Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Compartilhar"
+          hitSlop={6}
+          style={styles.actionButton}
+          onPress={() => void handleShare()}
+        >
+          <Text style={[styles.actionIcon, { color: theme.accent }]}>🔗</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -223,26 +296,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     borderRadius: 12,
     borderWidth: 1,
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginTop: 8,
-    gap: 10,
-  },
-  info: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-  trackName: {
-    marginTop: 2,
-    fontSize: 14,
-    fontWeight: "700",
   },
   controls: {
     flexDirection: "row",
@@ -267,6 +326,34 @@ const styles = StyleSheet.create({
   },
   playIcon: {
     color: "#FFFFFF",
+    fontSize: 16,
+  },
+  divider: {
+    width: 1,
+    height: 22,
+    marginHorizontal: 2,
+  },
+  fontButton: {
+    width: 28,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fontButtonText: {
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionIcon: {
     fontSize: 16,
   },
 });

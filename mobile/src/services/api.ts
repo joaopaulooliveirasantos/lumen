@@ -1,5 +1,5 @@
 import Constants from "expo-constants";
-import type { DailyLiturgyPayload, SaintOfDayPayload } from "../types/liturgy";
+import type { DailyLiturgyPayload, SaintOfDayPayload, SaintStoryPayload } from "../types/liturgy";
 
 function getApiBaseUrl(): string {
   const extra = Constants.expoConfig?.extra as { apiBaseUrl?: string } | undefined;
@@ -28,4 +28,21 @@ export async function fetchSaintOfDay(isoDate: string): Promise<SaintOfDayPayloa
   }
 
   return (await response.json()) as SaintOfDayPayload;
+}
+
+export async function fetchSaintStory(isoDate: string): Promise<SaintStoryPayload> {
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}/api/liturgia?date=${isoDate}&type=saint-story`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Falha de rede (${response.status})`);
+  }
+
+  const payload = (await response.json()) as Partial<SaintStoryPayload>;
+  if (!payload.nome || !Array.isArray(payload.paragrafos) || payload.paragrafos.length === 0) {
+    throw new Error("Resposta invalida do servidor para a historia do santo do dia.");
+  }
+
+  return payload as SaintStoryPayload;
 }

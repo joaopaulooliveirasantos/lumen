@@ -40,4 +40,17 @@ export interface SaintOfDayPayload {
   santos: string[];
 }
 
+export interface SaintStoryBlock {
+  tipo: "titulo" | "texto";
+  texto: string;
+}
+
+export interface SaintStoryPayload {
+  data: string;
+  nome: string;
+  imagemUrl: string | null;
+  fonteUrl: string;
+  paragrafos: SaintStoryBlock[];
+}
+
 export type ReadingTabKey = "leitura1" | "salmo" | "leitura2" | "evangelho" | "homilia";

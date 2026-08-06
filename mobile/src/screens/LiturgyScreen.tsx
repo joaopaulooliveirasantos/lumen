@@ -20,6 +20,7 @@ type Props = {
   isRead: boolean;
   onSelectDate: (date: string) => void;
   onAmen: () => void;
+  onUpdateFontScale: (delta: number) => void;
 };
 
 function WeekCalendar({
@@ -148,7 +149,17 @@ function ReadingTabBar({
   );
 }
 
-export function LiturgyScreen({ selectedDate, payload, loading, theme, settings, isRead, onSelectDate, onAmen }: Props) {
+export function LiturgyScreen({
+  selectedDate,
+  payload,
+  loading,
+  theme,
+  settings,
+  isRead,
+  onSelectDate,
+  onAmen,
+  onUpdateFontScale,
+}: Props) {
   const [activeReadingTab, setActiveReadingTab] = useState<ReadingTabKey>("leitura1");
 
   useEffect(() => {
@@ -222,6 +233,8 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
           theme={theme}
           activeTrack={currentTab}
           onTrackChange={setActiveReadingTab}
+          fontScale={settings.fontScale}
+          onUpdateFontScale={onUpdateFontScale}
         />
       </View>
 
@@ -239,6 +252,7 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
+            closingPhrase="Graças a Deus"
           />
         ) : null}
 
@@ -282,6 +296,7 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
+            closingPhrase="Graças a Deus"
           />
         ) : null}
 
@@ -295,6 +310,7 @@ export function LiturgyScreen({ selectedDate, payload, loading, theme, settings,
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
+            closingPhrase="Glória a vós, Senhor"
           />
         ) : null}
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { DatePickerModal } from "../components/DatePickerModal";
 import { formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
 import { shadeColor } from "../services/color";
 import type { DailyLiturgyPayload, SaintOfDayPayload } from "../types/liturgy";
@@ -23,11 +25,13 @@ function Hero({
   liturgicColor,
   selectedDate,
   offlineSource,
+  onOpenCalendar,
 }: {
   accent: string;
   liturgicColor: string | undefined;
   selectedDate: string;
   offlineSource: boolean;
+  onOpenCalendar: () => void;
 }) {
   return (
     <LinearGradient
@@ -36,6 +40,16 @@ function Hero({
       end={{ x: 1, y: 1 }}
       style={styles.hero}
     >
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Escolher outra data"
+        hitSlop={8}
+        style={styles.calendarButton}
+        onPress={onOpenCalendar}
+      >
+        <Text style={styles.calendarIcon}>📅</Text>
+      </Pressable>
+
       <View style={styles.heroTopRow}>
         <Text style={styles.heroCross}>✝</Text>
         <Text allowFontScaling style={styles.heroTitle}>LUMEN</Text>
@@ -131,17 +145,24 @@ function SaintOfDayCard({
   saintOfDay,
   loading,
   theme,
+  onPress,
 }: {
   saintOfDay: SaintOfDayPayload | null;
   loading: boolean;
   theme: ThemePalette;
+  onPress: () => void;
 }) {
   if (loading || !saintOfDay || !Array.isArray(saintOfDay.santos) || saintOfDay.santos.length === 0) {
     return null;
   }
 
   return (
-    <View style={[saintStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Ver a historia do santo do dia"
+      style={[saintStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+      onPress={onPress}
+    >
       <View style={[saintStyles.icon, { borderColor: theme.accent }]}>
         <Text style={saintStyles.iconText}>✦</Text>
       </View>
@@ -159,7 +180,8 @@ function SaintOfDayCard({
           </Text>
         ))}
       </View>
-    </View>
+      <Text style={[saintStyles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+    </Pressable>
   );
 }
 
@@ -252,6 +274,8 @@ type Props = {
   onRetry: () => void;
   onContinueReading: () => void;
   onOpenRosary: () => void;
+  onOpenSaintStory: () => void;
+  onSelectDate: (date: string) => void;
 };
 
 export function HomeScreen({
@@ -268,7 +292,11 @@ export function HomeScreen({
   onRetry,
   onContinueReading,
   onOpenRosary,
+  onOpenSaintStory,
+  onSelectDate,
 }: Props) {
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
   return (
     <ScrollView
       style={[styles.scroll, { backgroundColor: theme.appBackground }]}
@@ -279,12 +307,26 @@ export function HomeScreen({
         liturgicColor={payload?.cor}
         selectedDate={selectedDate}
         offlineSource={offlineSource}
+        onOpenCalendar={() => setCalendarOpen(true)}
+      />
+
+      <DatePickerModal
+        visible={calendarOpen}
+        selectedDate={selectedDate}
+        theme={theme}
+        onSelect={onSelectDate}
+        onClose={() => setCalendarOpen(false)}
       />
 
       <View style={styles.body}>
         <ReadingCalendar readDays={readDays} rosaryDays={rosaryDays} theme={theme} />
 
-        <SaintOfDayCard saintOfDay={saintOfDay} loading={saintLoading} theme={theme} />
+        <SaintOfDayCard
+          saintOfDay={saintOfDay}
+          loading={saintLoading}
+          theme={theme}
+          onPress={onOpenSaintStory}
+        />
 
         {!loading && payload ? (
           <TodayLiturgySummary payload={payload} theme={theme} onContinueReading={onContinueReading} />
@@ -341,6 +383,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+  },
+  calendarButton: {
+    position: "absolute",
+    top: 10,
+    right: 12,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.32)",
+    zIndex: 1,
+  },
+  calendarIcon: {
+    fontSize: 16,
   },
   heroCross: {
     fontSize: 15,
@@ -580,4 +639,5 @@ const saintStyles = StyleSheet.create({
     letterSpacing: 1,
   },
   title: { marginTop: 3, fontSize: 14, fontWeight: "700" },
+  chevron: { fontSize: 20, paddingHorizontal: 4 },
 });
