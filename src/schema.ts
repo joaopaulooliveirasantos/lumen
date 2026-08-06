@@ -35,3 +35,16 @@ export const saintOfDaySchema = z.object({
   data: z.string().min(1),
   santos: z.array(z.string().min(1)),
 });
+
+export const saintStoryBlockSchema = z.object({
+  tipo: z.enum(["titulo", "texto"]),
+  texto: z.string().min(1),
+});
+
+export const saintStorySchema = z.object({
+  data: z.string().min(1),
+  nome: z.string().min(1),
+  imagemUrl: z.string().url().nullable(),
+  fonteUrl: z.string().url(),
+  paragrafos: z.array(saintStoryBlockSchema).min(1),
+});
