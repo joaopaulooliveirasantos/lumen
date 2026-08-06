@@ -1,6 +1,20 @@
 import { SaintClient } from "../integrations/saintClient";
+import { CnbbSaintClient } from "../integrations/cnbbSaintClient";
+import { PprSaintClient } from "../integrations/pprSaintClient";
 import { SaintOfDayService } from "../services/saintOfDayService";
 import { isValidIsoDate } from "../utils/date";
+import { config } from "../config";
+
+function createSaintClient(): Pick<SaintClient, "getByDate"> {
+  switch (config.liturgyProvider) {
+    case "ppr":
+      return new PprSaintClient();
+    case "cnbb":
+      return new CnbbSaintClient();
+    default:
+      return new SaintClient();
+  }
+}
 
 export interface RequestLike {
   query?: {
@@ -31,7 +45,7 @@ export async function getSaintOfDay(request: RequestLike): Promise<ServerlessRes
     };
   }
 
-  const service = new SaintOfDayService(new SaintClient());
+  const service = new SaintOfDayService(createSaintClient());
 
   try {
     const payload = await service.getSaintOfDayPayload(date);

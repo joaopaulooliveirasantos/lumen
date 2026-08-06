@@ -4,4 +4,5 @@ export const config = {
     "https://feed.evangelizo.org/v2/reader.php",
   evangelizoLang: process.env.EVANGELIZO_LANG ?? "PT",
   evangelizoContent: process.env.EVANGELIZO_CONTENT,
+  liturgyProvider: process.env.LITURGY_PROVIDER ?? "ppr",
 };

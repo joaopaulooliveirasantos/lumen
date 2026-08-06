@@ -1,7 +1,21 @@
 import { LiturgyClient } from "../integrations/liturgyClient";
+import { CnbbLiturgyClient } from "../integrations/cnbbLiturgyClient";
+import { PprLiturgyClient } from "../integrations/pprLiturgyClient";
 import { EvangelizoCommentClient } from "../integrations/evangelizoCommentClient";
 import { DailyLiturgyService } from "../services/dailyLiturgyService";
 import { isValidIsoDate } from "../utils/date";
+import { config } from "../config";
+
+function createLiturgyClient(): Pick<LiturgyClient, "getByDate"> {
+  switch (config.liturgyProvider) {
+    case "ppr":
+      return new PprLiturgyClient();
+    case "cnbb":
+      return new CnbbLiturgyClient();
+    default:
+      return new LiturgyClient();
+  }
+}
 
 export interface RequestLike {
   query?: {
@@ -32,7 +46,7 @@ export async function getDailyLiturgy(request: RequestLike): Promise<ServerlessR
     };
   }
 
-  const service = new DailyLiturgyService(new LiturgyClient(), new EvangelizoCommentClient());
+  const service = new DailyLiturgyService(createLiturgyClient(), new EvangelizoCommentClient());
 
   try {
     const payload = await service.getDailyPayload(date);

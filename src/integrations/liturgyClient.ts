@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance } from "axios";
 import { config } from "../config";
 import { toBrazilianDate } from "../utils/date";
+import { SaintClient } from "./saintClient";
 
 interface ParsedReading {
   titulo: string;
@@ -21,7 +22,7 @@ function cleanText(input: string): string {
   return decodeEntities(input.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
 }
 
-function inferColorFromTitle(liturgicTitle: string): string {
+function inferColorFromTitle(liturgicTitle: string, hasSaint: boolean): string {
   const title = liturgicTitle.toLowerCase();
 
   if (title.includes("quaresma") || title.includes("advento")) {
@@ -48,6 +49,10 @@ function inferColorFromTitle(liturgicTitle: string): string {
     title.includes("solenidade") ||
     title.includes("festa")
   ) {
+    return "Branco";
+  }
+
+  if (hasSaint) {
     return "Branco";
   }
 
@@ -102,7 +107,7 @@ function parseSection(sectionHtml: string): ParsedReading | null {
   };
 }
 
-function parseEvangelizoPayload(raw: string, isoDate: string): unknown {
+function parseEvangelizoPayload(raw: string, isoDate: string, hasSaint: boolean): unknown {
   const normalized = raw.replace(/\r/g, "").trim();
   const firstBreak = normalized.match(/<br\s*\/?>\s*<br\s*\/?>/i);
 
@@ -139,7 +144,7 @@ function parseEvangelizoPayload(raw: string, isoDate: string): unknown {
   return {
     data: toBrazilianDate(isoDate),
     liturgia: liturgicTitle || `Liturgia de ${toBrazilianDate(isoDate)}`,
-    cor: inferColorFromTitle(liturgicTitle),
+    cor: inferColorFromTitle(liturgicTitle, hasSaint),
     primeiraLeitura,
     salmo: {
       referencia: salmo.referencia,
@@ -153,9 +158,11 @@ function parseEvangelizoPayload(raw: string, isoDate: string): unknown {
 
 export class LiturgyClient {
   private readonly http: AxiosInstance;
+  private readonly saintClient: Pick<SaintClient, "getByDate">;
 
-  constructor(httpClient?: AxiosInstance) {
+  constructor(httpClient?: AxiosInstance, saintClient?: Pick<SaintClient, "getByDate">) {
     this.http = httpClient ?? axios.create({ timeout: 8000 });
+    this.saintClient = saintClient ?? new SaintClient(this.http);
   }
 
   async getByDate(isoDate: string): Promise<unknown> {
@@ -171,16 +178,19 @@ export class LiturgyClient {
         params.content = config.evangelizoContent;
       }
 
-      const response = await this.http.get(config.liturgyApiUrlTemplate, {
-        params,
-        responseType: "text",
-        headers: {
-          Accept: "text/plain, text/html, */*",
-        },
-      });
+      const [response, santos] = await Promise.all([
+        this.http.get(config.liturgyApiUrlTemplate, {
+          params,
+          responseType: "text",
+          headers: {
+            Accept: "text/plain, text/html, */*",
+          },
+        }),
+        this.saintClient.getByDate(isoDate).catch(() => []),
+      ]);
 
       const text = typeof response.data === "string" ? response.data : String(response.data ?? "");
-      return parseEvangelizoPayload(text, isoDate);
+      return parseEvangelizoPayload(text, isoDate, santos.length > 0);
     }
 
     const endpoint = config.liturgyApiUrlTemplate.replace("{date}", isoDate);
