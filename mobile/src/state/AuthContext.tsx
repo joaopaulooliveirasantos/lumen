@@ -46,11 +46,25 @@ async function fetchProfile(session: Session): Promise<UserProfile> {
     .eq("id", session.user.id)
     .maybeSingle();
 
+  // A tabela profiles so e preenchida na criacao da conta (trigger). O
+  // metadata da sessao atual e sempre a fonte mais fresca (ex: foto do
+  // Google pode ter mudado desde o cadastro), entao ele tem prioridade.
+  const metadata = session.user.user_metadata as Record<string, unknown> | undefined;
+  const metadataAvatar = typeof metadata?.avatar_url === "string" ? metadata.avatar_url : null;
+  const metadataName =
+    typeof metadata?.display_name === "string"
+      ? metadata.display_name
+      : typeof metadata?.full_name === "string"
+        ? metadata.full_name
+        : typeof metadata?.name === "string"
+          ? metadata.name
+          : null;
+
   return {
     id: session.user.id,
     email: session.user.email ?? null,
-    displayName: data?.display_name ?? null,
-    avatarUrl: data?.avatar_url ?? null,
+    displayName: metadataName ?? data?.display_name ?? null,
+    avatarUrl: metadataAvatar ?? data?.avatar_url ?? null,
   };
 }
 

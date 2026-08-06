@@ -98,9 +98,13 @@ export function ProfileScreen({
         <View style={[styles.avatarContainer, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           {session ? (
             <>
-              <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
-                <Text style={styles.avatarLetter}>{avatarLetter}</Text>
-              </View>
+              {profile?.avatarUrl ? (
+                <Image source={{ uri: profile.avatarUrl }} style={styles.avatarImage} />
+              ) : (
+                <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
+                  <Text style={styles.avatarLetter}>{avatarLetter}</Text>
+                </View>
+              )}
               <Text allowFontScaling style={[styles.userName, { color: theme.titleText }]}>
                 {displayName}
               </Text>
@@ -230,6 +234,12 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 12,
+  },
+  avatarImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     marginBottom: 12,
   },
   avatarLetter: {
