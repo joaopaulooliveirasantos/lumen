@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { AntDesign } from "@expo/vector-icons";
 import { useAuth } from "../state/AuthContext";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
@@ -237,6 +238,7 @@ export function AuthScreen({ theme, settings, onExit }: Props) {
           onPress={() => void handleGoogle()}
           disabled={submitting}
         >
+          <AntDesign name="google" size={18} color={theme.titleText} style={styles.socialButtonIcon} />
           <Text allowFontScaling style={[styles.socialButtonText, { color: theme.titleText }]}>
             Continuar com Google
           </Text>
@@ -337,12 +339,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   socialButton: {
+    flexDirection: "row",
     minHeight: 48,
     borderWidth: 1,
     borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
+  },
+  socialButtonIcon: {
+    marginRight: 10,
   },
   socialButtonText: {
     fontSize: 15,
