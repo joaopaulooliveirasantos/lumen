@@ -101,3 +101,10 @@ Status de implementacao: concluido no repositorio com melhorias de acessibilidad
 - Tempo medio de sessao
 - Taxa de uso offline
 - Taxa de falha de sincronizacao e crash-free sessions
+
+## 12. Funcionalidades Adicionais (Pos-Roadmap)
+- **Cadastro de Usuario**: login/cadastro opcional via Supabase Auth
+  (e-mail/senha, Google, Apple), com sessao persistente e perfil publico.
+  Login e opcional, nenhuma funcionalidade do app hoje depende de conta
+  ativa. Configuracao de credenciais (Supabase/OAuth) ainda pendente antes
+  de publicar. Detalhes completos em `README-mobile-cadastro-usuario.md`.

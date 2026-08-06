@@ -86,6 +86,28 @@ Este documento resume o que foi implementado nas Fases 1, 2, 3 e 4 do roadmap, c
 - `Termos-de-Uso.md`
 - `README-fase4-qualidade-publicacao.md`
 
+## 5.1 Funcionalidade Adicional - Cadastro de Usuario (Supabase Auth)
+Fora do roadmap original de 4 fases. Login/cadastro opcional via Supabase
+Auth (e-mail/senha, Google, Apple), com sessao persistente e perfil publico
+(`profiles`) criado automaticamente no cadastro. Ver detalhes,
+configuracao pendente (credenciais Supabase/OAuth ainda nao preenchidas) e
+limitacoes em `README-mobile-cadastro-usuario.md`.
+
+### Arquivos-chave
+- `mobile/src/services/supabaseClient.ts`
+- `mobile/src/state/AuthContext.tsx`
+- `mobile/src/screens/AuthScreen.tsx`
+- `mobile/src/types/user.ts`
+- `supabase/migrations/0001_profiles.sql`
+- `README-mobile-cadastro-usuario.md`
+
+### Pendencias antes de publicar
+- Preencher `expo.extra.supabaseUrl` / `supabaseAnonKey` em `mobile/app.json` (hoje vazios).
+- Configurar providers Google e Apple no painel do Supabase.
+- Adicionar exclusao de conta (exigencia das lojas para apps com cadastro).
+- `Politica-de-Privacidade.md` e os textos em `mobile/store/` ja foram
+  atualizados para declarar a coleta de e-mail/senha e login social.
+
 ## 6. Validacoes Executadas
 - Typecheck do mobile concluido sem erros.
 - Testes backend (Vitest) com todos os testes passando.
