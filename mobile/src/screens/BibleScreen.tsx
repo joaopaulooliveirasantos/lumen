@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -220,7 +221,9 @@ export function BibleScreen({ theme, settings }: Props) {
             <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
           </Pressable>
         ) : (
-          <View style={styles.backBtn} />
+          <View style={styles.backBtn}>
+            <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
+          </View>
         )}
         <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
           {titles[view]}
@@ -632,6 +635,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 40, alignItems: "center" },
   backText: { fontSize: 28, fontWeight: "700", lineHeight: 32 },
+  headerLogo: { width: 30, height: 30, borderRadius: 8 },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: "700", textAlign: "center" },
   listContent: { padding: 12, gap: 8 },
   sectionLabel: { fontSize: 12, fontWeight: "600", textTransform: "uppercase", marginBottom: 4, paddingHorizontal: 4 },

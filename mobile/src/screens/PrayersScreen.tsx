@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, SectionList, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, SectionList, ScrollView, StyleSheet, Text, View } from "react-native";
 import { prayerCategories } from "../data/prayers";
 import type { Prayer } from "../types/prayers";
 import type { ThemePalette } from "../types/theme";
@@ -27,7 +27,9 @@ export function PrayersScreen({ theme, settings }: Props) {
             <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
           </Pressable>
         ) : (
-          <View style={styles.backBtn} />
+          <View style={styles.backBtn}>
+            <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
+          </View>
         )}
         <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
           {title}
@@ -110,6 +112,7 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 40, alignItems: "center" },
   backText: { fontSize: 28, fontWeight: "700", lineHeight: 32 },
+  headerLogo: { width: 30, height: 30, borderRadius: 8 },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: "700", textAlign: "center" },
   listContent: { padding: 12, paddingBottom: 28 },
   sectionLabel: {
