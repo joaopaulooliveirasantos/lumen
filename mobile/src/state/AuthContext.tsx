@@ -21,7 +21,14 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const redirectTo = Linking.createURL("auth-callback");
+// Caminhos diferentes para cada fluxo: o login social (Google) troca o codigo
+// PKCE explicitamente a partir do retorno do WebBrowser, dentro de signInWithGoogle.
+// Se o listener global do Linking tambem tentasse processar essa mesma URL, os
+// dois disparariam a troca do mesmo codigo (uso unico) e o segundo falharia com
+// "invalid flow state, no valid flow state found". Por isso o listener global so
+// cuida do link de confirmacao de email, que usa um caminho proprio.
+const emailConfirmRedirectTo = Linking.createURL("email-confirmed");
+const oauthRedirectTo = Linking.createURL("oauth-callback");
 
 async function fetchProfile(session: Session): Promise<UserProfile> {
   const { data } = await supabase
@@ -66,9 +73,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const subscription = Linking.addEventListener("url", ({ url }) => {
-      if (!url.includes("auth-callback")) return;
+      if (!url.includes("email-confirmed")) return;
       void supabase.auth.exchangeCodeForSession(url);
-      void WebBrowser.dismissBrowser();
     });
 
     return () => subscription.remove();
@@ -80,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       password,
       options: {
         data: { display_name: displayName },
-        emailRedirectTo: redirectTo,
+        emailRedirectTo: emailConfirmRedirectTo,
       },
     });
     if (error) throw error;
@@ -96,12 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signInWithGoogle(): Promise<void> {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo, skipBrowserRedirect: true },
+      options: { redirectTo: oauthRedirectTo, skipBrowserRedirect: true },
     });
     if (error) throw error;
     if (!data.url) throw new Error("Nao foi possivel iniciar o login com Google.");
 
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+    const result = await WebBrowser.openAuthSessionAsync(data.url, oauthRedirectTo);
     if (result.type !== "success" || !result.url) {
       throw new Error("Login com Google cancelado.");
     }
