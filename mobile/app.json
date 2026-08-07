@@ -15,15 +15,15 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "br.com.lumen.liturgia",
+      "bundleIdentifier": "com.joaopaulosantos.lumen",
       "buildNumber": "1",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "Lumen envia lembretes diarios para leitura da liturgia."
       }
     },
     "android": {
-      "package": "br.com.lumen.liturgia",
-      "versionCode": 2,
+      "package": "com.joaopaulosantos.lumen",
+      "versionCode": 3,
       "permissions": [
         "POST_NOTIFICATIONS"
       ],

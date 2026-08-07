@@ -155,7 +155,7 @@ Todo esse dado é local-only — não sincroniza entre aparelhos nem depende de 
 
 ### 5.6 Config do app
 
-[mobile/app.json](../mobile/app.json): scheme `lumen` (deep link), bundle id `br.com.lumen.liturgia`, plugins (`expo-sqlite`, `expo-notifications`, `expo-secure-store`, `expo-web-browser`, `expo-apple-authentication`, `expo-font`), `extra.apiBaseUrl` apontando para a VPS (HTTP puro, por isso `usesCleartextTraffic: true` no Android), `extra.supabaseUrl`/`supabaseAnonKey`. [mobile/eas.json](../mobile/eas.json): perfis `development` (dev client), `preview` (gera `.apk` instalável, usado para testes internos) e `production` (gera `.aab`, auto-incrementa versão).
+[mobile/app.json](../mobile/app.json): scheme `lumen` (deep link), bundle id `com.joaopaulosantos.lumen`, plugins (`expo-sqlite`, `expo-notifications`, `expo-secure-store`, `expo-web-browser`, `expo-apple-authentication`, `expo-font`), `extra.apiBaseUrl` apontando para a VPS (HTTP puro, por isso `usesCleartextTraffic: true` no Android), `extra.supabaseUrl`/`supabaseAnonKey`. [mobile/eas.json](../mobile/eas.json): perfis `development` (dev client), `preview` (gera `.apk` instalável, usado para testes internos) e `production` (gera `.aab`, auto-incrementa versão).
 
 ### 5.7 Estratégia offline
 
