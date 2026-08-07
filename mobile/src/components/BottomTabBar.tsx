@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../state/AuthContext";
 import type { ThemePalette } from "../types/theme";
 
 export type TabName = "home" | "liturgia" | "biblia" | "oracoes" | "perfil";
@@ -26,6 +27,8 @@ type Props = {
 
 export function BottomTabBar({ activeTab, onTabPress, theme }: Props) {
   const insets = useSafeAreaInsets();
+  const { session, profile } = useAuth();
+  const avatarUrl = session ? profile?.avatarUrl ?? null : null;
   return (
     <View
       style={[
@@ -47,7 +50,14 @@ export function BottomTabBar({ activeTab, onTabPress, theme }: Props) {
             style={styles.tab}
             onPress={() => onTabPress(tab.name)}
           >
-            <Text style={[styles.icon, isActive && { color: theme.accent }]}>{tab.icon}</Text>
+            {tab.name === "perfil" && avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={[styles.avatarIcon, { borderColor: isActive ? theme.accent : "transparent" }]}
+              />
+            ) : (
+              <Text style={[styles.icon, isActive && { color: theme.accent }]}>{tab.icon}</Text>
+            )}
             <Text
               style={[
                 styles.label,
@@ -81,6 +91,12 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 20,
+  },
+  avatarIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
   },
   label: {
     fontSize: 10,
