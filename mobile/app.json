@@ -45,7 +45,8 @@
       ],
       "expo-secure-store",
       "expo-web-browser",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      "expo-font"
     ],
     "extra": {
       "apiBaseUrl": "http://147.15.109.185",
