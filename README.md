@@ -107,4 +107,13 @@ Status de implementacao: concluido no repositorio com melhorias de acessibilidad
   (e-mail/senha, Google, Apple), com sessao persistente e perfil publico.
   Login e opcional, nenhuma funcionalidade do app hoje depende de conta
   ativa. Configuracao de credenciais (Supabase/OAuth) ainda pendente antes
-  de publicar. Detalhes completos em `README-mobile-cadastro-usuario.md`.
+  de publicar. Detalhes completos em `doc/README-mobile-cadastro-usuario.md`.
+
+## 13. Documentacao
+Toda a documentacao adicional do projeto (arquitetura, deploy, fases,
+politicas, changelogs) esta em [`doc/`](doc/). Destaques:
+- [doc/ARCHITECTURE.md](doc/ARCHITECTURE.md) — arquitetura completa (mobile + backend + auth), stack e funcionamento.
+- [doc/README-backend-fase1.md](doc/README-backend-fase1.md) — detalhes do backend.
+- [doc/README-deploy-vps.md](doc/README-deploy-vps.md) — runbook de deploy/operacao da VPS.
+- [doc/README-mobile-cadastro-usuario.md](doc/README-mobile-cadastro-usuario.md) — feature de cadastro/login.
+- [doc/RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md](doc/RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md) — status de entrega por fase.

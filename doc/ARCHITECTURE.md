@@ -1,6 +1,6 @@
 # Arquitetura do Lumen
 
-Documento de referência técnica do projeto: o que existe, como está organizado e como as peças conversam entre si. Cobre o backend (`src/`, `api/`), o app mobile (`mobile/`) e a camada de autenticação (Supabase). Para o histórico de decisões/roadmap original, ver [README.md](README.md) e [RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md](RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md).
+Documento de referência técnica do projeto: o que existe, como está organizado e como as peças conversam entre si. Cobre o backend (`src/`, `api/`), o app mobile (`mobile/`) e a camada de autenticação (Supabase). Para o histórico de decisões/roadmap original, ver [README.md](../README.md) e [RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md](RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md).
 
 ## 1. Visão geral
 
@@ -59,13 +59,13 @@ Nenhum dos dois lados usa framework HTTP (Express etc.), ORM, Redux/Zustand, Rea
 
 Dois adaptadores chamam os mesmos handlers "framework-agnostic":
 
-- **[src/devServer.ts](src/devServer.ts)** — servidor `node:http` puro (sem Express), é o que roda em produção na VPS via systemd. Rotas:
+- **[src/devServer.ts](../src/devServer.ts)** — servidor `node:http` puro (sem Express), é o que roda em produção na VPS via systemd. Rotas:
   - `GET /api/liturgia?date=YYYY-MM-DD[&type=saint|saint-story]`
   - `GET /privacy-policy` (serve `src/static/privacy-policy.html`)
   - qualquer outra rota → 404 JSON
-- **[api/liturgia.ts](api/liturgia.ts)** — adaptador para Vercel (`@vercel/node`), remanescente de quando o backend era hospedado lá antes de migrar para a VPS (ver [README-deploy-vps.md](README-deploy-vps.md)). **Diferença importante**: não trata `type=saint-story` — esse endpoint só funciona via `devServer.ts`/VPS, não pela rota Vercel. `@vercel/node` nem está mais nas dependências do projeto, então esse adaptador está efetivamente sem uso ativo.
+- **[api/liturgia.ts](../api/liturgia.ts)** — adaptador para Vercel (`@vercel/node`), remanescente de quando o backend era hospedado lá antes de migrar para a VPS (ver [README-deploy-vps.md](README-deploy-vps.md)). **Diferença importante**: não trata `type=saint-story` — esse endpoint só funciona via `devServer.ts`/VPS, não pela rota Vercel. `@vercel/node` nem está mais nas dependências do projeto, então esse adaptador está efetivamente sem uso ativo.
 
-### 4.2 Handlers serverless ([src/serverless/](src/serverless/))
+### 4.2 Handlers serverless ([src/serverless/](../src/serverless/))
 
 Padrão idêntico nos três handlers — entrada `{ query: { date } }`, saída `{ statusCode, headers, body }`:
 
@@ -75,14 +75,14 @@ Padrão idêntico nos três handlers — entrada `{ query: { date } }`, saída `
 | `getSaintOfDay.ts` | `type=saint` | `{ data, santos[] }` | idem | consulta ao santo falhou |
 | `getSaintStory.ts` | `type=saint-story` | `{ data, nome, imagemUrl, fonteUrl, paragrafos[] }` | idem | consulta à história falhou |
 
-### 4.3 Services ([src/services/](src/services/))
+### 4.3 Services ([src/services/](../src/services/))
 
 Camada de consolidação entre os handlers e as integrações:
 
 - **`dailyLiturgyService.ts`** — o mais complexo: busca liturgia + homilia **em paralelo**, normaliza campos heterogêneos entre provedores (snake_case/camelCase, nomes de campo diferentes por fonte), decide a homilia final priorizando a do próprio provedor (ex.: Meditação do PPR) e caindo para o comentário do Evangelizo quando ausente, e valida o resultado com `dailyLiturgySchema` (Zod) antes de devolver.
 - **`saintOfDayService.ts`** e **`saintStoryService.ts`** — wrappers finos, sem consolidação multi-fonte.
 
-### 4.4 Integrações ([src/integrations/](src/integrations/)) — 4 famílias de provedores
+### 4.4 Integrações ([src/integrations/](../src/integrations/)) — 4 famílias de provedores
 
 A variável `LITURGY_PROVIDER` escolhe a fonte de liturgia + santo do dia:
 
@@ -95,11 +95,11 @@ A variável `LITURGY_PROVIDER` escolhe a fonte de liturgia + santo do dia:
 
 ### 4.5 Schema e tipos
 
-[src/schema.ts](src/schema.ts) define os schemas Zod (`dailyLiturgySchema`, `saintOfDaySchema`, `saintStorySchema`, etc.) que validam toda resposta antes de sair pela API — qualquer inconsistência de um provedor vira erro 502 em vez de payload malformado chegando ao app. [src/types.ts](src/types.ts) espelha os mesmos formatos em TypeScript para tipagem em tempo de compilação.
+[src/schema.ts](../src/schema.ts) define os schemas Zod (`dailyLiturgySchema`, `saintOfDaySchema`, `saintStorySchema`, etc.) que validam toda resposta antes de sair pela API — qualquer inconsistência de um provedor vira erro 502 em vez de payload malformado chegando ao app. [src/types.ts](../src/types.ts) espelha os mesmos formatos em TypeScript para tipagem em tempo de compilação.
 
 ### 4.6 Configuração
 
-[src/config.ts](src/config.ts) lê de env vars (ver [.env.example](.env.example)): `LITURGY_API_URL_TEMPLATE`, `EVANGELIZO_LANG`, `EVANGELIZO_CONTENT`, `LITURGY_PROVIDER`. `PORT` é lido direto no `devServer.ts`, só documentado no `.env` da VPS.
+[src/config.ts](../src/config.ts) lê de env vars (ver [.env.example](../.env.example)): `LITURGY_API_URL_TEMPLATE`, `EVANGELIZO_LANG`, `EVANGELIZO_CONTENT`, `LITURGY_PROVIDER`. `PORT` é lido direto no `devServer.ts`, só documentado no `.env` da VPS.
 
 ### 4.7 Testes
 
@@ -107,17 +107,17 @@ A variável `LITURGY_PROVIDER` escolhe a fonte de liturgia + santo do dia:
 
 ### 4.8 Deploy
 
-VPS Oracle Cloud (`147.15.109.185`), sem domínio/HTTPS ainda. `Internet → Nginx :80 → Node (systemd, :3333)`. Deploy via [scripts/deploy-vps.sh](scripts/deploy-vps.sh) (idempotente, cobre setup inicial e redeploy). Sem CI/CD — deploy é manual. Detalhes completos em [README-deploy-vps.md](README-deploy-vps.md) e [README-backend-fase1.md](README-backend-fase1.md).
+VPS Oracle Cloud (`147.15.109.185`), sem domínio/HTTPS ainda. `Internet → Nginx :80 → Node (systemd, :3333)`. Deploy via [scripts/deploy-vps.sh](../scripts/deploy-vps.sh) (idempotente, cobre setup inicial e redeploy). Sem CI/CD — deploy é manual. Detalhes completos em [README-deploy-vps.md](README-deploy-vps.md) e [README-backend-fase1.md](README-backend-fase1.md).
 
 ## 5. Mobile — arquitetura e funcionamento
 
 ### 5.1 Estrutura e navegação
 
-[mobile/App.tsx](mobile/App.tsx) é o único componente raiz. **Não usa React Navigation** — a navegação é um `switch` sobre um estado local `activeTab` (`"home" | "liturgia" | "biblia" | "oracoes" | "perfil"`), renderizado pela `BottomTabBar`. Três telas extras (`RosaryScreen`, `SaintStoryScreen`, `AuthScreen`) são overlays de tela cheia controlados por flags booleanas (`rosaryOpen`, `saintStoryOpen`, `authScreenOpen`) em vez de rotas — trocar de aba sempre fecha qualquer overlay aberto.
+[mobile/App.tsx](../mobile/App.tsx) é o único componente raiz. **Não usa React Navigation** — a navegação é um `switch` sobre um estado local `activeTab` (`"home" | "liturgia" | "biblia" | "oracoes" | "perfil"`), renderizado pela `BottomTabBar`. Três telas extras (`RosaryScreen`, `SaintStoryScreen`, `AuthScreen`) são overlays de tela cheia controlados por flags booleanas (`rosaryOpen`, `saintStoryOpen`, `authScreenOpen`) em vez de rotas — trocar de aba sempre fecha qualquer overlay aberto.
 
 No bootstrap, o app inicializa o cache SQLite e carrega configurações/histórico do AsyncStorage antes de mostrar qualquer tela (`LoadingScreen` até lá). O tema (cores) é recalculado a cada dia com base na cor litúrgica retornada pelo backend.
 
-### 5.2 Telas ([mobile/src/screens/](mobile/src/screens/))
+### 5.2 Telas ([mobile/src/screens/](../mobile/src/screens/))
 
 | Tela | O que faz |
 |---|---|
@@ -131,17 +131,17 @@ No bootstrap, o app inicializa o cache SQLite e carrega configurações/históri
 | `ProfileScreen` | Estado logado (nome/email/foto real + "Sair") ou visitante (CTA para `AuthScreen`) |
 | `AuthScreen` | Entrar / criar conta — email+senha, Google, Apple |
 
-### 5.3 Componentes-chave ([mobile/src/components/](mobile/src/components/))
+### 5.3 Componentes-chave ([mobile/src/components/](../mobile/src/components/))
 
 `BottomTabBar` (barra inferior, mostra a foto de perfil real no lugar do ícone quando logado), `LoadingScreen`, `DatePickerModal` (calendário mensal), `LiturgyPlayer` (TTS via `expo-speech`, escolhe a melhor voz pt-BR disponível), `ReadingSection`/`ReflectionSection` (cards de leitura/homilia memoizados), `AudioPlayer` (player de homilia via `expo-av`, com fallback caso o módulo não esteja disponível).
 
-### 5.4 Services ([mobile/src/services/](mobile/src/services/))
+### 5.4 Services ([mobile/src/services/](../mobile/src/services/))
 
 - **`api.ts`** — `fetch` puro contra o backend (`fetchDailyLiturgy`, `fetchSaintOfDay`, `fetchSaintStory`), sem headers de auth, sem retry.
 - **`notifications.ts`** — agenda o lembrete diário via `expo-notifications` (um único lembrete recorrente por vez, cancela o anterior ao reconfigurar).
 - **`date.ts`**, **`color.ts`**, **`rosary.ts`**, **`bibleData.ts`** — utilitários de data, cor, montagem do roteiro do terço e carregamento das traduções bíblicas (JSON estático fora de `mobile/`, em `biblias/`).
 
-### 5.5 Persistência local ([mobile/src/storage/](mobile/src/storage/))
+### 5.5 Persistência local ([mobile/src/storage/](../mobile/src/storage/))
 
 | Arquivo | Mecanismo | Guarda |
 |---|---|---|
@@ -155,7 +155,7 @@ Todo esse dado é local-only — não sincroniza entre aparelhos nem depende de 
 
 ### 5.6 Config do app
 
-[mobile/app.json](mobile/app.json): scheme `lumen` (deep link), bundle id `br.com.lumen.liturgia`, plugins (`expo-sqlite`, `expo-notifications`, `expo-secure-store`, `expo-web-browser`, `expo-apple-authentication`, `expo-font`), `extra.apiBaseUrl` apontando para a VPS (HTTP puro, por isso `usesCleartextTraffic: true` no Android), `extra.supabaseUrl`/`supabaseAnonKey`. [mobile/eas.json](mobile/eas.json): perfis `development` (dev client), `preview` (gera `.apk` instalável, usado para testes internos) e `production` (gera `.aab`, auto-incrementa versão).
+[mobile/app.json](../mobile/app.json): scheme `lumen` (deep link), bundle id `br.com.lumen.liturgia`, plugins (`expo-sqlite`, `expo-notifications`, `expo-secure-store`, `expo-web-browser`, `expo-apple-authentication`, `expo-font`), `extra.apiBaseUrl` apontando para a VPS (HTTP puro, por isso `usesCleartextTraffic: true` no Android), `extra.supabaseUrl`/`supabaseAnonKey`. [mobile/eas.json](../mobile/eas.json): perfis `development` (dev client), `preview` (gera `.apk` instalável, usado para testes internos) e `production` (gera `.aab`, auto-incrementa versão).
 
 ### 5.7 Estratégia offline
 
@@ -167,8 +167,8 @@ Implementada nesta sessão de trabalho — mobile fala direto com o Supabase, o 
 
 - **Cadastro por email/senha** com confirmação por email obrigatória antes do primeiro login (comportamento padrão do Supabase Auth).
 - **Login social**: Google (fluxo OAuth via navegador, PKCE — o app troca só o parâmetro `code`, não a URL inteira, por uma sessão) e Apple (botão nativo, só iOS, exigência da própria Apple).
-- **Sessão persistente**: guardada com um adapter próprio (`LargeSecureStore` em [mobile/src/services/supabaseClient.ts](mobile/src/services/supabaseClient.ts)) que cifra o valor com AES e guarda a chave no `expo-secure-store` e o blob cifrado no AsyncStorage — contorna o limite de ~2KB do SecureStore puro. Falha de leitura/descriptografia é tratada (descarta o item e segue deslogado, não trava o app).
-- **Perfil público**: tabela `profiles` no Postgres do Supabase ([supabase/migrations/0001_profiles.sql](supabase/migrations/0001_profiles.sql)), criada automaticamente por trigger no cadastro, com RLS (cada usuário só lê/edita a própria linha). Nome e foto priorizam o metadata da sessão atual (mais fresco, especialmente para foto do Google) com fallback pros dados salvos na tabela.
+- **Sessão persistente**: guardada com um adapter próprio (`LargeSecureStore` em [mobile/src/services/supabaseClient.ts](../mobile/src/services/supabaseClient.ts)) que cifra o valor com AES e guarda a chave no `expo-secure-store` e o blob cifrado no AsyncStorage — contorna o limite de ~2KB do SecureStore puro. Falha de leitura/descriptografia é tratada (descarta o item e segue deslogado, não trava o app).
+- **Perfil público**: tabela `profiles` no Postgres do Supabase ([supabase/migrations/0001_profiles.sql](../supabase/migrations/0001_profiles.sql)), criada automaticamente por trigger no cadastro, com RLS (cada usuário só lê/edita a própria linha). Nome e foto priorizam o metadata da sessão atual (mais fresco, especialmente para foto do Google) com fallback pros dados salvos na tabela.
 - **Ponto de entrada único**: aba Perfil — mostra "Visitante" + CTA quando deslogado, dados reais + "Sair" quando logado; a foto de perfil também substitui o ícone da aba na barra inferior quando disponível.
 - **Login é opcional** — nenhuma outra funcionalidade do app depende de conta ativa hoje.
 
@@ -186,7 +186,7 @@ Detalhes de setup (credenciais Supabase, providers OAuth) em [README-mobile-cada
 
 ## 8. Outros documentos no repositório
 
-- [README.md](README.md) — planejamento original e roadmap por fases.
+- [README.md](../README.md) — planejamento original e roadmap por fases.
 - [RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md](RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md) — status de entrega por fase.
 - [README-backend-fase1.md](README-backend-fase1.md) — detalhes do backend e dos provedores de liturgia.
 - [README-deploy-vps.md](README-deploy-vps.md) — runbook completo de deploy/operação da VPS.

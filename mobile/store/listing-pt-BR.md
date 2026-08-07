@@ -84,7 +84,7 @@ Cadastro de Usuário via Supabase Auth):
 - **Criptografia em trânsito:** sim (HTTPS/TLS, gerenciado pelo SDK do
   Supabase).
 - **Exclusão de dados:** ainda não há um botão de exclusão de conta no
-  app (pendência registrada em `README-mobile-cadastro-usuario.md`) —
+  app (pendência registrada em `doc/README-mobile-cadastro-usuario.md`) —
   até lá, o Play Console pode exigir informar um processo manual (e-mail
   de contato) para o usuário solicitar a exclusão.
 - Notificações de lembrete continuam sendo agendadas localmente (não usa
