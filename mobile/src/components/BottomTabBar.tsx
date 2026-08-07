@@ -93,9 +93,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   avatarIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 2,
   },
   label: {
