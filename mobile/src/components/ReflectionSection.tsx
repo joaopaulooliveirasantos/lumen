@@ -31,10 +31,10 @@ function ReflectionSectionComponent({
       accessibilityLabel={`Homilia. ${reflection.titulo}. Autor ${reflection.autor}`}
       style={[styles.card, { backgroundColor: cardColor, borderColor }]}
     >
-      <Text allowFontScaling style={[styles.title, { color: titleColor, fontSize: 16 * fontScale }]}>
+      <Text allowFontScaling style={[styles.title, { color: titleColor, fontSize: 18 * fontScale }]}>
         Homilía
       </Text>
-      <Text allowFontScaling style={[styles.commentTitle, { color: titleColor, fontSize: 15 * fontScale }]}>
+      <Text allowFontScaling style={[styles.commentTitle, { color: titleColor, fontSize: 16 * fontScale }]}>
         {reflection.titulo}
       </Text>
       <Text allowFontScaling style={[styles.author, { color: mutedColor, fontSize: 14 * fontScale }]}>
@@ -42,7 +42,7 @@ function ReflectionSectionComponent({
       </Text>
       <Text
         allowFontScaling
-        style={[styles.text, { color: bodyColor, fontSize: 15 * fontScale, lineHeight: 24 * fontScale }]}
+        style={[styles.text, { color: bodyColor, fontSize: 16 * fontScale, lineHeight: 26 * fontScale }]}
       >
         {reflection.texto}
       </Text>
@@ -71,8 +71,8 @@ export const ReflectionSection = memo(ReflectionSectionComponent);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 14,
+    padding: 22,
     marginBottom: 24,
     borderWidth: 1,
   },

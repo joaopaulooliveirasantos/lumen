@@ -1,9 +1,16 @@
 import { useState } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import Constants from "expo-constants";
 import { SettingsScreen } from "./SettingsScreen";
 import { useAuth } from "../state/AuthContext";
 import type { ThemePalette } from "../types/theme";
 import type { BibleTranslationId, ReadingMode, UserSettings } from "../types/settings";
+
+const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+const APP_BUILD_NUMBER =
+  Platform.OS === "android"
+    ? Constants.expoConfig?.android?.versionCode
+    : Constants.expoConfig?.ios?.buildNumber;
 
 type ProfileView = "perfil" | "configuracoes";
 
@@ -180,10 +187,10 @@ export function ProfileScreen({
 
         <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
           <Text allowFontScaling style={[styles.sectionTitle, { color: theme.titleText }]}>
-            Versao
+            Versão
           </Text>
           <Text allowFontScaling style={[styles.bodyText, { color: theme.mutedText }]}>
-            1.0.0
+            {APP_BUILD_NUMBER ? `${APP_VERSION} (build ${APP_BUILD_NUMBER})` : APP_VERSION}
           </Text>
         </View>
       </ScrollView>

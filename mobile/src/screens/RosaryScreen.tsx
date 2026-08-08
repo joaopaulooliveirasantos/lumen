@@ -15,7 +15,7 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-function RosaryHero({ theme, suggestedGroupName }: { theme: ThemePalette; suggestedGroupName: string }) {
+function RosaryHero({ theme }: { theme: ThemePalette }) {
   const today = formatIsoDate(new Date());
   return (
     <LinearGradient
@@ -32,21 +32,6 @@ function RosaryHero({ theme, suggestedGroupName }: { theme: ThemePalette; sugges
 
       <Text allowFontScaling style={heroStyles.title}>TERÇO</Text>
       <Text allowFontScaling style={heroStyles.date}>{capitalize(formatReadableDate(today))}</Text>
-
-      <View style={heroStyles.divider} />
-
-      <View style={heroStyles.badge}>
-        <View style={heroStyles.badgeDot} />
-        <Text allowFontScaling style={heroStyles.badgeText} numberOfLines={1}>
-          Mistérios sugeridos: {suggestedGroupName}
-        </Text>
-      </View>
-      <View style={[heroStyles.badge, heroStyles.badgeSpacing]}>
-        <Text style={heroStyles.badgeIcon}>⏱</Text>
-        <Text allowFontScaling style={heroStyles.badgeText}>
-          Aprox. 20 minutos de oração
-        </Text>
-      </View>
     </LinearGradient>
   );
 }
@@ -112,12 +97,11 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
 
   // ── Tela: Seleção de mistério ──────────────────────────────────────────────
   if (view === "selecao") {
-    const suggestedGroup = mysteryGroups.find((g) => g.id === suggestedMysteryGroupFor(new Date()));
     return (
       <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
         <Header title="Terço" />
         <ScrollView contentContainerStyle={styles.listContent}>
-          <RosaryHero theme={theme} suggestedGroupName={suggestedGroup?.nome ?? ""} />
+          <RosaryHero theme={theme} />
 
           <Text allowFontScaling style={[styles.sectionLabel, { color: theme.mutedText }]}>
             Escolher Mistério
@@ -329,9 +313,9 @@ const styles = StyleSheet.create({
 const heroStyles = StyleSheet.create({
   hero: {
     alignItems: "center",
-    borderRadius: 20,
-    paddingTop: 20,
-    paddingBottom: 18,
+    borderRadius: 16,
+    paddingTop: 12,
+    paddingBottom: 10,
     paddingHorizontal: 20,
     marginBottom: 16,
     shadowColor: "#000000",
@@ -344,7 +328,7 @@ const heroStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "stretch",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   ornamentLine: {
     flex: 1,
@@ -352,57 +336,20 @@ const heroStyles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.45)",
   },
   icon: {
-    fontSize: 18,
+    fontSize: 16,
     marginHorizontal: 10,
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "900",
     color: "#FFFFFF",
-    letterSpacing: 5,
+    letterSpacing: 4,
   },
   date: {
     fontSize: 12,
     fontWeight: "600",
     color: "rgba(255,255,255,0.92)",
-    marginTop: 4,
+    marginTop: 2,
     textAlign: "center",
-  },
-  divider: {
-    width: 44,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: "#F3D98B",
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "stretch",
-    justifyContent: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.16)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.32)",
-  },
-  badgeSpacing: { marginTop: 8 },
-  badgeDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: "#FFFFFF",
-    marginRight: 8,
-  },
-  badgeIcon: {
-    fontSize: 13,
-    marginRight: 8,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#FFFFFF",
   },
 });

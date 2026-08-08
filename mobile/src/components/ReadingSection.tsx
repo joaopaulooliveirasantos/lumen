@@ -32,25 +32,25 @@ function ReadingSectionComponent({
       accessibilityLabel={`${title}. ${reading.referencia}. ${reading.titulo}`}
       style={[styles.card, { backgroundColor: cardColor, borderColor }]}
     >
-      <Text allowFontScaling style={[styles.title, { color: titleColor, fontSize: 16 * fontScale }]}>
+      <Text allowFontScaling style={[styles.title, { color: titleColor, fontSize: 18 * fontScale }]}>
         {title}
       </Text>
-      <Text allowFontScaling style={[styles.reference, { color: accentColor, fontSize: 13 * fontScale }]}>
+      <Text allowFontScaling style={[styles.reference, { color: accentColor, fontSize: 14 * fontScale }]}>
         {reading.referencia}
       </Text>
-      <Text allowFontScaling style={[styles.subtitle, { color: titleColor, fontSize: 14 * fontScale }]}>
+      <Text allowFontScaling style={[styles.subtitle, { color: titleColor, fontSize: 15 * fontScale }]}>
         {reading.titulo}
       </Text>
       <Text
         allowFontScaling
-        style={[styles.text, { color: bodyColor, fontSize: 15 * fontScale, lineHeight: 24 * fontScale }]}
+        style={[styles.text, { color: bodyColor, fontSize: 16 * fontScale, lineHeight: 26 * fontScale }]}
       >
         {reading.texto}
       </Text>
       {closingPhrase ? (
         <Text
           allowFontScaling
-          style={[styles.closingPhrase, { color: titleColor, fontSize: 15 * fontScale }]}
+          style={[styles.closingPhrase, { color: titleColor, fontSize: 16 * fontScale }]}
         >
           {closingPhrase}
         </Text>
@@ -63,8 +63,8 @@ export const ReadingSection = memo(ReadingSectionComponent);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 14,
+    padding: 22,
     marginBottom: 12,
     borderWidth: 1,
   },

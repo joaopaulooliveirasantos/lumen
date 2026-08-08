@@ -23,7 +23,7 @@
     },
     "android": {
       "package": "com.joaopaulosantos.lumen",
-      "versionCode": 3,
+      "versionCode": 7,
       "permissions": [
         "POST_NOTIFICATIONS"
       ],

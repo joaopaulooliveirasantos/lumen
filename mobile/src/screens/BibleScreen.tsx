@@ -19,6 +19,7 @@ import type { UserSettings } from "../types/settings";
 import type { VerseBookmark } from "../types/bookmark";
 import { getBookmarks, removeBookmark, updateBookmarkComment, upsertBookmarks } from "../storage/bookmarks";
 import { getBibleData } from "../services/bibleData";
+import { bibleTranslations } from "../data/bibleTranslations";
 
 type ScreenView = "livros" | "capitulos" | "versiculos" | "leitura" | "marcado";
 type Testament = "antigoTestamento" | "novoTestamento";
@@ -201,8 +202,9 @@ export function BibleScreen({ theme, settings }: Props) {
 
   // ── Header ──────────────────────────────────────────────────────────────────
   function Header() {
+    const bibleName = bibleTranslations.find((t) => t.id === settings.bibleTranslation)?.nome ?? "";
     const titles: Record<ScreenView, string> = {
-      livros: "Bíblia",
+      livros: bibleName ? `Bíblia - ${bibleName}` : "Bíblia",
       capitulos: book?.nome ?? "",
       versiculos: `${book?.nome} — Cap. ${chapter?.capitulo}`,
       leitura: `${book?.nome} ${chapter?.capitulo},${startVerse ?? ""}`,
