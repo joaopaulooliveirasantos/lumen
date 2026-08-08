@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { bibleTranslations } from "../data/bibleTranslations";
+import { AppIcon } from "../components/AppIcon";
 import type { ThemePalette } from "../types/theme";
 import type { BibleTranslationId, ReadingMode, UserSettings } from "../types/settings";
 
@@ -148,7 +149,7 @@ export function SettingsScreen({
                     {translation.editora}
                   </Text>
                 </View>
-                {selected ? <Text style={[styles.bibleCheck, { color: theme.accent }]}>{"✓"}</Text> : null}
+                {selected ? <AppIcon name="checkmark" size={18} color={theme.accent} style={styles.bibleCheck} /> : null}
               </Pressable>
             );
           })}

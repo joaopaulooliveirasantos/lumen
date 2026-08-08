@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { fetchSaintStory } from "../services/api";
+import { AppIcon } from "../components/AppIcon";
 import type { SaintStoryPayload } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
@@ -55,7 +56,7 @@ export function SaintStoryScreen({ date, theme, settings, onExit }: Props) {
           onPress={onExit}
           style={styles.closeBtn}
         >
-          <Text style={[styles.closeText, { color: theme.accent }]}>{"✕"}</Text>
+          <AppIcon name="close" size={18} color={theme.accent} />
         </Pressable>
         <Text
           allowFontScaling
@@ -136,7 +137,8 @@ export function SaintStoryScreen({ date, theme, settings, onExit }: Props) {
             onPress={() => void Linking.openURL(story.fonteUrl)}
           >
             <Text allowFontScaling style={[styles.sourceText, { color: theme.accent }]}>
-              Fonte: Canção Nova ↗
+              Fonte: Canção Nova{" "}
+              <AppIcon name="externalLink" size={13} color={theme.accent} />
             </Text>
           </Pressable>
         </ScrollView>

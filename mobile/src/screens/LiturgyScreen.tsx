@@ -5,6 +5,7 @@ import { LiturgyPlayer } from "../components/LiturgyPlayer";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { ReadingSection } from "../components/ReadingSection";
 import { ReflectionSection } from "../components/ReflectionSection";
+import { AppIcon } from "../components/AppIcon";
 import { formatReadableDate } from "../services/date";
 import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
@@ -44,7 +45,7 @@ function TitleCard({
         ]}
         onPress={onOpenCalendar}
       >
-        <Text style={styles.titleCalendarIcon}>📅</Text>
+        <AppIcon name="calendar" size={16} color={theme.accent} />
       </Pressable>
     </View>
   );
@@ -268,7 +269,12 @@ export function LiturgyScreen({
           onPress={onAmen}
         >
           <Text allowFontScaling style={[styles.amenText, { color: isRead ? theme.accent : "#FFFFFF" }]}>
-            {isRead ? "✓ Amém" : "🙏 Amém"}
+            <AppIcon
+              name={isRead ? "checkmark" : "prayingHands"}
+              size={15}
+              color={isRead ? theme.accent : "#FFFFFF"}
+            />{" "}
+            Amém
           </Text>
         </Pressable>
       </View>
@@ -374,9 +380,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  titleCalendarIcon: {
-    fontSize: 16,
   },
   tabBar: {
     flexDirection: "row",

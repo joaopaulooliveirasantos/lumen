@@ -20,6 +20,7 @@ import type { VerseBookmark } from "../types/bookmark";
 import { getBookmarks, removeBookmark, updateBookmarkComment, upsertBookmarks } from "../storage/bookmarks";
 import { getBibleData } from "../services/bibleData";
 import { bibleTranslations } from "../data/bibleTranslations";
+import { AppIcon, type AppIconName } from "../components/AppIcon";
 
 type ScreenView = "livros" | "capitulos" | "versiculos" | "leitura" | "marcado";
 type Testament = "antigoTestamento" | "novoTestamento";
@@ -237,10 +238,10 @@ export function BibleScreen({ theme, settings }: Props) {
 
   // ── Tela: Livros (raiz, com tabs de testamento e marcados) ────────────────────
   if (view === "livros") {
-    const tabs: { key: TestamentTab; label: string }[] = [
+    const tabs: { key: TestamentTab; label: string; icon?: AppIconName }[] = [
       { key: "antigoTestamento", label: "Antigo" },
       { key: "novoTestamento", label: "Novo" },
-      { key: "marcados", label: "🔖 Marcados" },
+      { key: "marcados", label: "Marcados", icon: "bookmark" },
     ];
 
     return (
@@ -267,6 +268,10 @@ export function BibleScreen({ theme, settings }: Props) {
                     { color: isActive ? "#FFFFFF" : theme.mutedText, fontWeight: isActive ? "700" : "600" },
                   ]}
                 >
+                  {tab.icon ? (
+                    <AppIcon name={tab.icon} size={12} color={isActive ? "#FFFFFF" : theme.mutedText} />
+                  ) : null}
+                  {tab.icon ? "  " : ""}
                   {tab.label}
                 </Text>
               </Pressable>
@@ -317,7 +322,7 @@ export function BibleScreen({ theme, settings }: Props) {
                         numberOfLines={1}
                         style={[styles.rowComment, { color: theme.accent, fontSize: 12 * fs }]}
                       >
-                        {"\u{1F4AC} "}{item.comentario}
+                        <AppIcon name="comment" size={12} color={theme.accent} />{" "}{item.comentario}
                       </Text>
                     ) : null}
                   </View>
@@ -351,7 +356,7 @@ export function BibleScreen({ theme, settings }: Props) {
                 >
                   <View style={[styles.rowIndex, { backgroundColor: theme.accent }]}>
                     {isGospel ? (
-                      <Text style={styles.rowIndexCross}>✝</Text>
+                      <AppIcon name="cross" size={15} color="#FFFFFF" />
                     ) : (
                       <Text style={styles.rowIndexText}>{index + 1}</Text>
                     )}
@@ -498,7 +503,7 @@ export function BibleScreen({ theme, settings }: Props) {
               style={styles.actionButton}
               onPress={() => void handleCopy()}
             >
-              <Text style={styles.actionIcon}>{"\u{1F4CB}"}</Text>
+              <AppIcon name="copy" size={20} color={theme.titleText} />
               <Text allowFontScaling style={[styles.actionLabel, { color: theme.titleText }]}>Copiar</Text>
             </Pressable>
             <Pressable
@@ -507,7 +512,7 @@ export function BibleScreen({ theme, settings }: Props) {
               style={styles.actionButton}
               onPress={() => void handleShare()}
             >
-              <Text style={styles.actionIcon}>{"\u{1F4E4}"}</Text>
+              <AppIcon name="share" size={20} color={theme.titleText} />
               <Text allowFontScaling style={[styles.actionLabel, { color: theme.titleText }]}>Compartilhar</Text>
             </Pressable>
             <Pressable
@@ -516,7 +521,7 @@ export function BibleScreen({ theme, settings }: Props) {
               style={styles.actionButton}
               onPress={openMarkModal}
             >
-              <Text style={styles.actionIcon}>{"\u{1F516}"}</Text>
+              <AppIcon name="bookmark" size={20} color={theme.titleText} />
               <Text allowFontScaling style={[styles.actionLabel, { color: theme.titleText }]}>Marcar</Text>
             </Pressable>
           </View>
@@ -657,7 +662,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rowIndexText: { color: "#FFFFFF", fontWeight: "700", fontSize: 13 },
-  rowIndexCross: { color: "#FFFFFF", fontWeight: "700", fontSize: 17 },
   rowBody: { flex: 1, paddingHorizontal: 12, paddingVertical: 10 },
   rowTitleLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   rowTitle: { fontWeight: "600" },
@@ -724,7 +728,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   actionButton: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2 },
-  actionIcon: { fontSize: 20 },
   actionLabel: { fontSize: 12, fontWeight: "600" },
   modalBackdrop: {
     flex: 1,

@@ -3,6 +3,7 @@ import { Alert, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View }
 import Constants from "expo-constants";
 import { SettingsScreen } from "./SettingsScreen";
 import { useAuth } from "../state/AuthContext";
+import { AppIcon } from "../components/AppIcon";
 import type { ThemePalette } from "../types/theme";
 import type { BibleTranslationId, ReadingMode, UserSettings } from "../types/settings";
 
@@ -163,7 +164,7 @@ export function ProfileScreen({
           onPress={() => setView("configuracoes")}
         >
           <View style={[styles.menuIcon, { backgroundColor: theme.accent }]}>
-            <Text style={styles.menuIconText}>⚙️</Text>
+            <AppIcon name="settings" size={18} color="#FFFFFF" />
           </View>
           <View style={styles.menuBody}>
             <Text allowFontScaling style={[styles.menuTitle, { color: theme.titleText }]}>
@@ -301,9 +302,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
-  },
-  menuIconText: {
-    fontSize: 18,
   },
   menuBody: {
     flex: 1,

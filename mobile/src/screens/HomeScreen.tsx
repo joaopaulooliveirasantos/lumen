@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { DatePickerModal } from "../components/DatePickerModal";
+import { AppIcon } from "../components/AppIcon";
 import { formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
 import { shadeColor } from "../services/color";
 import type { DailyLiturgyPayload, SaintOfDayPayload } from "../types/liturgy";
@@ -47,11 +48,11 @@ function Hero({
         style={styles.calendarButton}
         onPress={onOpenCalendar}
       >
-        <Text style={styles.calendarIcon}>📅</Text>
+        <AppIcon name="calendar" size={16} color="#FFFFFF" />
       </Pressable>
 
       <View style={styles.heroTopRow}>
-        <Text style={styles.heroCross}>✝</Text>
+        <AppIcon name="cross" size={14} color="#F3D98B" style={styles.heroCross} />
         <Text allowFontScaling style={styles.heroTitle}>LUMEN</Text>
       </View>
 
@@ -96,11 +97,11 @@ function ReadingCalendar({
           Progresso da Liturgia
         </Text>
         <View style={calStyles.statsInline}>
-          <Text style={calStyles.statsIcon}>📖</Text>
+          <AppIcon name="book" size={11} color={theme.mutedText} />
           <Text allowFontScaling style={[calStyles.statsText, { color: theme.mutedText }]}>
             {readThisWeek}/7
           </Text>
-          <Text style={[calStyles.statsIcon, calStyles.statsIconSpaced]}>🌹</Text>
+          <AppIcon name="flower" size={11} color={theme.mutedText} style={calStyles.statsIconSpaced} />
           <Text allowFontScaling style={[calStyles.statsText, { color: theme.mutedText }]}>
             {rosaryThisWeek}/7
           </Text>
@@ -164,7 +165,7 @@ function SaintOfDayCard({
       onPress={onPress}
     >
       <View style={[saintStyles.icon, { borderColor: theme.accent }]}>
-        <Text style={saintStyles.iconText}>✦</Text>
+        <AppIcon name="star" size={18} color={theme.accent} />
       </View>
       <View style={saintStyles.body}>
         <Text allowFontScaling style={[saintStyles.label, { color: theme.mutedText }]}>
@@ -245,7 +246,7 @@ function RosaryEntryCard({ theme, onPress }: { theme: ThemePalette; onPress: () 
       onPress={onPress}
     >
       <View style={[rosaryStyles.icon, { borderColor: theme.accent }]}>
-        <Text style={rosaryStyles.iconText}>🌹</Text>
+        <AppIcon name="flower" size={20} color={theme.accent} />
       </View>
       <View style={rosaryStyles.body}>
         <Text allowFontScaling style={[rosaryStyles.title, { color: theme.titleText }]}>
@@ -398,12 +399,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.32)",
     zIndex: 1,
   },
-  calendarIcon: {
-    fontSize: 16,
-  },
   heroCross: {
-    fontSize: 15,
-    color: "#F3D98B",
     marginRight: 8,
   },
   heroTitle: {
@@ -499,9 +495,6 @@ const calStyles = StyleSheet.create({
   statsInline: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  statsIcon: {
-    fontSize: 11,
   },
   statsIconSpaced: {
     marginLeft: 8,
@@ -604,7 +597,6 @@ const rosaryStyles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
-  iconText: { fontSize: 20 },
   body: { flex: 1 },
   title: { fontSize: 15, fontWeight: "700" },
   subtitle: { marginTop: 2, fontSize: 12 },
@@ -630,7 +622,6 @@ const saintStyles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
-  iconText: { fontSize: 18 },
   body: { flex: 1 },
   label: {
     fontSize: 11,

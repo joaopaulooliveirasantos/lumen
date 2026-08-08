@@ -5,6 +5,7 @@ import { mysteryGroups, suggestedMysteryGroupFor } from "../data/rosaryMysteries
 import { buildRosarySteps } from "../services/rosary";
 import { shadeColor } from "../services/color";
 import { formatIsoDate, formatReadableDate } from "../services/date";
+import { AppIcon } from "../components/AppIcon";
 import type { MysteryGroupId, RosaryStep } from "../types/rosary";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
@@ -26,7 +27,7 @@ function RosaryHero({ theme }: { theme: ThemePalette }) {
     >
       <View style={heroStyles.ornamentRow}>
         <View style={heroStyles.ornamentLine} />
-        <Text style={heroStyles.icon}>🌹</Text>
+        <AppIcon name="flower" size={18} color="#FFFFFF" style={heroStyles.icon} />
         <View style={heroStyles.ornamentLine} />
       </View>
 
@@ -60,7 +61,7 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
           onPress={onExit}
           style={styles.closeBtn}
         >
-          <Text style={[styles.closeText, { color: theme.accent }]}>{"✕"}</Text>
+          <AppIcon name="close" size={20} color={theme.accent} />
         </Pressable>
         <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
           {title}
@@ -87,7 +88,7 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
   function handleNextStep(isLastStep: boolean) {
     if (isLastStep) {
       onFinish();
-      Alert.alert("Terço concluído!", "Que Nossa Senhora interceda por você. 🙏", [
+      Alert.alert("Terço concluído!", "Que Nossa Senhora interceda por você.", [
         { text: "OK", onPress: onExit },
       ]);
       return;
@@ -133,7 +134,7 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
                     {group.dias}
                   </Text>
                 </View>
-                {isSelected ? <Text style={[styles.checkMark, { color: theme.accent }]}>{"✓"}</Text> : null}
+                {isSelected ? <AppIcon name="checkmark" size={18} color={theme.accent} style={styles.checkMark} /> : null}
               </Pressable>
             );
           })}
@@ -242,7 +243,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   closeBtn: { width: 40, alignItems: "center" },
-  closeText: { fontSize: 20, fontWeight: "700" },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: "700", textAlign: "center" },
   listContent: { padding: 12, paddingBottom: 28 },
   sectionLabel: {

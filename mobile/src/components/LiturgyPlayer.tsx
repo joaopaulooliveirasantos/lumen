@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, Share, StyleSheet, Text, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
+import { AppIcon } from "./AppIcon";
 import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 
@@ -208,7 +209,7 @@ export function LiturgyPlayer({
           onPress={() => handleStep(-1)}
           disabled={currentIndex <= 0}
         >
-          <Text style={[styles.icon, { color: currentIndex <= 0 ? theme.border : theme.accent }]}>⏮</Text>
+          <AppIcon name="playSkipBack" size={16} color={currentIndex <= 0 ? theme.border : theme.accent} />
         </Pressable>
 
         <Pressable
@@ -217,7 +218,7 @@ export function LiturgyPlayer({
           style={[styles.playButton, { backgroundColor: theme.accent }]}
           onPress={handlePlayPause}
         >
-          <Text style={styles.playIcon}>{isPlaying ? "⏸" : "▶"}</Text>
+          <AppIcon name={isPlaying ? "pause" : "play"} size={16} color="#FFFFFF" />
         </Pressable>
 
         <Pressable
@@ -228,14 +229,11 @@ export function LiturgyPlayer({
           onPress={() => handleStep(1)}
           disabled={currentIndex >= tracks.length - 1}
         >
-          <Text
-            style={[
-              styles.icon,
-              { color: currentIndex >= tracks.length - 1 ? theme.border : theme.accent },
-            ]}
-          >
-            ⏭
-          </Text>
+          <AppIcon
+            name="playSkipForward"
+            size={16}
+            color={currentIndex >= tracks.length - 1 ? theme.border : theme.accent}
+          />
         </Pressable>
 
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
@@ -275,7 +273,7 @@ export function LiturgyPlayer({
           style={styles.actionButton}
           onPress={() => void handleCopy()}
         >
-          <Text style={[styles.actionIcon, { color: theme.accent }]}>📋</Text>
+          <AppIcon name="copy" size={16} color={theme.accent} />
         </Pressable>
 
         <Pressable
@@ -285,7 +283,7 @@ export function LiturgyPlayer({
           style={styles.actionButton}
           onPress={() => void handleShare()}
         >
-          <Text style={[styles.actionIcon, { color: theme.accent }]}>🔗</Text>
+          <AppIcon name="share" size={16} color={theme.accent} />
         </Pressable>
       </View>
     </View>
@@ -314,19 +312,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  icon: {
-    fontSize: 16,
-  },
   playButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-  },
-  playIcon: {
-    color: "#FFFFFF",
-    fontSize: 16,
   },
   divider: {
     width: 1,
@@ -352,8 +343,5 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: "center",
     justifyContent: "center",
-  },
-  actionIcon: {
-    fontSize: 16,
   },
 });
