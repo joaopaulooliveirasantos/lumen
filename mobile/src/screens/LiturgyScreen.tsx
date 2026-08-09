@@ -6,7 +6,7 @@ import { LoadingScreen } from "../components/LoadingScreen";
 import { ReadingSection } from "../components/ReadingSection";
 import { ReflectionSection } from "../components/ReflectionSection";
 import { AppIcon } from "../components/AppIcon";
-import { formatReadableDate } from "../services/date";
+import { formatReadableDate, getDateParts } from "../services/date";
 import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
@@ -25,16 +25,39 @@ type Props = {
 
 function TitleCard({
   theme,
+  selectedDate,
   onOpenCalendar,
 }: {
   theme: ThemePalette;
+  selectedDate: string;
   onOpenCalendar: () => void;
 }) {
+  const { day, monthAbbr, year } = getDateParts(selectedDate);
+
   return (
     <View style={[styles.titleCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-      <Text allowFontScaling style={[styles.titleCardText, { color: theme.titleText }]}>
+      <View style={styles.titleCardDateBlock}>
+        <Text allowFontScaling style={[styles.titleCardDay, { color: theme.titleText }]}>
+          {day}
+        </Text>
+        <View style={styles.titleCardMonthYear}>
+          <Text allowFontScaling style={[styles.titleCardMonth, { color: theme.accent }]}>
+            {monthAbbr}
+          </Text>
+          <Text allowFontScaling style={[styles.titleCardYear, { color: theme.mutedText }]}>
+            {year}
+          </Text>
+        </View>
+      </View>
+
+      <Text
+        allowFontScaling
+        numberOfLines={1}
+        style={[styles.titleCardText, { color: theme.titleText }]}
+      >
         Liturgia Diária
       </Text>
+
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Escolher outra data"
@@ -118,7 +141,7 @@ export function LiturgyScreen({
     return (
       <View style={[styles.screen, { backgroundColor: theme.appBackground }]}>
         <View style={styles.headerArea}>
-          <TitleCard theme={theme} onOpenCalendar={() => setCalendarOpen(true)} />
+          <TitleCard theme={theme} selectedDate={selectedDate} onOpenCalendar={() => setCalendarOpen(true)} />
         </View>
         <View style={styles.emptyBox}>
           <Text allowFontScaling style={[styles.emptyText, { color: theme.titleText }]}>
@@ -152,7 +175,7 @@ export function LiturgyScreen({
   return (
     <View style={[styles.screen, { backgroundColor: theme.appBackground }]}>
       <View style={styles.headerArea}>
-        <TitleCard theme={theme} onOpenCalendar={() => setCalendarOpen(true)} />
+        <TitleCard theme={theme} selectedDate={selectedDate} onOpenCalendar={() => setCalendarOpen(true)} />
 
         <ReadingTabBar tabs={tabs} active={currentTab} onSelect={setActiveReadingTab} theme={theme} />
 
@@ -370,8 +393,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   titleCardText: {
+    flex: 1,
     fontSize: 17,
     fontWeight: "800",
+    textAlign: "center",
+  },
+  titleCardDateBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  titleCardDay: {
+    fontSize: 22,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
+  titleCardMonthYear: {
+    flexDirection: "column",
+    justifyContent: "center",
+  },
+  titleCardMonth: {
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    lineHeight: 12,
+  },
+  titleCardYear: {
+    fontSize: 10,
+    fontWeight: "600",
+    lineHeight: 12,
   },
   titleCalendarButton: {
     width: 34,

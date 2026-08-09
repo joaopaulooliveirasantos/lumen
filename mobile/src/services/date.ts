@@ -51,3 +51,10 @@ export const MONTH_NAMES_PT = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
+
+export const MONTH_ABBR_PT = MONTH_NAMES_PT.map((name) => name.slice(0, 3));
+
+export function getDateParts(isoDate: string): { day: string; monthAbbr: string; year: string } {
+  const [year, month, day] = isoDate.split("-");
+  return { day, monthAbbr: MONTH_ABBR_PT[Number(month) - 1], year };
+}

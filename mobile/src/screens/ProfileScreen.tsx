@@ -18,7 +18,6 @@ type ProfileView = "perfil" | "configuracoes";
 type Props = {
   theme: ThemePalette;
   settings: UserSettings;
-  onUpdateFontScale: (delta: number) => void;
   onUpdateReadingMode: (mode: ReadingMode) => void;
   onUpdateBibleTranslation: (translation: BibleTranslationId) => void;
   onReminderTimeChange: (value: string) => void;
@@ -30,7 +29,6 @@ type Props = {
 export function ProfileScreen({
   theme,
   settings,
-  onUpdateFontScale,
   onUpdateReadingMode,
   onUpdateBibleTranslation,
   onReminderTimeChange,
@@ -58,25 +56,26 @@ export function ProfileScreen({
   if (view === "configuracoes") {
     return (
       <View style={[styles.subScreen, { backgroundColor: theme.appBackground }]}>
-        <View style={[styles.subHeader, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Voltar para o perfil"
-            onPress={() => setView("perfil")}
-            style={styles.backBtn}
-          >
-            <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
-          </Pressable>
-          <Text allowFontScaling style={[styles.subHeaderTitle, { color: theme.titleText }]} numberOfLines={1}>
-            Configurações
-          </Text>
-          <View style={styles.backBtn} />
+        <View style={styles.headerArea}>
+          <View style={[styles.subHeader, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para o perfil"
+              onPress={() => setView("perfil")}
+              style={styles.backBtn}
+            >
+              <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
+            </Pressable>
+            <Text allowFontScaling style={[styles.subHeaderTitle, { color: theme.titleText }]} numberOfLines={1}>
+              Configurações
+            </Text>
+            <View style={styles.backBtn} />
+          </View>
         </View>
 
         <SettingsScreen
           settings={settings}
           theme={theme}
-          onUpdateFontScale={onUpdateFontScale}
           onUpdateReadingMode={onUpdateReadingMode}
           onUpdateBibleTranslation={onUpdateBibleTranslation}
           onReminderTimeChange={onReminderTimeChange}
@@ -89,14 +88,16 @@ export function ProfileScreen({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
-      <View style={[styles.header, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <View style={styles.backBtn}>
-          <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
+      <View style={styles.headerArea}>
+        <View style={[styles.header, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          <View style={styles.backBtn}>
+            <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
+          </View>
+          <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
+            Perfil
+          </Text>
+          <View style={styles.backBtn} />
         </View>
-        <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
-          Perfil
-        </Text>
-        <View style={styles.backBtn} />
       </View>
 
       <ScrollView
@@ -203,12 +204,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerArea: {
+    paddingHorizontal: 14,
+    paddingTop: 14,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 14,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 16,
   },
   headerLogo: {
     width: 30,
@@ -339,9 +346,11 @@ const styles = StyleSheet.create({
   subHeader: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 14,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 16,
   },
   backBtn: {
     width: 40,

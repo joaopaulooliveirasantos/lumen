@@ -286,7 +286,6 @@ export default function App() {
           <ProfileScreen
             theme={theme}
             settings={settings}
-            onUpdateFontScale={updateFontScale}
             onUpdateReadingMode={updateReadingMode}
             onUpdateBibleTranslation={updateBibleTranslation}
             onReminderTimeChange={(value) =>

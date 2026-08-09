@@ -16,7 +16,6 @@ import type { BibleTranslationId, ReadingMode, UserSettings } from "../types/set
 type Props = {
   settings: UserSettings;
   theme: ThemePalette;
-  onUpdateFontScale: (delta: number) => void;
   onUpdateReadingMode: (mode: ReadingMode) => void;
   onUpdateBibleTranslation: (translation: BibleTranslationId) => void;
   onReminderTimeChange: (value: string) => void;
@@ -33,7 +32,6 @@ const modeLabel: Record<ReadingMode, string> = {
 export function SettingsScreen({
   settings,
   theme,
-  onUpdateFontScale,
   onUpdateReadingMode,
   onUpdateBibleTranslation,
   onReminderTimeChange,
@@ -81,41 +79,6 @@ export function SettingsScreen({
             );
           })}
         </View>
-      </View>
-
-      {/* Tamanho da fonte */}
-      <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        <Text allowFontScaling style={[styles.sectionTitle, { color: theme.titleText }]}>
-          Tamanho da fonte
-        </Text>
-        <View style={styles.fontRow}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Diminuir tamanho da fonte"
-            style={[styles.fontButton, { borderColor: theme.accent }]}
-            onPress={() => onUpdateFontScale(-0.1)}
-          >
-            <Text allowFontScaling style={[styles.fontButtonText, { color: theme.accent }]}>
-              A-
-            </Text>
-          </Pressable>
-          <Text allowFontScaling style={[styles.fontValue, { color: theme.mutedText }]}>
-            {(settings.fontScale * 100).toFixed(0)}%
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Aumentar tamanho da fonte"
-            style={[styles.fontButton, { borderColor: theme.accent }]}
-            onPress={() => onUpdateFontScale(0.1)}
-          >
-            <Text allowFontScaling style={[styles.fontButtonText, { color: theme.accent }]}>
-              A+
-            </Text>
-          </Pressable>
-        </View>
-        <Text allowFontScaling style={[styles.fontPreview, { color: theme.bodyText, fontSize: 15 * settings.fontScale }]}>
-          Exemplo de texto com a fonte atual.
-        </Text>
       </View>
 
       {/* Bíblia */}
@@ -240,33 +203,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 6,
     paddingHorizontal: 14,
-  },
-  fontRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  fontButton: {
-    borderRadius: 8,
-    borderWidth: 1,
-    minHeight: 38,
-    minWidth: 48,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 12,
-  },
-  fontButtonText: {
-    fontWeight: "700",
-    fontSize: 15,
-  },
-  fontValue: {
-    minWidth: 52,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  fontPreview: {
-    marginTop: 14,
-    lineHeight: 22,
   },
   bibleList: {
     gap: 8,

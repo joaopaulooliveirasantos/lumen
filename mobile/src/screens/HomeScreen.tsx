@@ -10,30 +10,26 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { DatePickerModal } from "../components/DatePickerModal";
 import { AppIcon } from "../components/AppIcon";
-import { formatIsoDate, formatReadableDate, getWeekDays } from "../services/date";
+import { formatIsoDate, getDateParts, getWeekDays } from "../services/date";
 import { shadeColor } from "../services/color";
 import type { DailyLiturgyPayload, SaintOfDayPayload } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 
 const DAY_LABELS_SHORT = ["D", "S", "T", "Q", "Q", "S", "S"];
 
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
 function Hero({
   accent,
-  liturgicColor,
   selectedDate,
   offlineSource,
   onOpenCalendar,
 }: {
   accent: string;
-  liturgicColor: string | undefined;
   selectedDate: string;
   offlineSource: boolean;
   onOpenCalendar: () => void;
 }) {
+  const { day, monthAbbr, year } = getDateParts(selectedDate);
+
   return (
     <LinearGradient
       colors={[shadeColor(accent, 14), accent, shadeColor(accent, -18)]}
@@ -56,15 +52,12 @@ function Hero({
         <Text allowFontScaling style={styles.heroTitle}>LUMEN</Text>
       </View>
 
-      <View style={styles.heroInfoRow}>
-        <Text allowFontScaling style={styles.heroDate}>{capitalize(formatReadableDate(selectedDate))}</Text>
-
-        {liturgicColor ? (
-          <View style={styles.heroBadge}>
-            <View style={styles.heroBadgeDot} />
-            <Text allowFontScaling style={styles.heroBadgeText}>{liturgicColor}</Text>
-          </View>
-        ) : null}
+      <View style={styles.heroDateBlock}>
+        <Text allowFontScaling style={styles.heroDateDay}>{day}</Text>
+        <View style={styles.heroDateMonthYear}>
+          <Text allowFontScaling style={styles.heroDateMonth}>{monthAbbr}</Text>
+          <Text allowFontScaling style={styles.heroDateYear}>{year}</Text>
+        </View>
       </View>
 
       {offlineSource ? (
@@ -201,39 +194,39 @@ function TodayLiturgySummary({
       : payload.evangelho.texto;
 
   return (
-    <View style={[summaryStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-      <Text allowFontScaling style={[summaryStyles.label, { color: theme.mutedText }]}>
-        Liturgia de Hoje
-      </Text>
-      <Text
-        allowFontScaling
-        numberOfLines={2}
-        style={[summaryStyles.title, { color: theme.titleText }]}
-      >
-        {payload.liturgia}
-      </Text>
-      <Text allowFontScaling style={[summaryStyles.gospelRef, { color: theme.accent }]}>
-        Evangelho: {payload.evangelho.referencia}
-      </Text>
-      <Text
-        allowFontScaling
-        numberOfLines={3}
-        style={[summaryStyles.excerpt, { color: theme.bodyText }]}
-      >
-        {excerpt}
-      </Text>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Continuar lendo a liturgia de hoje"
-        style={summaryStyles.linkRow}
-        onPress={onContinueReading}
-      >
-        <Text allowFontScaling style={[summaryStyles.linkText, { color: theme.accent }]}>
-          Continuar lendo
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Ver a liturgia de hoje"
+      style={[summaryStyles.container, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+      onPress={onContinueReading}
+    >
+      <View style={[summaryStyles.icon, { borderColor: theme.accent }]}>
+        <AppIcon name="book" size={18} color={theme.accent} />
+      </View>
+      <View style={summaryStyles.body}>
+        <Text allowFontScaling style={[summaryStyles.label, { color: theme.mutedText }]}>
+          Liturgia de Hoje
         </Text>
-        <Text style={[summaryStyles.linkArrow, { color: theme.accent }]}>{"→"}</Text>
-      </Pressable>
-    </View>
+        <Text
+          allowFontScaling
+          numberOfLines={2}
+          style={[summaryStyles.title, { color: theme.titleText }]}
+        >
+          {payload.liturgia}
+        </Text>
+        <Text allowFontScaling style={[summaryStyles.gospelRef, { color: theme.accent }]}>
+          Evangelho: {payload.evangelho.referencia}
+        </Text>
+        <Text
+          allowFontScaling
+          numberOfLines={3}
+          style={[summaryStyles.excerpt, { color: theme.bodyText }]}
+        >
+          {excerpt}
+        </Text>
+      </View>
+      <Text style={[summaryStyles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+    </Pressable>
   );
 }
 
@@ -305,7 +298,6 @@ export function HomeScreen({
     >
       <Hero
         accent={theme.accent}
-        liturgicColor={payload?.cor}
         selectedDate={selectedDate}
         offlineSource={offlineSource}
         onOpenCalendar={() => setCalendarOpen(true)}
@@ -369,8 +361,8 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 14, paddingTop: 14 },
   hero: {
     alignItems: "center",
-    paddingTop: 14,
-    paddingBottom: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
@@ -381,6 +373,11 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   heroTopRow: {
+    position: "absolute",
+    top: 10,
+    left: 0,
+    right: 0,
+    height: 30,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -408,40 +405,35 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     letterSpacing: 4,
   },
-  heroInfoRow: {
+  heroDateBlock: {
+    alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
+    gap: 6,
+  },
+  heroDateDay: {
+    fontSize: 30,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    lineHeight: 30,
+  },
+  heroDateMonthYear: {
+    flexDirection: "column",
     justifyContent: "center",
-    gap: 10,
-    marginTop: 8,
   },
-  heroDate: {
+  heroDateMonth: {
     fontSize: 12,
-    fontWeight: "600",
-    color: "rgba(255,255,255,0.92)",
-    textAlign: "center",
+    fontWeight: "700",
+    color: "#FFFFFF",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    lineHeight: 14,
   },
-  heroBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.16)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.32)",
-  },
-  heroBadgeDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: "#FFFFFF",
-    marginRight: 6,
-  },
-  heroBadgeText: {
+  heroDateYear: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: "rgba(255,255,255,0.8)",
+    lineHeight: 14,
   },
   heroOffline: {
     marginTop: 8,
@@ -534,11 +526,23 @@ const calStyles = StyleSheet.create({
 
 const summaryStyles = StyleSheet.create({
   container: {
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 14,
     borderWidth: 1,
     padding: 14,
     marginBottom: 14,
   },
+  icon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  body: { flex: 1 },
   label: {
     fontSize: 11,
     fontWeight: "700",
@@ -560,22 +564,7 @@ const summaryStyles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 20,
   },
-  linkRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    marginTop: 12,
-    minHeight: 32,
-  },
-  linkText: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  linkArrow: {
-    marginLeft: 6,
-    fontSize: 14,
-    fontWeight: "700",
-  },
+  chevron: { fontSize: 20, paddingHorizontal: 4 },
 });
 
 const rosaryStyles = StyleSheet.create({

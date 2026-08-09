@@ -23,7 +23,8 @@ export type AppIconName =
   | "settings"
   | "calendar"
   | "star"
-  | "flower";
+  | "flower"
+  | "voice";
 
 type IconSpec =
   | { family: "ionicons"; glyph: React.ComponentProps<typeof Ionicons>["name"] }
@@ -53,6 +54,7 @@ const ICONS: Record<AppIconName, IconSpec> = {
   calendar: { family: "ionicons", glyph: "calendar-outline" },
   star: { family: "ionicons", glyph: "star" },
   flower: { family: "ionicons", glyph: "flower" },
+  voice: { family: "ionicons", glyph: "mic-outline" },
 };
 
 type Props = {

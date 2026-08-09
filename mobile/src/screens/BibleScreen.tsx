@@ -213,25 +213,27 @@ export function BibleScreen({ theme, settings }: Props) {
     };
 
     return (
-      <View style={[styles.header, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        {view !== "livros" ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Voltar"
-            onPress={goBack}
-            style={styles.backBtn}
-          >
-            <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.backBtn}>
-            <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
-          </View>
-        )}
-        <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
-          {titles[view]}
-        </Text>
-        <View style={styles.backBtn} />
+      <View style={styles.headerArea}>
+        <View style={[styles.header, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          {view !== "livros" ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar"
+              onPress={goBack}
+              style={styles.backBtn}
+            >
+              <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.backBtn}>
+              <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
+            </View>
+          )}
+          <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
+            {titles[view]}
+          </Text>
+          <View style={styles.backBtn} />
+        </View>
       </View>
     );
   }
@@ -633,12 +635,18 @@ export function BibleScreen({ theme, settings }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  headerArea: {
+    paddingHorizontal: 14,
+    paddingTop: 14,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 14,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 16,
   },
   backBtn: { width: 40, alignItems: "center" },
   backText: { fontSize: 28, fontWeight: "700", lineHeight: 32 },
