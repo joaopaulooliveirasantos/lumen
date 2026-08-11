@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import type { BibleBook, BibleChapter } from "../types/bible";
+import type { BibleBook, BibleChapter, BibleLocation } from "../types/bible";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
 import type { VerseBookmark } from "../types/bookmark";
@@ -31,13 +31,15 @@ const GOSPEL_BOOKS = ["São Mateus", "São Marcos", "São Lucas", "São João"];
 type Props = {
   theme: ThemePalette;
   settings: UserSettings;
+  initialSelection?: BibleLocation | null;
+  onInitialSelectionHandled?: () => void;
 };
 
 function bookmarkId(testament: Testament, livro: string, capitulo: number, versiculo: number): string {
   return `${testament}:${livro}:${capitulo}:${versiculo}`;
 }
 
-export function BibleScreen({ theme, settings }: Props) {
+export function BibleScreen({ theme, settings, initialSelection, onInitialSelectionHandled }: Props) {
   const [view, setView] = useState<ScreenView>("livros");
   const [activeTab, setActiveTab] = useState<TestamentTab>("antigoTestamento");
   const [book, setBook] = useState<BibleBook | null>(null);
@@ -60,6 +62,24 @@ export function BibleScreen({ theme, settings }: Props) {
   const testament: Testament = activeTab === "novoTestamento" ? "novoTestamento" : "antigoTestamento";
   const bibleData = getBibleData(settings.bibleTranslation);
   const books = bibleData[testament];
+
+  useEffect(() => {
+    if (!initialSelection) return;
+    const foundInOld = bibleData.antigoTestamento.find((b) => b.nome === initialSelection.livro);
+    const foundInNew = bibleData.novoTestamento.find((b) => b.nome === initialSelection.livro);
+    const foundBook = foundInOld ?? foundInNew;
+    const foundChapter = foundBook?.capitulos.find((c) => c.capitulo === initialSelection.capitulo);
+    if (foundBook && foundChapter) {
+      setActiveTab(foundInOld ? "antigoTestamento" : "novoTestamento");
+      setBook(foundBook);
+      setChapter(foundChapter);
+      setSelectedVerses(new Set());
+      setStartVerse(initialSelection.versiculoInicio ?? foundChapter.versiculos[0]?.versiculo ?? 1);
+      setView("leitura");
+    }
+    onInitialSelectionHandled?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSelection, bibleData]);
 
   function selectBook(b: BibleBook) {
     setBook(b);

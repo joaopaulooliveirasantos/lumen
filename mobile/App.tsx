@@ -23,6 +23,7 @@ import { getAllReadingPlanProgress, markReadingPlanDayCompleted } from "./src/st
 import type { ReadingPlanProgress } from "./src/storage/readingPlanProgress";
 import { getRosaryDays, markRosaryAsPrayed } from "./src/storage/rosaryHistory";
 import { loadUserSettings, saveUserSettings } from "./src/storage/userSettings";
+import type { BibleLocation } from "./src/types/bible";
 import type { DailyLiturgyPayload, SaintOfDayPayload } from "./src/types/liturgy";
 import type { ThemePalette } from "./src/types/theme";
 import {
@@ -112,6 +113,7 @@ export default function App() {
   const [rosaryOpen, setRosaryOpen] = useState(false);
   const [readingPlansOpen, setReadingPlansOpen] = useState(false);
   const [readingPlansInitialPlanId, setReadingPlansInitialPlanId] = useState<string | null>(null);
+  const [bibleDeepLink, setBibleDeepLink] = useState<BibleLocation | null>(null);
   const [saintStoryOpen, setSaintStoryOpen] = useState(false);
   const [authScreenOpen, setAuthScreenOpen] = useState(false);
 
@@ -250,6 +252,12 @@ export default function App() {
     setReadingPlanProgress(updated);
   }
 
+  function handleOpenBibleReference(location: BibleLocation): void {
+    setBibleDeepLink(location);
+    setReadingPlansOpen(false);
+    setActiveTab("biblia");
+  }
+
   function renderScreen() {
     switch (activeTab) {
       case "home":
@@ -295,7 +303,14 @@ export default function App() {
           />
         );
       case "biblia":
-        return <BibleScreen theme={theme} settings={settings} />;
+        return (
+          <BibleScreen
+            theme={theme}
+            settings={settings}
+            initialSelection={bibleDeepLink}
+            onInitialSelectionHandled={() => setBibleDeepLink(null)}
+          />
+        );
       case "oracoes":
         return <PrayersScreen theme={theme} settings={settings} />;
       case "perfil":
@@ -347,6 +362,7 @@ export default function App() {
                 onDayCompleted={(planoId, dia, duracaoDias) =>
                   void handleReadingPlanDayCompleted(planoId, dia, duracaoDias)
                 }
+                onOpenBibleReference={handleOpenBibleReference}
                 onExit={() => setReadingPlansOpen(false)}
               />
             ) : saintStoryOpen ? (

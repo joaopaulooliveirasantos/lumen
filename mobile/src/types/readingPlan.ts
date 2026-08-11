@@ -1,3 +1,5 @@
+import type { ImageSourcePropType } from "react-native";
+
 export interface BibleReference {
   livro: string;
   capituloInicio: number;
@@ -29,7 +31,7 @@ export type ReadingPlanCategory =
   | "familia";
 
 export interface ReadingPlanCover {
-  icone: string;
+  imagem: ImageSourcePropType;
   corBase: string;
 }
 

@@ -8,7 +8,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "liturgico",
     duracaoDias: 8,
     destaque: true,
-    capa: { icone: "🕯️", corBase: "#5B3A8E" },
+    capa: { imagem: require("../../assets/reading-plans/advento.png"), corBase: "#5B3A8E" },
     dias: [
       {
         dia: 1,
@@ -67,7 +67,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "liturgico",
     duracaoDias: 15,
     destaque: true,
-    capa: { icone: "✝️", corBase: "#6A1B9A" },
+    capa: { imagem: require("../../assets/reading-plans/quaresma.png"), corBase: "#6A1B9A" },
     dias: [
       {
         dia: 1,
@@ -171,7 +171,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "evangelho",
     duracaoDias: 12,
     destaque: true,
-    capa: { icone: "📖", corBase: "#1E5C35" },
+    capa: { imagem: require("../../assets/reading-plans/evangelho-lucas.png"), corBase: "#1E5C35" },
     dias: [
       {
         dia: 1,
@@ -260,7 +260,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "tematico",
     duracaoDias: 7,
     destaque: true,
-    capa: { icone: "💗", corBase: "#AD1457" },
+    capa: { imagem: require("../../assets/reading-plans/misericordia.png"), corBase: "#AD1457" },
     dias: [
       {
         dia: 1,
@@ -313,7 +313,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "tematico",
     duracaoDias: 10,
     destaque: true,
-    capa: { icone: "🕊️", corBase: "#2E7D32" },
+    capa: { imagem: require("../../assets/reading-plans/salmos-consolo.png"), corBase: "#2E7D32" },
     dias: [
       {
         dia: 1,
@@ -384,7 +384,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "sapiencial",
     duracaoDias: 12,
     destaque: false,
-    capa: { icone: "📜", corBase: "#D97706" },
+    capa: { imagem: require("../../assets/reading-plans/proverbios-sabedoria.png"), corBase: "#D97706" },
     dias: [
       {
         dia: 1,
@@ -467,7 +467,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "catequetico",
     duracaoDias: 12,
     destaque: false,
-    capa: { icone: "✉️", corBase: "#1E5C35" },
+    capa: { imagem: require("../../assets/reading-plans/cartas-paulo.png"), corBase: "#1E5C35" },
     dias: [
       {
         dia: 1,
@@ -553,7 +553,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "mariano",
     duracaoDias: 10,
     destaque: false,
-    capa: { icone: "🌷", corBase: "#2563EB" },
+    capa: { imagem: require("../../assets/reading-plans/maria.png"), corBase: "#2563EB" },
     dias: [
       {
         dia: 1,
@@ -624,7 +624,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "familia",
     duracaoDias: 8,
     destaque: false,
-    capa: { icone: "🏡", corBase: "#B45309" },
+    capa: { imagem: require("../../assets/reading-plans/familia.png"), corBase: "#B45309" },
     dias: [
       {
         dia: 1,
@@ -683,7 +683,7 @@ export const readingPlans: ReadingPlan[] = [
     categoria: "catequetico",
     duracaoDias: 12,
     destaque: false,
-    capa: { icone: "🌍", corBase: "#166534" },
+    capa: { imagem: require("../../assets/reading-plans/genesis-origens.png"), corBase: "#166534" },
     dias: [
       {
         dia: 1,

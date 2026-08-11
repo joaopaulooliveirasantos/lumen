@@ -1,12 +1,28 @@
 import { useState } from "react";
-import { Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { readingPlans } from "../data/readingPlans";
 import { ReadingPlanCard } from "../components/ReadingPlanCard";
-import { getPlanStatus, resolveReadingPlanDay } from "../services/readingPlans";
+import { getPlanStatus } from "../services/readingPlans";
 import type { ReadingPlanProgress } from "../storage/readingPlanProgress";
-import type { ReadingPlan } from "../types/readingPlan";
+import type { BibleLocation } from "../types/bible";
+import type { BibleReference, ReadingPlan } from "../types/readingPlan";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
+
+function formatReference(ref: BibleReference): string {
+  const capituloFim = ref.capituloFim ?? ref.capituloInicio;
+  if (capituloFim !== ref.capituloInicio) {
+    const inicio =
+      ref.versiculoInicio !== undefined ? `${ref.capituloInicio},${ref.versiculoInicio}` : `${ref.capituloInicio}`;
+    const fim = ref.versiculoFim !== undefined ? `${capituloFim},${ref.versiculoFim}` : `${capituloFim}`;
+    return `${ref.livro} ${inicio}–${fim}`;
+  }
+  if (ref.versiculoInicio === undefined) return `${ref.livro} ${ref.capituloInicio}`;
+  if (ref.versiculoFim === undefined || ref.versiculoFim === ref.versiculoInicio) {
+    return `${ref.livro} ${ref.capituloInicio},${ref.versiculoInicio}`;
+  }
+  return `${ref.livro} ${ref.capituloInicio},${ref.versiculoInicio}-${ref.versiculoFim}`;
+}
 
 type ReadingPlansView = "destaques" | "todos" | "detalhe" | "leitura";
 
@@ -26,10 +42,19 @@ type Props = {
   progress: Record<string, ReadingPlanProgress>;
   initialPlanId?: string | null;
   onDayCompleted: (planoId: string, dia: number, duracaoDias: number) => void;
+  onOpenBibleReference: (location: BibleLocation) => void;
   onExit: () => void;
 };
 
-export function ReadingPlansScreen({ theme, settings, progress, initialPlanId, onDayCompleted, onExit }: Props) {
+export function ReadingPlansScreen({
+  theme,
+  settings,
+  progress,
+  initialPlanId,
+  onDayCompleted,
+  onOpenBibleReference,
+  onExit,
+}: Props) {
   const initialPlan = initialPlanId ? readingPlans.find((p) => p.id === initialPlanId) ?? null : null;
   const [view, setView] = useState<ReadingPlansView>(initialPlan ? "detalhe" : "destaques");
   const [activePlan, setActivePlan] = useState<ReadingPlan | null>(initialPlan);
@@ -166,7 +191,7 @@ export function ReadingPlansScreen({ theme, settings, progress, initialPlanId, o
       <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
         <Header title={plan.titulo} onBack={handleBack} />
         <ScrollView contentContainerStyle={styles.detalheContent}>
-          <Text style={styles.detalheIcon}>{plan.capa.icone}</Text>
+          <Image source={plan.capa.imagem} style={styles.detalheImagem} resizeMode="cover" />
           <Text allowFontScaling style={[styles.detalheTitulo, { color: theme.titleText, fontSize: 20 * fs }]}>
             {plan.titulo}
           </Text>
@@ -229,7 +254,6 @@ export function ReadingPlansScreen({ theme, settings, progress, initialPlanId, o
     const day = plan.dias.find((d) => d.dia === activeDayNum);
     if (!day) return null;
 
-    const passages = resolveReadingPlanDay(day, settings.bibleTranslation);
     const isDone = (progress[plan.id]?.diasConcluidos ?? []).includes(day.dia);
     const isLastDay = day.dia >= plan.duracaoDias;
     const hasNextDay = plan.dias.some((d) => d.dia === day.dia + 1);
@@ -254,18 +278,28 @@ export function ReadingPlansScreen({ theme, settings, progress, initialPlanId, o
             {day.titulo}
           </Text>
 
-          {passages.map((passage) => (
-            <View key={`${passage.livro}-${passage.capitulo}`} style={styles.passageBlock}>
-              <Text allowFontScaling style={[styles.passageRef, { color: theme.accent, fontSize: 13 * fs }]}>
-                {passage.livro} {passage.capitulo}
+          {day.referencias.map((ref, index) => (
+            <Pressable
+              key={`${ref.livro}-${ref.capituloInicio}-${index}`}
+              accessibilityRole="button"
+              accessibilityLabel={`Ler ${formatReference(ref)} na Bíblia`}
+              style={[styles.refCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+              onPress={() =>
+                onOpenBibleReference({
+                  livro: ref.livro,
+                  capitulo: ref.capituloInicio,
+                  versiculoInicio: ref.versiculoInicio,
+                })
+              }
+            >
+              <View style={[styles.refIcon, { backgroundColor: `${theme.accent}1F` }]}>
+                <Text style={styles.refIconText}>📖</Text>
+              </View>
+              <Text allowFontScaling style={[styles.refText, { color: theme.titleText, fontSize: 15 * fs }]}>
+                {formatReference(ref)}
               </Text>
-              <Text
-                allowFontScaling
-                style={[styles.passageText, { color: theme.bodyText, fontSize: 16 * fs, lineHeight: 26 * fs }]}
-              >
-                {passage.versiculos.map((v) => `${v.versiculo}. ${v.texto}`).join(" ")}
-              </Text>
-            </View>
+              <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+            </Pressable>
           ))}
 
           {day.catecismo ? (
@@ -376,7 +410,7 @@ const styles = StyleSheet.create({
   verTodosText: { fontWeight: "700", fontSize: 14 },
   listaContent: { padding: 14, paddingBottom: 28 },
   detalheContent: { padding: 18, paddingBottom: 28, alignItems: "center" },
-  detalheIcon: { fontSize: 42, marginBottom: 8 },
+  detalheImagem: { width: 128, height: 128, borderRadius: 24, marginBottom: 12 },
   detalheTitulo: { fontWeight: "800", textAlign: "center" },
   detalheSubtitulo: { textAlign: "center", marginTop: 4 },
   detalheDuracao: { fontWeight: "700", marginTop: 8, marginBottom: 18 },
@@ -411,9 +445,18 @@ const styles = StyleSheet.create({
   secondaryButtonText: { fontWeight: "700", fontSize: 15 },
   leituraContent: { padding: 16, paddingBottom: 28 },
   leituraTitulo: { fontWeight: "800", marginBottom: 14 },
-  passageBlock: { marginBottom: 18 },
-  passageRef: { fontWeight: "700", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.3 },
-  passageText: {},
+  refCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 10,
+    minHeight: 56,
+  },
+  refIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginRight: 12 },
+  refIconText: { fontSize: 17 },
+  refText: { flex: 1, fontWeight: "700" },
   cicCard: { borderRadius: 14, borderWidth: 1, padding: 16, marginTop: 6 },
   cicLabel: { fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 6 },
   cicTema: { fontWeight: "700", marginBottom: 8 },

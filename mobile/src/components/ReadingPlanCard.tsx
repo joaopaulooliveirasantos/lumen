@@ -1,6 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { shadeColor } from "../services/color";
 import type { PlanStatusInfo } from "../services/readingPlans";
 import type { ReadingPlan } from "../types/readingPlan";
 import type { ThemePalette } from "../types/theme";
@@ -26,12 +25,6 @@ function ProgressBadge({ statusInfo, duracaoDias }: { statusInfo: PlanStatusInfo
 }
 
 export function ReadingPlanCard({ plan, theme, size, statusInfo, onPress }: Props) {
-  const gradient: [string, string, string] = [
-    shadeColor(plan.capa.corBase, 16),
-    plan.capa.corBase,
-    shadeColor(plan.capa.corBase, -20),
-  ];
-
   if (size === "carrossel") {
     return (
       <Pressable
@@ -40,9 +33,16 @@ export function ReadingPlanCard({ plan, theme, size, statusInfo, onPress }: Prop
         style={styles.carrosselWrap}
         onPress={onPress}
       >
-        <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.carrosselCard}>
+        <ImageBackground
+          source={plan.capa.imagem}
+          style={styles.carrosselCard}
+          imageStyle={styles.carrosselImage}
+        >
+          <LinearGradient
+            colors={["transparent", "rgba(20,16,24,0.05)", "rgba(15,12,18,0.62)"]}
+            style={StyleSheet.absoluteFillObject}
+          />
           {statusInfo ? <ProgressBadge statusInfo={statusInfo} duracaoDias={plan.duracaoDias} /> : null}
-          <Text style={styles.carrosselIcon}>{plan.capa.icone}</Text>
           <View style={styles.carrosselBody}>
             <Text allowFontScaling numberOfLines={2} style={styles.carrosselTitle}>
               {plan.titulo}
@@ -51,7 +51,7 @@ export function ReadingPlanCard({ plan, theme, size, statusInfo, onPress }: Prop
               {plan.duracaoDias} dias
             </Text>
           </View>
-        </LinearGradient>
+        </ImageBackground>
       </Pressable>
     );
   }
@@ -63,9 +63,7 @@ export function ReadingPlanCard({ plan, theme, size, statusInfo, onPress }: Prop
       style={[styles.listaRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
       onPress={onPress}
     >
-      <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.listaIcon}>
-        <Text style={styles.listaIconText}>{plan.capa.icone}</Text>
-      </LinearGradient>
+      <Image source={plan.capa.imagem} style={styles.listaIcon} resizeMode="cover" />
       <View style={styles.listaBody}>
         <Text allowFontScaling numberOfLines={1} style={[styles.listaTitle, { color: theme.titleText }]}>
           {plan.titulo}
@@ -95,13 +93,14 @@ const styles = StyleSheet.create({
     minHeight: 140,
     padding: 14,
     justifyContent: "space-between",
+    overflow: "hidden",
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
-  carrosselIcon: { fontSize: 30 },
+  carrosselImage: { borderRadius: 16 },
   carrosselBody: { marginTop: 8 },
   carrosselTitle: { color: "#FFFFFF", fontWeight: "800", fontSize: 15 },
   carrosselDuracao: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "600", marginTop: 2 },
@@ -126,11 +125,8 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
     marginRight: 12,
   },
-  listaIconText: { fontSize: 20 },
   listaBody: { flex: 1 },
   listaTitle: { fontWeight: "700", fontSize: 15 },
   listaSub: { marginTop: 2, fontSize: 12 },
