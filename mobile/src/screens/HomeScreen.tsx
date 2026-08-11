@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,8 +11,12 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { DatePickerModal } from "../components/DatePickerModal";
 import { AppIcon } from "../components/AppIcon";
+import { ReadingPlanCard } from "../components/ReadingPlanCard";
+import { readingPlans } from "../data/readingPlans";
 import { formatIsoDate, getDateParts, getWeekDays } from "../services/date";
 import { shadeColor } from "../services/color";
+import { getPlanStatus } from "../services/readingPlans";
+import type { ReadingPlanProgress } from "../storage/readingPlanProgress";
 import type { DailyLiturgyPayload, SaintOfDayPayload } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 
@@ -254,6 +259,53 @@ function RosaryEntryCard({ theme, onPress }: { theme: ThemePalette; onPress: () 
   );
 }
 
+function ReadingPlansCarousel({
+  readingPlanProgress,
+  theme,
+  onOpenReadingPlan,
+}: {
+  readingPlanProgress: Record<string, ReadingPlanProgress>;
+  theme: ThemePalette;
+  onOpenReadingPlan: (planId?: string) => void;
+}) {
+  const destaquePlans = readingPlans.filter((p) => p.destaque);
+
+  return (
+    <View style={carouselStyles.container}>
+      <View style={carouselStyles.headerRow}>
+        <Text allowFontScaling style={[carouselStyles.title, { color: theme.titleText }]}>
+          📖 Planos de Leitura
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ver todos os planos de leitura"
+          onPress={() => onOpenReadingPlan()}
+        >
+          <Text allowFontScaling style={[carouselStyles.verTodos, { color: theme.accent }]}>
+            Ver todos →
+          </Text>
+        </Pressable>
+      </View>
+      <FlatList
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        data={destaquePlans}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={carouselStyles.list}
+        renderItem={({ item }) => (
+          <ReadingPlanCard
+            plan={item}
+            theme={theme}
+            size="carrossel"
+            statusInfo={getPlanStatus(item, readingPlanProgress[item.id])}
+            onPress={() => onOpenReadingPlan(item.id)}
+          />
+        )}
+      />
+    </View>
+  );
+}
+
 type Props = {
   selectedDate: string;
   payload: DailyLiturgyPayload | null;
@@ -263,11 +315,13 @@ type Props = {
   theme: ThemePalette;
   readDays: string[];
   rosaryDays: string[];
+  readingPlanProgress: Record<string, ReadingPlanProgress>;
   saintOfDay: SaintOfDayPayload | null;
   saintLoading: boolean;
   onRetry: () => void;
   onContinueReading: () => void;
   onOpenRosary: () => void;
+  onOpenReadingPlan: (planId?: string) => void;
   onOpenSaintStory: () => void;
   onSelectDate: (date: string) => void;
 };
@@ -281,11 +335,13 @@ export function HomeScreen({
   theme,
   readDays,
   rosaryDays,
+  readingPlanProgress,
   saintOfDay,
   saintLoading,
   onRetry,
   onContinueReading,
   onOpenRosary,
+  onOpenReadingPlan,
   onOpenSaintStory,
   onSelectDate,
 }: Props) {
@@ -326,6 +382,12 @@ export function HomeScreen({
         ) : null}
 
         <RosaryEntryCard theme={theme} onPress={onOpenRosary} />
+
+        <ReadingPlansCarousel
+          readingPlanProgress={readingPlanProgress}
+          theme={theme}
+          onOpenReadingPlan={onOpenReadingPlan}
+        />
 
         {loading ? (
           <View style={styles.loadingBox}>
@@ -590,6 +652,19 @@ const rosaryStyles = StyleSheet.create({
   title: { fontSize: 15, fontWeight: "700" },
   subtitle: { marginTop: 2, fontSize: 12 },
   chevron: { fontSize: 20, paddingHorizontal: 4 },
+});
+
+const carouselStyles = StyleSheet.create({
+  container: { marginBottom: 14 },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  title: { fontSize: 15, fontWeight: "700" },
+  verTodos: { fontSize: 13, fontWeight: "700" },
+  list: { paddingRight: 4 },
 });
 
 const saintStyles = StyleSheet.create({
