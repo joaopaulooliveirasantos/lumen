@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { DatePickerModal } from "../components/DatePickerModal";
 import { LiturgyPlayer } from "../components/LiturgyPlayer";
 import { LoadingScreen } from "../components/LoadingScreen";
@@ -128,10 +128,26 @@ export function LiturgyScreen({
 }: Props) {
   const [activeReadingTab, setActiveReadingTab] = useState<ReadingTabKey>("leitura1");
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [amenBurstVisible, setAmenBurstVisible] = useState(false);
+  const amenOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setActiveReadingTab("leitura1");
   }, [selectedDate]);
+
+  function handleAmenPress() {
+    setAmenBurstVisible(true);
+    amenOpacity.setValue(1);
+    Animated.timing(amenOpacity, {
+      toValue: 0,
+      duration: 1200,
+      delay: 400,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) setAmenBurstVisible(false);
+    });
+    onAmen();
+  }
 
   if (loading) {
     return <LoadingScreen accent={theme.accent} message="Carregando as leituras do dia..." />;
@@ -289,7 +305,7 @@ export function LiturgyScreen({
               ? { backgroundColor: "transparent", borderWidth: 1.5, borderColor: theme.accent }
               : { backgroundColor: theme.accent },
           ]}
-          onPress={onAmen}
+          onPress={handleAmenPress}
         >
           <Text allowFontScaling style={[styles.amenText, { color: isRead ? theme.accent : "#FFFFFF" }]}>
             <AppIcon
@@ -301,6 +317,14 @@ export function LiturgyScreen({
           </Text>
         </Pressable>
       </View>
+
+      {amenBurstVisible ? (
+        <View style={styles.amenBurst} pointerEvents="none">
+          <Animated.View style={{ opacity: amenOpacity }}>
+            <AppIcon name="prayingHands" size={120} color={theme.accent} />
+          </Animated.View>
+        </View>
+      ) : null}
 
       <DatePickerModal
         visible={calendarOpen}
@@ -381,6 +405,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
     letterSpacing: 0.5,
+  },
+  amenBurst: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   titleCard: {
     flexDirection: "row",

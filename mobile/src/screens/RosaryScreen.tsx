@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { mysteryGroups, suggestedMysteryGroupFor } from "../data/rosaryMysteries";
 import { buildRosarySteps } from "../services/rosary";
@@ -49,6 +49,8 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
   const [selectedGroup, setSelectedGroup] = useState<MysteryGroupId>(() => suggestedMysteryGroupFor(new Date()));
   const [steps, setSteps] = useState<RosaryStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
+  const [finishBurstVisible, setFinishBurstVisible] = useState(false);
+  const finishOpacity = useRef(new Animated.Value(0)).current;
 
   const fs = settings.fontScale;
 
@@ -88,9 +90,17 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
   function handleNextStep(isLastStep: boolean) {
     if (isLastStep) {
       onFinish();
-      Alert.alert("Terço concluído!", "Que Nossa Senhora interceda por você.", [
-        { text: "OK", onPress: onExit },
-      ]);
+      setFinishBurstVisible(true);
+      finishOpacity.setValue(1);
+      Animated.timing(finishOpacity, {
+        toValue: 0,
+        duration: 1200,
+        delay: 400,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        setFinishBurstVisible(false);
+        if (finished) onExit();
+      });
       return;
     }
     setStepIndex((i) => i + 1);
@@ -229,6 +239,14 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
           </Text>
         </Pressable>
       </View>
+
+      {finishBurstVisible ? (
+        <View style={styles.finishBurst} pointerEvents="none">
+          <Animated.View style={{ opacity: finishOpacity }}>
+            <AppIcon name="flower" size={120} color={theme.accent} />
+          </Animated.View>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -308,6 +326,15 @@ const styles = StyleSheet.create({
   },
   repeatBadgeText: { fontSize: 12, fontWeight: "700" },
   stepText: { marginTop: 14 },
+  finishBurst: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
 const heroStyles = StyleSheet.create({

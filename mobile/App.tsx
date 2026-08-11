@@ -230,7 +230,6 @@ export default function App() {
   async function handleAmen(): Promise<void> {
     const updated = await markDayAsRead(selectedDate);
     setReadDays(updated);
-    Alert.alert("Am\u00e9m!", "Leitura da liturgia conclu\u00edda.");
   }
 
   async function handleRosaryFinished(): Promise<void> {
