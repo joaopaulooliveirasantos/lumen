@@ -368,6 +368,12 @@ export function HomeScreen({
       />
 
       <View style={styles.body}>
+        <ReadingPlansCarousel
+          readingPlanProgress={readingPlanProgress}
+          theme={theme}
+          onOpenReadingPlan={onOpenReadingPlan}
+        />
+
         <ReadingCalendar readDays={readDays} rosaryDays={rosaryDays} theme={theme} />
 
         <SaintOfDayCard
@@ -382,12 +388,6 @@ export function HomeScreen({
         ) : null}
 
         <RosaryEntryCard theme={theme} onPress={onOpenRosary} />
-
-        <ReadingPlansCarousel
-          readingPlanProgress={readingPlanProgress}
-          theme={theme}
-          onOpenReadingPlan={onOpenReadingPlan}
-        />
 
         {loading ? (
           <View style={styles.loadingBox}>
