@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Alert, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Alert, Animated, FlatList, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { readingPlans } from "../data/readingPlans";
+import { AppIcon } from "../components/AppIcon";
 import { ReadingPlanCard } from "../components/ReadingPlanCard";
-import { getPlanStatus } from "../services/readingPlans";
+import { getPlanStatus, resolveReference } from "../services/readingPlans";
 import type { ReadingPlanProgress } from "../storage/readingPlanProgress";
 import type { BibleLocation } from "../types/bible";
 import type { BibleReference, ReadingPlan } from "../types/readingPlan";
@@ -59,9 +60,18 @@ export function ReadingPlansScreen({
   const [view, setView] = useState<ReadingPlansView>(initialPlan ? "detalhe" : "destaques");
   const [activePlan, setActivePlan] = useState<ReadingPlan | null>(initialPlan);
   const [activeDayNum, setActiveDayNum] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [amenBurstVisible, setAmenBurstVisible] = useState(false);
+  const amenOpacity = useRef(new Animated.Value(0)).current;
 
   const fs = settings.fontScale;
   const destaquePlans = readingPlans.filter((p) => p.destaque);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredPlans = normalizedQuery
+    ? readingPlans.filter(
+        (p) => p.titulo.toLowerCase().includes(normalizedQuery) || p.subtitulo.toLowerCase().includes(normalizedQuery),
+      )
+    : readingPlans;
 
   function Header({ title, onBack }: { title: string; onBack: () => void }) {
     return (
@@ -156,20 +166,49 @@ export function ReadingPlansScreen({
     return (
       <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
         <Header title="Todos os planos" onBack={handleBack} />
-        <FlatList
-          data={readingPlans}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listaContent}
-          renderItem={({ item }) => (
-            <ReadingPlanCard
-              plan={item}
-              theme={theme}
-              size="lista"
-              statusInfo={getPlanStatus(item, progress[item.id])}
-              onPress={() => openPlan(item)}
-            />
-          )}
-        />
+        <View style={[styles.searchBar, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          <AppIcon name="book" size={16} color={theme.mutedText} />
+          <TextInput
+            accessibilityLabel="Pesquisar planos de leitura"
+            placeholder="Pesquisar planos..."
+            placeholderTextColor={theme.mutedText}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={[styles.searchInput, { color: theme.titleText, fontSize: 14 * fs }]}
+          />
+          {searchQuery.length > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Limpar pesquisa"
+              hitSlop={8}
+              onPress={() => setSearchQuery("")}
+            >
+              <AppIcon name="close" size={16} color={theme.mutedText} />
+            </Pressable>
+          ) : null}
+        </View>
+        {filteredPlans.length === 0 ? (
+          <View style={styles.emptyBox}>
+            <Text allowFontScaling style={[styles.emptyText, { color: theme.mutedText }]}>
+              Nenhum plano encontrado para "{searchQuery}".
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredPlans}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listaContent}
+            renderItem={({ item }) => (
+              <ReadingPlanCard
+                plan={item}
+                theme={theme}
+                size="lista"
+                statusInfo={getPlanStatus(item, progress[item.id])}
+                onPress={() => openPlan(item)}
+              />
+            )}
+          />
+        )}
       </View>
     );
   }
@@ -259,15 +298,23 @@ export function ReadingPlansScreen({
     const hasNextDay = plan.dias.some((d) => d.dia === day.dia + 1);
     const hasPrevDay = plan.dias.some((d) => d.dia === day.dia - 1);
 
-    function handleComplete() {
+    function handleAmenPress() {
       onDayCompleted(plan.id, day!.dia, plan.duracaoDias);
-      if (isLastDay) {
-        Alert.alert("Plano concluído!", `Você concluiu "${plan.titulo}". 🙏`, [
-          { text: "OK", onPress: () => setView("detalhe") },
-        ]);
-        return;
-      }
-      Alert.alert("Dia concluído", "Leitura marcada como concluída.");
+      setAmenBurstVisible(true);
+      amenOpacity.setValue(1);
+      Animated.timing(amenOpacity, {
+        toValue: 0,
+        duration: 1200,
+        delay: 400,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        setAmenBurstVisible(false);
+        if (finished && isLastDay) {
+          Alert.alert("Plano concluído!", `Você concluiu "${plan.titulo}". 🙏`, [
+            { text: "OK", onPress: () => setView("detalhe") },
+          ]);
+        }
+      });
     }
 
     return (
@@ -278,29 +325,47 @@ export function ReadingPlansScreen({
             {day.titulo}
           </Text>
 
-          {day.referencias.map((ref, index) => (
-            <Pressable
-              key={`${ref.livro}-${ref.capituloInicio}-${index}`}
-              accessibilityRole="button"
-              accessibilityLabel={`Ler ${formatReference(ref)} na Bíblia`}
-              style={[styles.refCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
-              onPress={() =>
-                onOpenBibleReference({
-                  livro: ref.livro,
-                  capitulo: ref.capituloInicio,
-                  versiculoInicio: ref.versiculoInicio,
-                })
-              }
-            >
-              <View style={[styles.refIcon, { backgroundColor: `${theme.accent}1F` }]}>
-                <Text style={styles.refIconText}>📖</Text>
+          {day.referencias.map((ref, index) => {
+            const passages = resolveReference(ref, settings.bibleTranslation);
+            return (
+              <View key={`${ref.livro}-${ref.capituloInicio}-${index}`} style={styles.refBlock}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ler ${formatReference(ref)} na Bíblia`}
+                  style={[styles.refCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+                  onPress={() =>
+                    onOpenBibleReference({
+                      livro: ref.livro,
+                      capitulo: ref.capituloInicio,
+                      versiculoInicio: ref.versiculoInicio,
+                    })
+                  }
+                >
+                  <View style={[styles.refIcon, { backgroundColor: `${theme.accent}1F` }]}>
+                    <Text style={styles.refIconText}>📖</Text>
+                  </View>
+                  <Text allowFontScaling style={[styles.refText, { color: theme.titleText, fontSize: 15 * fs }]}>
+                    {formatReference(ref)}
+                  </Text>
+                  <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+                </Pressable>
+
+                {passages.map((passage) => (
+                  <View key={`${passage.livro}-${passage.capitulo}`} style={styles.passageBlock}>
+                    <Text allowFontScaling style={[styles.passageRef, { color: theme.accent, fontSize: 12 * fs }]}>
+                      {passage.livro} {passage.capitulo}
+                    </Text>
+                    <Text
+                      allowFontScaling
+                      style={[styles.passageText, { color: theme.bodyText, fontSize: 15 * fs, lineHeight: 24 * fs }]}
+                    >
+                      {passage.versiculos.map((v) => `${v.versiculo}. ${v.texto}`).join(" ")}
+                    </Text>
+                  </View>
+                ))}
               </View>
-              <Text allowFontScaling style={[styles.refText, { color: theme.titleText, fontSize: 15 * fs }]}>
-                {formatReference(ref)}
-              </Text>
-              <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
-            </Pressable>
-          ))}
+            );
+          })}
 
           {day.catecismo ? (
             <View style={[styles.cicCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
@@ -360,16 +425,24 @@ export function ReadingPlansScreen({
           ) : (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Concluir dia"
+              accessibilityLabel="Amém"
               style={[styles.primaryButton, styles.primaryButtonFlex, { backgroundColor: theme.accent }]}
-              onPress={handleComplete}
+              onPress={handleAmenPress}
             >
               <Text allowFontScaling style={styles.primaryButtonText}>
-                Concluir dia
+                <AppIcon name="prayingHands" size={15} color="#FFFFFF" /> Amém
               </Text>
             </Pressable>
           )}
         </View>
+
+        {amenBurstVisible ? (
+          <View style={styles.amenBurst} pointerEvents="none">
+            <Animated.View style={{ opacity: amenOpacity }}>
+              <AppIcon name="prayingHands" size={120} color={theme.accent} />
+            </Animated.View>
+          </View>
+        ) : null}
       </View>
     );
   }
@@ -408,6 +481,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   verTodosText: { fontWeight: "700", fontSize: 14 },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginHorizontal: 14,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    minHeight: 44,
+  },
+  searchInput: { flex: 1, paddingVertical: 10 },
+  emptyBox: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24 },
+  emptyText: { fontSize: 14, textAlign: "center" },
   listaContent: { padding: 14, paddingBottom: 28 },
   detalheContent: { padding: 18, paddingBottom: 28, alignItems: "center" },
   detalheImagem: { width: 128, height: 128, borderRadius: 24, marginBottom: 12 },
@@ -457,8 +544,21 @@ const styles = StyleSheet.create({
   refIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginRight: 12 },
   refIconText: { fontSize: 17 },
   refText: { flex: 1, fontWeight: "700" },
+  refBlock: { marginBottom: 4 },
+  passageBlock: { paddingHorizontal: 4, marginBottom: 14 },
+  passageRef: { fontWeight: "700", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.3 },
+  passageText: {},
   cicCard: { borderRadius: 14, borderWidth: 1, padding: 16, marginTop: 6 },
   cicLabel: { fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.3, marginBottom: 6 },
   cicTema: { fontWeight: "700", marginBottom: 8 },
   cicTrecho: { fontStyle: "italic" },
+  amenBurst: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

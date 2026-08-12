@@ -6,6 +6,7 @@ import { buildRosarySteps } from "../services/rosary";
 import { shadeColor } from "../services/color";
 import { formatIsoDate, formatReadableDate } from "../services/date";
 import { AppIcon } from "../components/AppIcon";
+import { PrayerPlayer } from "../components/PrayerPlayer";
 import type { MysteryGroupId, RosaryStep } from "../types/rosary";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
@@ -42,9 +43,10 @@ type Props = {
   settings: UserSettings;
   onExit: () => void;
   onFinish: () => void;
+  onUpdateFontScale: (delta: number) => void;
 };
 
-export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
+export function RosaryScreen({ theme, settings, onExit, onFinish, onUpdateFontScale }: Props) {
   const [view, setView] = useState<RosaryView>("selecao");
   const [selectedGroup, setSelectedGroup] = useState<MysteryGroupId>(() => suggestedMysteryGroupFor(new Date()));
   const [steps, setSteps] = useState<RosaryStep[]>([]);
@@ -174,6 +176,18 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
   return (
     <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
       <Header title={currentStep.titulo} />
+
+      <View style={styles.playerWrap}>
+        <PrayerPlayer
+          key={currentStep.ordem}
+          text={`${currentStep.titulo}. ${currentStep.texto}`}
+          shareText={`${currentStep.titulo}\n\n${currentStep.texto}`}
+          resetKey={currentStep.ordem}
+          theme={theme}
+          fontScale={fs}
+          onUpdateFontScale={onUpdateFontScale}
+        />
+      </View>
 
       <View style={styles.progressWrap}>
         <Text allowFontScaling style={[styles.progressLabel, { color: theme.mutedText }]}>
@@ -309,6 +323,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   secondaryButtonText: { fontWeight: "700", fontSize: 15 },
+  playerWrap: { paddingHorizontal: 14, paddingTop: 10 },
   progressWrap: { paddingHorizontal: 14, paddingTop: 12, paddingBottom: 4 },
   progressLabel: { fontSize: 12, fontWeight: "600", marginBottom: 6, textAlign: "center" },
   progressTrack: { height: 4, borderRadius: 2, overflow: "hidden" },

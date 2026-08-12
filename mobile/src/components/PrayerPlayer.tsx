@@ -3,85 +3,24 @@ import { Alert, Modal, Pressable, ScrollView, Share, StyleSheet, Text, View } fr
 import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
 import { AppIcon } from "./AppIcon";
-import { EVANGELHO_RESPONSE, LEITURA_RESPONSE } from "../data/liturgyResponses";
 import { loadSavedVoiceIdentifier, saveVoiceIdentifier } from "../storage/ttsVoice";
 import { getDeviceLanguage, pickBestVoice, rankVoices, type VoiceScore } from "../services/ttsVoiceRanking";
-import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 
-interface PlayerTrack {
-  key: ReadingTabKey;
-  label: string;
+type Props = {
   text: string;
   shareText: string;
-}
-
-function buildTracks(payload: DailyLiturgyPayload): PlayerTrack[] {
-  const tracks: PlayerTrack[] = [
-    {
-      key: "leitura1",
-      label: "1ª Leitura",
-      text: `Primeira leitura. ${payload.primeiraLeitura.titulo}. ${payload.primeiraLeitura.texto} ${LEITURA_RESPONSE.call}. ${LEITURA_RESPONSE.response}.`,
-      shareText: `Primeira Leitura\n${payload.primeiraLeitura.titulo}\n${payload.primeiraLeitura.referencia}\n\n${payload.primeiraLeitura.texto}\n\n${LEITURA_RESPONSE.call}\n${LEITURA_RESPONSE.response}`,
-    },
-    {
-      key: "salmo",
-      label: "Salmo",
-      text: `Salmo responsorial. ${payload.salmo.refrao}. ${payload.salmo.texto}`,
-      shareText: `Salmo Responsorial\n${payload.salmo.referencia}\n\n${payload.salmo.refrao}\n\n${payload.salmo.texto}`,
-    },
-  ];
-
-  if (payload.segundaLeitura) {
-    tracks.push({
-      key: "leitura2",
-      label: "2ª Leitura",
-      text: `Segunda leitura. ${payload.segundaLeitura.titulo}. ${payload.segundaLeitura.texto} ${LEITURA_RESPONSE.call}. ${LEITURA_RESPONSE.response}.`,
-      shareText: `Segunda Leitura\n${payload.segundaLeitura.titulo}\n${payload.segundaLeitura.referencia}\n\n${payload.segundaLeitura.texto}\n\n${LEITURA_RESPONSE.call}\n${LEITURA_RESPONSE.response}`,
-    });
-  }
-
-  tracks.push({
-    key: "evangelho",
-    label: "Evangelho",
-    text: `Evangelho. ${payload.evangelho.titulo}. ${payload.evangelho.texto} ${EVANGELHO_RESPONSE.call}. ${EVANGELHO_RESPONSE.response}`,
-    shareText: `Evangelho\n${payload.evangelho.titulo}\n${payload.evangelho.referencia}\n\n${payload.evangelho.texto}\n\n${EVANGELHO_RESPONSE.call}\n${EVANGELHO_RESPONSE.response}`,
-  });
-
-  tracks.push({
-    key: "homilia",
-    label: "Homilía",
-    text: `Homilía. ${payload.reflexao.titulo}. ${payload.reflexao.texto}`,
-    shareText: `Homilía\n${payload.reflexao.titulo}\n${payload.reflexao.autor}\n\n${payload.reflexao.texto}${
-      payload.reflexao.fonte ? `\n\n${payload.reflexao.fonte}` : ""
-    }`,
-  });
-
-  return tracks;
-}
-
-type Props = {
-  payload: DailyLiturgyPayload;
+  resetKey: string | number;
   theme: ThemePalette;
-  activeTrack: ReadingTabKey;
-  onTrackChange: (key: ReadingTabKey) => void;
   fontScale: number;
   onUpdateFontScale: (delta: number) => void;
 };
 
-export function LiturgyPlayer({
-  payload,
-  theme,
-  activeTrack,
-  onTrackChange,
-  fontScale,
-  onUpdateFontScale,
-}: Props) {
+export function PrayerPlayer({ text, shareText, resetKey, theme, fontScale, onUpdateFontScale }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [voice, setVoice] = useState<Speech.Voice | null>(null);
   const [voiceRanking, setVoiceRanking] = useState<VoiceScore[]>([]);
   const [voiceDebugOpen, setVoiceDebugOpen] = useState(false);
-  const tracks = useMemo(() => buildTracks(payload), [payload]);
   const deviceLanguage = useMemo(() => getDeviceLanguage(), []);
   const visibleVoiceRanking = useMemo(
     () => voiceRanking.filter((entry) => (entry.voice.language ?? "").toLowerCase().startsWith(deviceLanguage)),
@@ -108,16 +47,10 @@ export function LiturgyPlayer({
     };
   }, []);
 
-  function selectVoice(selected: Speech.Voice) {
-    setVoice(selected);
-    setVoiceDebugOpen(false);
-    void saveVoiceIdentifier(selected.identifier);
-  }
-
   useEffect(() => {
     Speech.stop();
     setIsPlaying(false);
-  }, [payload]);
+  }, [resetKey]);
 
   useEffect(() => {
     return () => {
@@ -125,64 +58,39 @@ export function LiturgyPlayer({
     };
   }, []);
 
-  function speakTrack(key: ReadingTabKey) {
-    const track = tracks.find((t) => t.key === key);
-    if (!track) {
-      setIsPlaying(false);
-      return;
-    }
-    Speech.stop();
-    setIsPlaying(true);
-    Speech.speak(track.text, {
-      language: "pt-BR",
-      voice: voice?.identifier,
-      pitch: 0.88,
-      rate: 0.94,
-      onDone: () => {
-        const idx = tracks.findIndex((t) => t.key === key);
-        const next = tracks[idx + 1];
-        if (next) {
-          onTrackChange(next.key);
-          speakTrack(next.key);
-        } else {
-          setIsPlaying(false);
-        }
-      },
-      onStopped: () => setIsPlaying(false),
-      onError: () => setIsPlaying(false),
-    });
+  function selectVoice(selected: Speech.Voice) {
+    setVoice(selected);
+    setVoiceDebugOpen(false);
+    void saveVoiceIdentifier(selected.identifier);
   }
 
   function handlePlayPause() {
     if (isPlaying) {
       Speech.stop();
       setIsPlaying(false);
-    } else {
-      speakTrack(activeTrack);
+      return;
     }
+    Speech.stop();
+    setIsPlaying(true);
+    Speech.speak(text, {
+      language: "pt-BR",
+      voice: voice?.identifier,
+      pitch: 0.88,
+      rate: 0.94,
+      onDone: () => setIsPlaying(false),
+      onStopped: () => setIsPlaying(false),
+      onError: () => setIsPlaying(false),
+    });
   }
-
-  function handleStep(delta: 1 | -1) {
-    const idx = tracks.findIndex((t) => t.key === activeTrack);
-    const target = tracks[idx + delta];
-    if (!target) return;
-    onTrackChange(target.key);
-    if (isPlaying) speakTrack(target.key);
-  }
-
-  const currentIndex = tracks.findIndex((t) => t.key === activeTrack);
-  const currentTrack = tracks[currentIndex];
 
   async function handleCopy() {
-    if (!currentTrack) return;
-    await Clipboard.setStringAsync(currentTrack.shareText);
+    await Clipboard.setStringAsync(shareText);
     Alert.alert("Copiado", "Texto copiado para a área de transferência.");
   }
 
   async function handleShare() {
-    if (!currentTrack) return;
     try {
-      await Share.share({ message: currentTrack.shareText });
+      await Share.share({ message: shareText });
     } catch {
       // usuário cancelou o compartilhamento
     }
@@ -193,37 +101,11 @@ export function LiturgyPlayer({
       <View style={styles.controls}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Leitura anterior"
-          hitSlop={6}
-          style={styles.iconButton}
-          onPress={() => handleStep(-1)}
-          disabled={currentIndex <= 0}
-        >
-          <AppIcon name="playSkipBack" size={16} color={currentIndex <= 0 ? theme.border : theme.accent} />
-        </Pressable>
-
-        <Pressable
-          accessibilityRole="button"
           accessibilityLabel={isPlaying ? "Pausar leitura" : "Reproduzir leitura"}
           style={[styles.playButton, { backgroundColor: theme.accent }]}
           onPress={handlePlayPause}
         >
           <AppIcon name={isPlaying ? "pause" : "play"} size={16} color="#FFFFFF" />
-        </Pressable>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Próxima leitura"
-          hitSlop={6}
-          style={styles.iconButton}
-          onPress={() => handleStep(1)}
-          disabled={currentIndex >= tracks.length - 1}
-        >
-          <AppIcon
-            name="playSkipForward"
-            size={16}
-            color={currentIndex >= tracks.length - 1 ? theme.border : theme.accent}
-          />
         </Pressable>
 
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
@@ -384,12 +266,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-  },
-  iconButton: {
-    width: 32,
-    height: 32,
-    alignItems: "center",
-    justifyContent: "center",
   },
   playButton: {
     width: 40,

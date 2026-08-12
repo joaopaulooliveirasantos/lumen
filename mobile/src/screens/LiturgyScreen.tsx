@@ -6,6 +6,7 @@ import { LoadingScreen } from "../components/LoadingScreen";
 import { ReadingSection } from "../components/ReadingSection";
 import { ReflectionSection } from "../components/ReflectionSection";
 import { AppIcon } from "../components/AppIcon";
+import { EVANGELHO_RESPONSE, LEITURA_RESPONSE } from "../data/liturgyResponses";
 import { formatReadableDate, getDateParts } from "../services/date";
 import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
@@ -219,7 +220,8 @@ export function LiturgyScreen({
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
-            closingPhrase="Graças a Deus"
+            closingCall={LEITURA_RESPONSE.call}
+            closingResponse={LEITURA_RESPONSE.response}
           />
         ) : null}
 
@@ -263,7 +265,8 @@ export function LiturgyScreen({
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
-            closingPhrase="Graças a Deus"
+            closingCall={LEITURA_RESPONSE.call}
+            closingResponse={LEITURA_RESPONSE.response}
           />
         ) : null}
 
@@ -277,7 +280,8 @@ export function LiturgyScreen({
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
-            closingPhrase="Glória a vós, Senhor"
+            closingCall={EVANGELHO_RESPONSE.call}
+            closingResponse={EVANGELHO_RESPONSE.response}
           />
         ) : null}
 

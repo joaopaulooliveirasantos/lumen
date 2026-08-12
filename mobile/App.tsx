@@ -352,6 +352,7 @@ export default function App() {
                 settings={settings}
                 onExit={() => setRosaryOpen(false)}
                 onFinish={() => void handleRosaryFinished()}
+                onUpdateFontScale={updateFontScale}
               />
             ) : readingPlansOpen ? (
               <ReadingPlansScreen
