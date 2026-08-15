@@ -46,18 +46,25 @@ Note que `.eas/workflows/` mora dentro de `mobile/` (mesmo diretório do
 
 | Workflow EAS | O que faz |
 |---|---|
-| [`mobile/.eas/workflows/build-production.yml`](../mobile/.eas/workflows/build-production.yml) | Build Android + iOS, perfil `production` |
+| [`mobile/.eas/workflows/build-production-android.yml`](../mobile/.eas/workflows/build-production-android.yml) | Build Android, perfil `production` — é o que o botão do GitHub usa |
+| [`mobile/.eas/workflows/build-production.yml`](../mobile/.eas/workflows/build-production.yml) | Build Android + iOS, perfil `production` — só via terminal, não ligado ao botão do GitHub |
 | [`mobile/.eas/workflows/submit-android.yml`](../mobile/.eas/workflows/submit-android.yml) | Submete o `.aab` mais recente pro Play Store (track interno) |
 
-Dá pra rodar os dois direto do terminal (`cd mobile && eas workflow:run
-.eas/workflows/build-production.yml`, sessão do EAS CLI local já
-autenticada) **ou**, agora, pelo botão **Actions → Mobile Deploy (EAS
-Build + Submit) → Run workflow** no GitHub — usando
+Dá pra rodar qualquer um deles direto do terminal (`cd mobile && eas
+workflow:run .eas/workflows/build-production-android.yml`, sessão do
+EAS CLI local já autenticada) **ou**, pelo botão **Actions → Mobile
+Deploy (EAS Build + Submit) → Run workflow** no GitHub — usando
 [`.github/workflows/mobile-deploy.yml`](../.github/workflows/mobile-deploy.yml).
 Esse workflow só autentica e aciona os EAS Workflows acima (que rodam na
 infraestrutura da própria EAS) — não faz build/submit dentro do runner
 do GitHub. Tem uma opção (`submeter_para_loja`) pra também rodar o
 submit logo depois do build, na mesma execução.
+
+O botão do GitHub builda **só Android** (usa
+`build-production-android.yml`) — a única loja configurada no projeto
+hoje é a Play Store. Pra buildar iOS também, use
+`build-production.yml` direto do terminal; submissão iOS continua fora
+do escopo do CD (sem credenciais da App Store Connect ainda).
 
 **Segredo necessário no GitHub** (Settings → Secrets and variables →
 Actions), antes da primeira execução:

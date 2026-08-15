@@ -1,0 +1,19 @@
+name: Build de producao (Android)
+
+# Disparo manual, de duas formas:
+#   1) do terminal, dentro de mobile/: eas workflow:run .eas/workflows/build-production-android.yml
+#   2) pelo GitHub: Actions -> Mobile Deploy (EAS Build + Submit) -> Run workflow
+# (.github/workflows/mobile-deploy.yml, precisa do secret EXPO_TOKEN).
+#
+# Só Android por enquanto: o CD automatizado (botao do GitHub) cobre so a
+# loja ja configurada no projeto (Play Store, via submit-android.yml). Pra
+# buildar iOS tambem, use build-production.yml (build_android + build_ios)
+# direto do terminal — submissao iOS continua fora do escopo do CD, sem
+# credenciais da App Store Connect ainda.
+
+jobs:
+  build_android:
+    type: build
+    params:
+      platform: android
+      profile: production

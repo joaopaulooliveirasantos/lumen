@@ -7,9 +7,14 @@ name: Mobile Deploy (EAS Build + Submit)
 #
 # O que esse workflow faz: autentica no EAS CLI com um token de acesso
 # (EXPO_TOKEN) e dispara os EAS Workflows ja versionados no repo
-# (.eas/workflows/build-production.yml e submit-android.yml), que rodam
-# na infraestrutura da propria EAS — este job so aciona e acompanha o
-# resultado, nao faz o build/submit localmente.
+# (.eas/workflows/build-production-android.yml e submit-android.yml), que
+# rodam na infraestrutura da propria EAS — este job so aciona e acompanha
+# o resultado, nao faz o build/submit localmente.
+#
+# So Android: a loja configurada no projeto por enquanto e a Play Store
+# (submit-android.yml); nao ha credenciais da App Store Connect ainda.
+# Pra buildar iOS tambem, use build-production.yml direto do terminal
+# (dentro de mobile/) — ver doc/README-cicd.md.
 on:
   workflow_dispatch:
     inputs:
@@ -24,7 +29,7 @@ concurrency:
 
 jobs:
   build:
-    name: EAS Build (Android + iOS, producao)
+    name: EAS Build (Android, producao)
     runs-on: ubuntu-latest
     environment: production-mobile
     defaults:
@@ -50,8 +55,8 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Rodar build-production.yml na EAS
-        run: eas workflow:run .eas/workflows/build-production.yml --non-interactive --wait
+      - name: Rodar build-production-android.yml na EAS
+        run: eas workflow:run .eas/workflows/build-production-android.yml --non-interactive --wait
 
       - name: Rodar submit-android.yml na EAS
         if: ${{ inputs.submeter_para_loja }}
