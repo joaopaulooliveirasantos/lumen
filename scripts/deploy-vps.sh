@@ -6,6 +6,10 @@
 # Pode ser rodado tanto para o primeiro deploy quanto para atualizacoes
 # seguintes: os passos de instalacao/configuracao sao idempotentes
 # (nao quebram nada se ja estiverem feitos).
+#
+# Tambem roda via CI (.github/workflows/backend-deploy.yml, Fase 3 do
+# plano de CI/CD) — nesse caso VPS_HOST/VPS_USER/SSH_KEY vem de
+# variaveis/segredos do GitHub Actions em vez do ambiente local.
 
 set -euo pipefail
 
@@ -20,8 +24,8 @@ SERVICE_NAME="lumen-backend"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_TAR="$(mktemp -u /tmp/lumen-backend-XXXXXX.tar.gz)"
 
-SSH="ssh -i $SSH_KEY -o ConnectTimeout=15"
-SCP="scp -i $SSH_KEY"
+SSH="ssh -i $SSH_KEY -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new"
+SCP="scp -i $SSH_KEY -o StrictHostKeyChecking=accept-new"
 
 echo "==> Empacotando arquivos do backend..."
 tar -czf "$TMP_TAR" -C "$REPO_ROOT" package.json package-lock.json tsconfig.json src
@@ -50,10 +54,20 @@ echo "==> Enviando pacote para o servidor..."
 $SCP "$TMP_TAR" "$VPS_USER@$VPS_HOST:$REMOTE_DIR/deploy.tar.gz"
 rm -f "$TMP_TAR"
 
-echo "==> Extraindo, instalando dependencias e buildando..."
+echo "==> Extraindo, instalando dependencias e buildando (com backup/rollback)..."
 $SSH "$VPS_USER@$VPS_HOST" bash -s <<REMOTE_BUILD
 set -euo pipefail
 cd "$REMOTE_DIR"
+
+# Backup do dist/ atual antes de sobrescrever — se o build novo falhar,
+# restauramos o dist anterior para o systemd continuar tendo algo
+# funcional em disco (ele nao reinicia sozinho aqui, entao o processo
+# em memoria nao muda, mas o proximo restart manual nao quebra tudo).
+if [ -d dist ]; then
+  echo "Fazendo backup do dist/ atual em dist.previous/..."
+  rm -rf dist.previous
+  cp -r dist dist.previous
+fi
 
 tar -xzf deploy.tar.gz
 rm -f deploy.tar.gz
@@ -69,7 +83,18 @@ ENV
 fi
 
 npm ci
-npm run build
+
+if ! npm run build; then
+  echo "Build falhou! Restaurando dist/ anterior a partir do backup..."
+  rm -rf dist
+  if [ -d dist.previous ]; then
+    mv dist.previous dist
+    echo "dist/ anterior restaurado. O servico systemd nao sera reiniciado com codigo quebrado."
+  else
+    echo "Nao havia dist.previous (provavelmente e o primeiro deploy) — nada para restaurar."
+  fi
+  exit 1
+fi
 REMOTE_BUILD
 
 echo "==> Configurando systemd (lumen-backend)..."

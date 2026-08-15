@@ -1,0 +1,53 @@
+name: Backend Deploy (VPS)
+
+# Gatilho manual por enquanto (mais conservador, dado que ainda nao ha
+# HTTPS/staging — ver Fase 0/decisoes do plano de CI/CD). Para deploy
+# automatico a cada merge na main, descomente o bloco "push:" abaixo.
+on:
+  workflow_dispatch: {}
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "src/**"
+  #     - "package.json"
+  #     - "package-lock.json"
+  #     - "tsconfig.json"
+  #     - "scripts/deploy-vps.sh"
+
+concurrency:
+  group: backend-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy para VPS
+    runs-on: ubuntu-latest
+    environment: production-backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Deploy (scripts/deploy-vps.sh)
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST || '147.15.109.185' }}
+          VPS_USER: ${{ vars.VPS_USER || 'ubuntu' }}
+          SSH_KEY: /home/runner/.ssh/deploy_key
+        run: bash scripts/deploy-vps.sh
+
+      - name: Smoke test (falha o job se a API nao responder 200)
+        env:
+          VPS_HOST: ${{ vars.VPS_HOST || '147.15.109.185' }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$VPS_HOST/api/liturgia?date=$DATE")
+          echo "HTTP $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "Deploy nao respondeu 200. O script ja restaura dist/ anterior no VPS se o build tiver falhado; verifique 'journalctl -u lumen-backend -f' no servidor."
+            exit 1
+          fi
