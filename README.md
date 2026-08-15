@@ -117,3 +117,4 @@ politicas, changelogs) esta em [`doc/`](doc/). Destaques:
 - [doc/README-deploy-vps.md](doc/README-deploy-vps.md) — runbook de deploy/operacao da VPS.
 - [doc/README-mobile-cadastro-usuario.md](doc/README-mobile-cadastro-usuario.md) — feature de cadastro/login.
 - [doc/RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md](doc/RESUMO-IMPLEMENTACAO-E-PROXIMOS-PASSOS.md) — status de entrega por fase.
+- [doc/README-cicd.md](doc/README-cicd.md) — CI/CD: workflows, segredos necessarios e como disparar deploys/builds manuais.

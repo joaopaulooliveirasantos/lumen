@@ -177,7 +177,7 @@ Detalhes de setup (credenciais Supabase, providers OAuth) em [README-mobile-cada
 ## 7. Limitações conhecidas / dívida técnica
 
 - **Sem HTTPS** no backend (VPS sem domínio ainda).
-- **Sem CI/CD** — deploy do backend e build do mobile são manuais.
+- **CI/CD parcial** — CI automático (build+testes do backend, typecheck do mobile) roda em todo push/PR; deploy do backend e build/submit do mobile têm workflows prontos mas de disparo manual (`workflow_dispatch` / `eas workflow:run`), sem branch protection nem EAS Update (OTA) ainda. Ver [README-cicd.md](README-cicd.md).
 - **`api/liturgia.ts` (adaptador Vercel) está desatualizado** — não serve `type=saint-story` e depende de um pacote (`@vercel/node`) que não está mais instalado; candidato a remoção se a VPS for definitiva.
 - **Cobertura de testes desigual** — backend tem boa cobertura nas famílias PPR/CNBB, mas nenhuma no Canção Nova, santo do dia isolado, e nos entry points; mobile não tem testes automatizados.
 - **Sem exclusão de conta** — exigência das lojas (Play/App Store) para apps com cadastro, ainda não implementada.
@@ -191,3 +191,4 @@ Detalhes de setup (credenciais Supabase, providers OAuth) em [README-mobile-cada
 - [README-backend-fase1.md](README-backend-fase1.md) — detalhes do backend e dos provedores de liturgia.
 - [README-deploy-vps.md](README-deploy-vps.md) — runbook completo de deploy/operação da VPS.
 - [README-mobile-cadastro-usuario.md](README-mobile-cadastro-usuario.md) — detalhes da feature de cadastro/login.
+- [README-cicd.md](README-cicd.md) — workflows de CI/CD, segredos necessários e como disparar builds/deploys manuais.
