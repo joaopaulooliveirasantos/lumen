@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { DatePickerModal } from "../components/DatePickerModal";
 import { LiturgyPlayer } from "../components/LiturgyPlayer";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { ReadingSection } from "../components/ReadingSection";
 import { ReflectionSection } from "../components/ReflectionSection";
-import { formatReadableDate } from "../services/date";
+import { AppIcon } from "../components/AppIcon";
+import { EVANGELHO_RESPONSE, LEITURA_RESPONSE } from "../data/liturgyResponses";
+import { formatReadableDate, getDateParts } from "../services/date";
 import type { DailyLiturgyPayload, ReadingTabKey } from "../types/liturgy";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
@@ -24,16 +26,39 @@ type Props = {
 
 function TitleCard({
   theme,
+  selectedDate,
   onOpenCalendar,
 }: {
   theme: ThemePalette;
+  selectedDate: string;
   onOpenCalendar: () => void;
 }) {
+  const { day, monthAbbr, year } = getDateParts(selectedDate);
+
   return (
     <View style={[styles.titleCard, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-      <Text allowFontScaling style={[styles.titleCardText, { color: theme.titleText }]}>
+      <View style={styles.titleCardDateBlock}>
+        <Text allowFontScaling style={[styles.titleCardDay, { color: theme.titleText }]}>
+          {day}
+        </Text>
+        <View style={styles.titleCardMonthYear}>
+          <Text allowFontScaling style={[styles.titleCardMonth, { color: theme.accent }]}>
+            {monthAbbr}
+          </Text>
+          <Text allowFontScaling style={[styles.titleCardYear, { color: theme.mutedText }]}>
+            {year}
+          </Text>
+        </View>
+      </View>
+
+      <Text
+        allowFontScaling
+        numberOfLines={1}
+        style={[styles.titleCardText, { color: theme.titleText }]}
+      >
         Liturgia Diária
       </Text>
+
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Escolher outra data"
@@ -44,7 +69,7 @@ function TitleCard({
         ]}
         onPress={onOpenCalendar}
       >
-        <Text style={styles.titleCalendarIcon}>📅</Text>
+        <AppIcon name="calendar" size={16} color={theme.accent} />
       </Pressable>
     </View>
   );
@@ -104,10 +129,26 @@ export function LiturgyScreen({
 }: Props) {
   const [activeReadingTab, setActiveReadingTab] = useState<ReadingTabKey>("leitura1");
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [amenBurstVisible, setAmenBurstVisible] = useState(false);
+  const amenOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setActiveReadingTab("leitura1");
   }, [selectedDate]);
+
+  function handleAmenPress() {
+    setAmenBurstVisible(true);
+    amenOpacity.setValue(1);
+    Animated.timing(amenOpacity, {
+      toValue: 0,
+      duration: 1200,
+      delay: 400,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) setAmenBurstVisible(false);
+    });
+    onAmen();
+  }
 
   if (loading) {
     return <LoadingScreen accent={theme.accent} message="Carregando as leituras do dia..." />;
@@ -117,7 +158,7 @@ export function LiturgyScreen({
     return (
       <View style={[styles.screen, { backgroundColor: theme.appBackground }]}>
         <View style={styles.headerArea}>
-          <TitleCard theme={theme} onOpenCalendar={() => setCalendarOpen(true)} />
+          <TitleCard theme={theme} selectedDate={selectedDate} onOpenCalendar={() => setCalendarOpen(true)} />
         </View>
         <View style={styles.emptyBox}>
           <Text allowFontScaling style={[styles.emptyText, { color: theme.titleText }]}>
@@ -151,7 +192,7 @@ export function LiturgyScreen({
   return (
     <View style={[styles.screen, { backgroundColor: theme.appBackground }]}>
       <View style={styles.headerArea}>
-        <TitleCard theme={theme} onOpenCalendar={() => setCalendarOpen(true)} />
+        <TitleCard theme={theme} selectedDate={selectedDate} onOpenCalendar={() => setCalendarOpen(true)} />
 
         <ReadingTabBar tabs={tabs} active={currentTab} onSelect={setActiveReadingTab} theme={theme} />
 
@@ -179,7 +220,8 @@ export function LiturgyScreen({
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
-            closingPhrase="Graças a Deus"
+            closingCall={LEITURA_RESPONSE.call}
+            closingResponse={LEITURA_RESPONSE.response}
           />
         ) : null}
 
@@ -223,7 +265,8 @@ export function LiturgyScreen({
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
-            closingPhrase="Graças a Deus"
+            closingCall={LEITURA_RESPONSE.call}
+            closingResponse={LEITURA_RESPONSE.response}
           />
         ) : null}
 
@@ -237,7 +280,8 @@ export function LiturgyScreen({
             titleColor={theme.titleText}
             bodyColor={theme.bodyText}
             accentColor={theme.accent}
-            closingPhrase="Glória a vós, Senhor"
+            closingCall={EVANGELHO_RESPONSE.call}
+            closingResponse={EVANGELHO_RESPONSE.response}
           />
         ) : null}
 
@@ -265,13 +309,26 @@ export function LiturgyScreen({
               ? { backgroundColor: "transparent", borderWidth: 1.5, borderColor: theme.accent }
               : { backgroundColor: theme.accent },
           ]}
-          onPress={onAmen}
+          onPress={handleAmenPress}
         >
           <Text allowFontScaling style={[styles.amenText, { color: isRead ? theme.accent : "#FFFFFF" }]}>
-            {isRead ? "✓ Amém" : "🙏 Amém"}
+            <AppIcon
+              name={isRead ? "checkmark" : "prayingHands"}
+              size={15}
+              color={isRead ? theme.accent : "#FFFFFF"}
+            />{" "}
+            Amém
           </Text>
         </Pressable>
       </View>
+
+      {amenBurstVisible ? (
+        <View style={styles.amenBurst} pointerEvents="none">
+          <Animated.View style={{ opacity: amenOpacity }}>
+            <AppIcon name="prayingHands" size={120} color={theme.accent} />
+          </Animated.View>
+        </View>
+      ) : null}
 
       <DatePickerModal
         visible={calendarOpen}
@@ -353,6 +410,15 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 0.5,
   },
+  amenBurst: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   titleCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -364,8 +430,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   titleCardText: {
+    flex: 1,
     fontSize: 17,
     fontWeight: "800",
+    textAlign: "center",
+  },
+  titleCardDateBlock: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  titleCardDay: {
+    fontSize: 22,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
+  titleCardMonthYear: {
+    flexDirection: "column",
+    justifyContent: "center",
+  },
+  titleCardMonth: {
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    lineHeight: 12,
+  },
+  titleCardYear: {
+    fontSize: 10,
+    fontWeight: "600",
+    lineHeight: 12,
   },
   titleCalendarButton: {
     width: 34,
@@ -374,9 +468,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  titleCalendarIcon: {
-    fontSize: 16,
   },
   tabBar: {
     flexDirection: "row",

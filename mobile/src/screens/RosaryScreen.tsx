@@ -1,10 +1,12 @@
-import { useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { mysteryGroups, suggestedMysteryGroupFor } from "../data/rosaryMysteries";
 import { buildRosarySteps } from "../services/rosary";
 import { shadeColor } from "../services/color";
 import { formatIsoDate, formatReadableDate } from "../services/date";
+import { AppIcon } from "../components/AppIcon";
+import { PrayerPlayer } from "../components/PrayerPlayer";
 import type { MysteryGroupId, RosaryStep } from "../types/rosary";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
@@ -26,7 +28,7 @@ function RosaryHero({ theme }: { theme: ThemePalette }) {
     >
       <View style={heroStyles.ornamentRow}>
         <View style={heroStyles.ornamentLine} />
-        <Text style={heroStyles.icon}>🌹</Text>
+        <AppIcon name="flower" size={18} color="#FFFFFF" style={heroStyles.icon} />
         <View style={heroStyles.ornamentLine} />
       </View>
 
@@ -41,13 +43,16 @@ type Props = {
   settings: UserSettings;
   onExit: () => void;
   onFinish: () => void;
+  onUpdateFontScale: (delta: number) => void;
 };
 
-export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
+export function RosaryScreen({ theme, settings, onExit, onFinish, onUpdateFontScale }: Props) {
   const [view, setView] = useState<RosaryView>("selecao");
   const [selectedGroup, setSelectedGroup] = useState<MysteryGroupId>(() => suggestedMysteryGroupFor(new Date()));
   const [steps, setSteps] = useState<RosaryStep[]>([]);
   const [stepIndex, setStepIndex] = useState(0);
+  const [finishBurstVisible, setFinishBurstVisible] = useState(false);
+  const finishOpacity = useRef(new Animated.Value(0)).current;
 
   const fs = settings.fontScale;
 
@@ -60,7 +65,7 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
           onPress={onExit}
           style={styles.closeBtn}
         >
-          <Text style={[styles.closeText, { color: theme.accent }]}>{"✕"}</Text>
+          <AppIcon name="close" size={20} color={theme.accent} />
         </Pressable>
         <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
           {title}
@@ -87,9 +92,17 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
   function handleNextStep(isLastStep: boolean) {
     if (isLastStep) {
       onFinish();
-      Alert.alert("Terço concluído!", "Que Nossa Senhora interceda por você. 🙏", [
-        { text: "OK", onPress: onExit },
-      ]);
+      setFinishBurstVisible(true);
+      finishOpacity.setValue(1);
+      Animated.timing(finishOpacity, {
+        toValue: 0,
+        duration: 1200,
+        delay: 400,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        setFinishBurstVisible(false);
+        if (finished) onExit();
+      });
       return;
     }
     setStepIndex((i) => i + 1);
@@ -133,7 +146,7 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
                     {group.dias}
                   </Text>
                 </View>
-                {isSelected ? <Text style={[styles.checkMark, { color: theme.accent }]}>{"✓"}</Text> : null}
+                {isSelected ? <AppIcon name="checkmark" size={18} color={theme.accent} style={styles.checkMark} /> : null}
               </Pressable>
             );
           })}
@@ -163,6 +176,18 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
   return (
     <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
       <Header title={currentStep.titulo} />
+
+      <View style={styles.playerWrap}>
+        <PrayerPlayer
+          key={currentStep.ordem}
+          text={`${currentStep.titulo}. ${currentStep.texto}`}
+          shareText={`${currentStep.titulo}\n\n${currentStep.texto}`}
+          resetKey={currentStep.ordem}
+          theme={theme}
+          fontScale={fs}
+          onUpdateFontScale={onUpdateFontScale}
+        />
+      </View>
 
       <View style={styles.progressWrap}>
         <Text allowFontScaling style={[styles.progressLabel, { color: theme.mutedText }]}>
@@ -228,6 +253,14 @@ export function RosaryScreen({ theme, settings, onExit, onFinish }: Props) {
           </Text>
         </Pressable>
       </View>
+
+      {finishBurstVisible ? (
+        <View style={styles.finishBurst} pointerEvents="none">
+          <Animated.View style={{ opacity: finishOpacity }}>
+            <AppIcon name="flower" size={120} color={theme.accent} />
+          </Animated.View>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -242,7 +275,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   closeBtn: { width: 40, alignItems: "center" },
-  closeText: { fontSize: 20, fontWeight: "700" },
   headerTitle: { flex: 1, fontSize: 17, fontWeight: "700", textAlign: "center" },
   listContent: { padding: 12, paddingBottom: 28 },
   sectionLabel: {
@@ -291,6 +323,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   secondaryButtonText: { fontWeight: "700", fontSize: 15 },
+  playerWrap: { paddingHorizontal: 14, paddingTop: 10 },
   progressWrap: { paddingHorizontal: 14, paddingTop: 12, paddingBottom: 4 },
   progressLabel: { fontSize: 12, fontWeight: "600", marginBottom: 6, textAlign: "center" },
   progressTrack: { height: 4, borderRadius: 2, overflow: "hidden" },
@@ -308,6 +341,15 @@ const styles = StyleSheet.create({
   },
   repeatBadgeText: { fontSize: 12, fontWeight: "700" },
   stepText: { marginTop: 14 },
+  finishBurst: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
 const heroStyles = StyleSheet.create({

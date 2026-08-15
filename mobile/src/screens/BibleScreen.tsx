@@ -13,13 +13,14 @@ import {
   View,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import type { BibleBook, BibleChapter } from "../types/bible";
+import type { BibleBook, BibleChapter, BibleLocation } from "../types/bible";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
 import type { VerseBookmark } from "../types/bookmark";
 import { getBookmarks, removeBookmark, updateBookmarkComment, upsertBookmarks } from "../storage/bookmarks";
 import { getBibleData } from "../services/bibleData";
 import { bibleTranslations } from "../data/bibleTranslations";
+import { AppIcon, type AppIconName } from "../components/AppIcon";
 
 type ScreenView = "livros" | "capitulos" | "versiculos" | "leitura" | "marcado";
 type Testament = "antigoTestamento" | "novoTestamento";
@@ -30,13 +31,15 @@ const GOSPEL_BOOKS = ["São Mateus", "São Marcos", "São Lucas", "São João"];
 type Props = {
   theme: ThemePalette;
   settings: UserSettings;
+  initialSelection?: BibleLocation | null;
+  onInitialSelectionHandled?: () => void;
 };
 
 function bookmarkId(testament: Testament, livro: string, capitulo: number, versiculo: number): string {
   return `${testament}:${livro}:${capitulo}:${versiculo}`;
 }
 
-export function BibleScreen({ theme, settings }: Props) {
+export function BibleScreen({ theme, settings, initialSelection, onInitialSelectionHandled }: Props) {
   const [view, setView] = useState<ScreenView>("livros");
   const [activeTab, setActiveTab] = useState<TestamentTab>("antigoTestamento");
   const [book, setBook] = useState<BibleBook | null>(null);
@@ -59,6 +62,24 @@ export function BibleScreen({ theme, settings }: Props) {
   const testament: Testament = activeTab === "novoTestamento" ? "novoTestamento" : "antigoTestamento";
   const bibleData = getBibleData(settings.bibleTranslation);
   const books = bibleData[testament];
+
+  useEffect(() => {
+    if (!initialSelection) return;
+    const foundInOld = bibleData.antigoTestamento.find((b) => b.nome === initialSelection.livro);
+    const foundInNew = bibleData.novoTestamento.find((b) => b.nome === initialSelection.livro);
+    const foundBook = foundInOld ?? foundInNew;
+    const foundChapter = foundBook?.capitulos.find((c) => c.capitulo === initialSelection.capitulo);
+    if (foundBook && foundChapter) {
+      setActiveTab(foundInOld ? "antigoTestamento" : "novoTestamento");
+      setBook(foundBook);
+      setChapter(foundChapter);
+      setSelectedVerses(new Set());
+      setStartVerse(initialSelection.versiculoInicio ?? foundChapter.versiculos[0]?.versiculo ?? 1);
+      setView("leitura");
+    }
+    onInitialSelectionHandled?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSelection, bibleData]);
 
   function selectBook(b: BibleBook) {
     setBook(b);
@@ -212,35 +233,37 @@ export function BibleScreen({ theme, settings }: Props) {
     };
 
     return (
-      <View style={[styles.header, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        {view !== "livros" ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Voltar"
-            onPress={goBack}
-            style={styles.backBtn}
-          >
-            <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
-          </Pressable>
-        ) : (
-          <View style={styles.backBtn}>
-            <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
-          </View>
-        )}
-        <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
-          {titles[view]}
-        </Text>
-        <View style={styles.backBtn} />
+      <View style={styles.headerArea}>
+        <View style={[styles.header, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
+          {view !== "livros" ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar"
+              onPress={goBack}
+              style={styles.backBtn}
+            >
+              <Text style={[styles.backText, { color: theme.accent }]}>{"‹"}</Text>
+            </Pressable>
+          ) : (
+            <View style={styles.backBtn}>
+              <Image source={require("../../assets/icon.png")} style={styles.headerLogo} />
+            </View>
+          )}
+          <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
+            {titles[view]}
+          </Text>
+          <View style={styles.backBtn} />
+        </View>
       </View>
     );
   }
 
   // ── Tela: Livros (raiz, com tabs de testamento e marcados) ────────────────────
   if (view === "livros") {
-    const tabs: { key: TestamentTab; label: string }[] = [
+    const tabs: { key: TestamentTab; label: string; icon?: AppIconName }[] = [
       { key: "antigoTestamento", label: "Antigo" },
       { key: "novoTestamento", label: "Novo" },
-      { key: "marcados", label: "🔖 Marcados" },
+      { key: "marcados", label: "Marcados", icon: "bookmark" },
     ];
 
     return (
@@ -267,6 +290,10 @@ export function BibleScreen({ theme, settings }: Props) {
                     { color: isActive ? "#FFFFFF" : theme.mutedText, fontWeight: isActive ? "700" : "600" },
                   ]}
                 >
+                  {tab.icon ? (
+                    <AppIcon name={tab.icon} size={12} color={isActive ? "#FFFFFF" : theme.mutedText} />
+                  ) : null}
+                  {tab.icon ? "  " : ""}
                   {tab.label}
                 </Text>
               </Pressable>
@@ -317,7 +344,7 @@ export function BibleScreen({ theme, settings }: Props) {
                         numberOfLines={1}
                         style={[styles.rowComment, { color: theme.accent, fontSize: 12 * fs }]}
                       >
-                        {"\u{1F4AC} "}{item.comentario}
+                        <AppIcon name="comment" size={12} color={theme.accent} />{" "}{item.comentario}
                       </Text>
                     ) : null}
                   </View>
@@ -351,7 +378,7 @@ export function BibleScreen({ theme, settings }: Props) {
                 >
                   <View style={[styles.rowIndex, { backgroundColor: theme.accent }]}>
                     {isGospel ? (
-                      <Text style={styles.rowIndexCross}>✝</Text>
+                      <AppIcon name="cross" size={15} color="#FFFFFF" />
                     ) : (
                       <Text style={styles.rowIndexText}>{index + 1}</Text>
                     )}
@@ -498,7 +525,7 @@ export function BibleScreen({ theme, settings }: Props) {
               style={styles.actionButton}
               onPress={() => void handleCopy()}
             >
-              <Text style={styles.actionIcon}>{"\u{1F4CB}"}</Text>
+              <AppIcon name="copy" size={20} color={theme.titleText} />
               <Text allowFontScaling style={[styles.actionLabel, { color: theme.titleText }]}>Copiar</Text>
             </Pressable>
             <Pressable
@@ -507,7 +534,7 @@ export function BibleScreen({ theme, settings }: Props) {
               style={styles.actionButton}
               onPress={() => void handleShare()}
             >
-              <Text style={styles.actionIcon}>{"\u{1F4E4}"}</Text>
+              <AppIcon name="share" size={20} color={theme.titleText} />
               <Text allowFontScaling style={[styles.actionLabel, { color: theme.titleText }]}>Compartilhar</Text>
             </Pressable>
             <Pressable
@@ -516,7 +543,7 @@ export function BibleScreen({ theme, settings }: Props) {
               style={styles.actionButton}
               onPress={openMarkModal}
             >
-              <Text style={styles.actionIcon}>{"\u{1F516}"}</Text>
+              <AppIcon name="bookmark" size={20} color={theme.titleText} />
               <Text allowFontScaling style={[styles.actionLabel, { color: theme.titleText }]}>Marcar</Text>
             </Pressable>
           </View>
@@ -628,12 +655,18 @@ export function BibleScreen({ theme, settings }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  headerArea: {
+    paddingHorizontal: 14,
+    paddingTop: 14,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 14,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 16,
   },
   backBtn: { width: 40, alignItems: "center" },
   backText: { fontSize: 28, fontWeight: "700", lineHeight: 32 },
@@ -657,7 +690,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   rowIndexText: { color: "#FFFFFF", fontWeight: "700", fontSize: 13 },
-  rowIndexCross: { color: "#FFFFFF", fontWeight: "700", fontSize: 17 },
   rowBody: { flex: 1, paddingHorizontal: 12, paddingVertical: 10 },
   rowTitleLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   rowTitle: { fontWeight: "600" },
@@ -724,7 +756,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   actionButton: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2 },
-  actionIcon: { fontSize: 20 },
   actionLabel: { fontSize: 12, fontWeight: "600" },
   modalBackdrop: {
     flex: 1,

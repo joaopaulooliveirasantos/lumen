@@ -17,3 +17,9 @@ export interface BibleData {
   antigoTestamento: BibleBook[];
   novoTestamento: BibleBook[];
 }
+
+export interface BibleLocation {
+  livro: string;
+  capitulo: number;
+  versiculoInicio?: number;
+}

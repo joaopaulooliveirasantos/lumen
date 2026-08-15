@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { ActivityIndicator, Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { shadeColor } from "../services/color";
+import { AppIcon } from "./AppIcon";
 
 const DEFAULT_ACCENT = "#1E5C35";
 
@@ -44,11 +45,9 @@ export function LoadingScreen({ message = "Carregando...", accent = DEFAULT_ACCE
       end={{ x: 1, y: 1 }}
       style={styles.container}
     >
-      <Animated.Text
-        style={[styles.cross, { transform: [{ scale: crossScale }], opacity: crossOpacity }]}
-      >
-        ✝
-      </Animated.Text>
+      <Animated.View style={{ transform: [{ scale: crossScale }], opacity: crossOpacity }}>
+        <AppIcon name="cross" size={44} color="#F3D98B" />
+      </Animated.View>
 
       <View style={styles.divider} />
 
@@ -67,10 +66,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 32,
-  },
-  cross: {
-    fontSize: 56,
-    color: "#F3D98B",
   },
   divider: {
     width: 56,

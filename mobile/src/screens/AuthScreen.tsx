@@ -14,6 +14,7 @@ import {
 import * as AppleAuthentication from "expo-apple-authentication";
 import { AntDesign } from "@expo/vector-icons";
 import { useAuth } from "../state/AuthContext";
+import { AppIcon } from "../components/AppIcon";
 import type { ThemePalette } from "../types/theme";
 import type { UserSettings } from "../types/settings";
 
@@ -142,7 +143,7 @@ export function AuthScreen({ theme, settings, onExit }: Props) {
           onPress={onExit}
           style={styles.closeBtn}
         >
-          <Text style={[styles.closeText, { color: theme.accent }]}>{"✕"}</Text>
+          <AppIcon name="close" size={20} color={theme.accent} />
         </Pressable>
         <Text allowFontScaling style={[styles.headerTitle, { color: theme.titleText }]} numberOfLines={1}>
           {mode === "entrar" ? "Entrar" : "Criar conta"}

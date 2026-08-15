@@ -11,6 +11,7 @@ import { LiturgyScreen } from "./src/screens/LiturgyScreen";
 import { ProfileScreen } from "./src/screens/ProfileScreen";
 import { BibleScreen } from "./src/screens/BibleScreen";
 import { PrayersScreen } from "./src/screens/PrayersScreen";
+import { ReadingPlansScreen } from "./src/screens/ReadingPlansScreen";
 import { RosaryScreen } from "./src/screens/RosaryScreen";
 import { SaintStoryScreen } from "./src/screens/SaintStoryScreen";
 import { fetchDailyLiturgy, fetchSaintOfDay } from "./src/services/api";
@@ -18,8 +19,11 @@ import { addDays, formatIsoDate } from "./src/services/date";
 import { disableDailyReminder, scheduleDailyReminder } from "./src/services/notifications";
 import { getDailyCache, initCache, saveDailyCache } from "./src/storage/liturgyCache";
 import { getReadDays, markDayAsRead } from "./src/storage/readingHistory";
+import { getAllReadingPlanProgress, markReadingPlanDayCompleted } from "./src/storage/readingPlanProgress";
+import type { ReadingPlanProgress } from "./src/storage/readingPlanProgress";
 import { getRosaryDays, markRosaryAsPrayed } from "./src/storage/rosaryHistory";
 import { loadUserSettings, saveUserSettings } from "./src/storage/userSettings";
+import type { BibleLocation } from "./src/types/bible";
 import type { DailyLiturgyPayload, SaintOfDayPayload } from "./src/types/liturgy";
 import type { ThemePalette } from "./src/types/theme";
 import {
@@ -105,7 +109,11 @@ export default function App() {
   const [settingsReady, setSettingsReady] = useState(false);
   const [readDays, setReadDays] = useState<string[]>([]);
   const [rosaryDays, setRosaryDays] = useState<string[]>([]);
+  const [readingPlanProgress, setReadingPlanProgress] = useState<Record<string, ReadingPlanProgress>>({});
   const [rosaryOpen, setRosaryOpen] = useState(false);
+  const [readingPlansOpen, setReadingPlansOpen] = useState(false);
+  const [readingPlansInitialPlanId, setReadingPlansInitialPlanId] = useState<string | null>(null);
+  const [bibleDeepLink, setBibleDeepLink] = useState<BibleLocation | null>(null);
   const [saintStoryOpen, setSaintStoryOpen] = useState(false);
   const [authScreenOpen, setAuthScreenOpen] = useState(false);
 
@@ -122,14 +130,16 @@ export default function App() {
   useEffect(() => {
     async function bootstrap(): Promise<void> {
       await initCache();
-      const [loadedSettings, loadedReadDays, loadedRosaryDays] = await Promise.all([
+      const [loadedSettings, loadedReadDays, loadedRosaryDays, loadedReadingPlanProgress] = await Promise.all([
         loadUserSettings(),
         getReadDays(),
         getRosaryDays(),
+        getAllReadingPlanProgress(),
       ]);
       setSettings(loadedSettings);
       setReadDays(loadedReadDays);
       setRosaryDays(loadedRosaryDays);
+      setReadingPlanProgress(loadedReadingPlanProgress);
       setSettingsReady(true);
     }
     void bootstrap();
@@ -230,12 +240,22 @@ export default function App() {
   async function handleAmen(): Promise<void> {
     const updated = await markDayAsRead(selectedDate);
     setReadDays(updated);
-    Alert.alert("Am\u00e9m!", "Leitura da liturgia conclu\u00edda.");
   }
 
   async function handleRosaryFinished(): Promise<void> {
     const updated = await markRosaryAsPrayed(formatIsoDate(new Date()));
     setRosaryDays(updated);
+  }
+
+  async function handleReadingPlanDayCompleted(planoId: string, dia: number, duracaoDias: number): Promise<void> {
+    const updated = await markReadingPlanDayCompleted(planoId, dia, duracaoDias);
+    setReadingPlanProgress(updated);
+  }
+
+  function handleOpenBibleReference(location: BibleLocation): void {
+    setBibleDeepLink(location);
+    setReadingPlansOpen(false);
+    setActiveTab("biblia");
   }
 
   function renderScreen() {
@@ -251,6 +271,7 @@ export default function App() {
             theme={theme}
             readDays={readDays}
             rosaryDays={rosaryDays}
+            readingPlanProgress={readingPlanProgress}
             saintOfDay={saintOfDay}
             saintLoading={saintLoading}
             onRetry={() => void loadDate(selectedDate)}
@@ -259,6 +280,10 @@ export default function App() {
               setActiveTab("liturgia");
             }}
             onOpenRosary={() => setRosaryOpen(true)}
+            onOpenReadingPlan={(planId) => {
+              setReadingPlansInitialPlanId(planId ?? null);
+              setReadingPlansOpen(true);
+            }}
             onOpenSaintStory={() => setSaintStoryOpen(true)}
             onSelectDate={(date) => setSelectedDate(date)}
           />
@@ -278,7 +303,14 @@ export default function App() {
           />
         );
       case "biblia":
-        return <BibleScreen theme={theme} settings={settings} />;
+        return (
+          <BibleScreen
+            theme={theme}
+            settings={settings}
+            initialSelection={bibleDeepLink}
+            onInitialSelectionHandled={() => setBibleDeepLink(null)}
+          />
+        );
       case "oracoes":
         return <PrayersScreen theme={theme} settings={settings} />;
       case "perfil":
@@ -286,7 +318,6 @@ export default function App() {
           <ProfileScreen
             theme={theme}
             settings={settings}
-            onUpdateFontScale={updateFontScale}
             onUpdateReadingMode={updateReadingMode}
             onUpdateBibleTranslation={updateBibleTranslation}
             onReminderTimeChange={(value) =>
@@ -321,6 +352,19 @@ export default function App() {
                 settings={settings}
                 onExit={() => setRosaryOpen(false)}
                 onFinish={() => void handleRosaryFinished()}
+                onUpdateFontScale={updateFontScale}
+              />
+            ) : readingPlansOpen ? (
+              <ReadingPlansScreen
+                theme={theme}
+                settings={settings}
+                progress={readingPlanProgress}
+                initialPlanId={readingPlansInitialPlanId}
+                onDayCompleted={(planoId, dia, duracaoDias) =>
+                  void handleReadingPlanDayCompleted(planoId, dia, duracaoDias)
+                }
+                onOpenBibleReference={handleOpenBibleReference}
+                onExit={() => setReadingPlansOpen(false)}
               />
             ) : saintStoryOpen ? (
               <SaintStoryScreen
@@ -339,6 +383,7 @@ export default function App() {
             activeTab={activeTab}
             onTabPress={(tab) => {
               setRosaryOpen(false);
+              setReadingPlansOpen(false);
               setSaintStoryOpen(false);
               setAuthScreenOpen(false);
               setActiveTab(tab);
