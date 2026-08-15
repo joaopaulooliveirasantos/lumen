@@ -126,6 +126,39 @@ function resolveReference(bibleData, reference) {
 }
 
 // ---------------------------------------------------------------------------
+// Exceções conhecidas: lacunas reais de conteúdo entre as duas traduções
+// bundladas (não são erros de transcrição/typo, não dá pra "consertar"
+// ajustando a referência — a tradução simplesmente não tem esses capítulos).
+// Cada entrada precisa do motivo documentado. Uma falha só é ignorada aqui
+// se bater exatamente com plano+dia+tradução+livro+capítulos — qualquer
+// outra falha (inclusive uma nova lacuna no mesmo livro) ainda quebra o CI.
+// ---------------------------------------------------------------------------
+const KNOWN_GAPS = [
+  {
+    plano: "biblia-em-um-ano",
+    dia: 227,
+    traducao: "paulus",
+    livro: "Ester",
+    capituloInicio: 14,
+    capituloFim: 16,
+    motivo:
+      'A tradução Paulus só traz 10 capítulos de Ester (sem os acréscimos deuterocanônicos gregos que a Ave Maria numera como 11-16). Para quem lê nessa tradução, este trecho específico do dia 227 fica sem texto — o botão "Ester 14–16" ainda abre a tela da Bíblia normalmente.',
+  },
+];
+
+function isKnownGap(failure) {
+  return KNOWN_GAPS.some(
+    (g) =>
+      g.plano === failure.plano &&
+      g.dia === failure.dia &&
+      g.traducao === failure.traducao &&
+      g.livro === failure.referencia.livro &&
+      g.capituloInicio === failure.referencia.capituloInicio &&
+      g.capituloFim === failure.referencia.capituloFim,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 function main() {
@@ -167,18 +200,31 @@ function main() {
     }
   }
 
+  const knownFailures = failures.filter(isKnownGap);
+  const newFailures = failures.filter((f) => !isKnownGap(f));
+
   console.log(`Planos verificados: ${readingPlans.length}`);
   console.log(`Referências verificadas: ${totalRefs} (× ${translations.length} traduções)`);
 
-  if (failures.length > 0) {
-    console.error(`\n${failures.length} FALHA(S) ENCONTRADA(S):\n`);
-    for (const f of failures) {
+  if (knownFailures.length > 0) {
+    console.log(`\n${knownFailures.length} lacuna(s) conhecida(s) e documentada(s) (não quebram o build):`);
+    for (const f of knownFailures) {
+      const gap = KNOWN_GAPS.find(
+        (g) => g.plano === f.plano && g.dia === f.dia && g.traducao === f.traducao && g.livro === f.referencia.livro,
+      );
+      console.log(`  - [${f.plano} / dia ${f.dia} / ${f.traducao}] ${f.referencia.livro}: ${gap.motivo}`);
+    }
+  }
+
+  if (newFailures.length > 0) {
+    console.error(`\n${newFailures.length} FALHA(S) NOVA(S) ENCONTRADA(S):\n`);
+    for (const f of newFailures) {
       console.error(JSON.stringify(f));
     }
     process.exit(1);
   }
 
-  console.log("\nOK — todas as referências resolvem em ambas as traduções.");
+  console.log("\nOK — todas as referências resolvem em ambas as traduções (fora as lacunas conhecidas acima).");
 }
 
 main();
