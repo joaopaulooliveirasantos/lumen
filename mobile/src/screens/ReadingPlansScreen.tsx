@@ -35,6 +35,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   catequetico: "Catequese",
   mariano: "Mariano",
   familia: "Família",
+  "biblia-anual": "Bíblia em 1 Ano",
 };
 
 type Props = {
@@ -229,47 +230,50 @@ export function ReadingPlansScreen({
     return (
       <View style={[styles.container, { backgroundColor: theme.appBackground }]}>
         <Header title={plan.titulo} onBack={handleBack} />
-        <ScrollView contentContainerStyle={styles.detalheContent}>
-          <Image source={plan.capa.imagem} style={styles.detalheImagem} resizeMode="cover" />
-          <Text allowFontScaling style={[styles.detalheTitulo, { color: theme.titleText, fontSize: 20 * fs }]}>
-            {plan.titulo}
-          </Text>
-          <Text allowFontScaling style={[styles.detalheSubtitulo, { color: theme.mutedText, fontSize: 14 * fs }]}>
-            {plan.subtitulo}
-          </Text>
-          <Text allowFontScaling style={[styles.detalheDuracao, { color: theme.accent, fontSize: 12 * fs }]}>
-            {plan.duracaoDias} dias · {CATEGORY_LABELS[plan.categoria] ?? plan.categoria}
-          </Text>
-
-          <View style={styles.diasList}>
-            {plan.dias.map((day) => {
-              const isDone = concluidos.has(day.dia);
-              return (
-                <Pressable
-                  key={day.dia}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Dia ${day.dia}: ${day.titulo}${isDone ? ", concluído" : ""}`}
-                  style={[styles.diaRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
-                  onPress={() => openDay(day.dia)}
-                >
-                  <View style={[styles.diaNumero, { backgroundColor: isDone ? theme.accent : `${theme.accent}22` }]}>
-                    <Text style={[styles.diaNumeroText, { color: isDone ? "#FFFFFF" : theme.accent }]}>
-                      {isDone ? "✓" : day.dia}
-                    </Text>
-                  </View>
-                  <Text
-                    allowFontScaling
-                    numberOfLines={1}
-                    style={[styles.diaTitulo, { color: theme.titleText, fontSize: 14 * fs }]}
-                  >
-                    {day.titulo}
+        <FlatList
+          data={plan.dias}
+          keyExtractor={(day) => String(day.dia)}
+          contentContainerStyle={styles.detalheContent}
+          ListHeaderComponent={
+            <>
+              <Image source={plan.capa.imagem} style={styles.detalheImagem} resizeMode="cover" />
+              <Text allowFontScaling style={[styles.detalheTitulo, { color: theme.titleText, fontSize: 20 * fs }]}>
+                {plan.titulo}
+              </Text>
+              <Text allowFontScaling style={[styles.detalheSubtitulo, { color: theme.mutedText, fontSize: 14 * fs }]}>
+                {plan.subtitulo}
+              </Text>
+              <Text allowFontScaling style={[styles.detalheDuracao, { color: theme.accent, fontSize: 12 * fs }]}>
+                {plan.duracaoDias} dias · {CATEGORY_LABELS[plan.categoria] ?? plan.categoria}
+              </Text>
+            </>
+          }
+          renderItem={({ item: day }) => {
+            const isDone = concluidos.has(day.dia);
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Dia ${day.dia}: ${day.titulo}${isDone ? ", concluído" : ""}`}
+                style={[styles.diaRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+                onPress={() => openDay(day.dia)}
+              >
+                <View style={[styles.diaNumero, { backgroundColor: isDone ? theme.accent : `${theme.accent}22` }]}>
+                  <Text style={[styles.diaNumeroText, { color: isDone ? "#FFFFFF" : theme.accent }]}>
+                    {isDone ? "✓" : day.dia}
                   </Text>
-                  <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </ScrollView>
+                </View>
+                <Text
+                  allowFontScaling
+                  numberOfLines={1}
+                  style={[styles.diaTitulo, { color: theme.titleText, fontSize: 14 * fs }]}
+                >
+                  {day.titulo}
+                </Text>
+                <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+              </Pressable>
+            );
+          }}
+        />
 
         <View style={[styles.footer, { backgroundColor: theme.appBackground, borderTopColor: theme.border }]}>
           <Pressable
@@ -501,10 +505,10 @@ const styles = StyleSheet.create({
   detalheTitulo: { fontWeight: "800", textAlign: "center" },
   detalheSubtitulo: { textAlign: "center", marginTop: 4 },
   detalheDuracao: { fontWeight: "700", marginTop: 8, marginBottom: 18 },
-  diasList: { width: "100%" },
   diaRow: {
     flexDirection: "row",
     alignItems: "center",
+    alignSelf: "stretch",
     borderRadius: 12,
     borderWidth: 1,
     paddingVertical: 10,

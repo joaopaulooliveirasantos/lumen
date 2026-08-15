@@ -1,4 +1,5 @@
 import type { ReadingPlan } from "../types/readingPlan";
+import { diasBibliaEmUmAno } from "./readingPlans/bibliaEmUmAno";
 
 export const readingPlans: ReadingPlan[] = [
   {
@@ -761,5 +762,15 @@ export const readingPlans: ReadingPlan[] = [
         catecismo: { paragrafo: 312, tema: "Deus tira o bem até do mal, como na história de José", trecho: "Com o tempo, é possível descobrir que Deus, na sua omnipotente Providência, pode tirar um bem das consequências dum mal, causado pelas criaturas: «Não, não fostes vós – diz José a seus irmãos – que me fizestes vir para aqui. Foi Deus. […] Premeditastes contra mim o mal: o desígnio de Deus aproveitou-o para o bem […] e um povo numeroso foi salvo» (Gn 45, 8; 50, 20)." },
       },
     ],
+  },
+  {
+    id: "biblia-em-um-ano",
+    titulo: "Bíblia em 1 Ano",
+    subtitulo: "A Bíblia no meu dia a dia — método Mons. Jonas Abib",
+    categoria: "biblia-anual",
+    duracaoDias: 346,
+    destaque: true,
+    capa: { imagem: require("../../assets/reading-plans/biblia-em-um-ano.png"), corBase: "#7C2D12" },
+    dias: diasBibliaEmUmAno,
   },
 ];

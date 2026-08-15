@@ -34,3 +34,6 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Validar referencias dos planos de leitura
+        run: npm run validate:reading-plans

@@ -28,7 +28,8 @@ export type ReadingPlanCategory =
   | "sapiencial"
   | "catequetico"
   | "mariano"
-  | "familia";
+  | "familia"
+  | "biblia-anual";
 
 export interface ReadingPlanCover {
   imagem: ImageSourcePropType;
