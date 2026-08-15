@@ -1,0 +1,58 @@
+name: Mobile Deploy (EAS Build + Submit)
+
+# Gatilho manual (botao "Run workflow" no GitHub). Builds na EAS custam
+# credito/minutos e o submit a loja e praticamente irreversivel, entao
+# nao ligamos isso em push/PR automatico por enquanto — ver secao 11 do
+# plano de CI/CD (doc/README-cicd.md).
+#
+# O que esse workflow faz: autentica no EAS CLI com um token de acesso
+# (EXPO_TOKEN) e dispara os EAS Workflows ja versionados no repo
+# (.eas/workflows/build-production.yml e submit-android.yml), que rodam
+# na infraestrutura da propria EAS — este job so aciona e acompanha o
+# resultado, nao faz o build/submit localmente.
+on:
+  workflow_dispatch:
+    inputs:
+      submeter_para_loja:
+        description: "Depois do build, tambem submeter para a Play Store (track interno)?"
+        type: boolean
+        default: false
+
+concurrency:
+  group: mobile-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: EAS Build (Android + iOS, producao)
+    runs-on: ubuntu-latest
+    environment: production-mobile
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Configurar EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Rodar build-production.yml na EAS
+        run: eas workflow:run .eas/workflows/build-production.yml --non-interactive --wait
+
+      - name: Rodar submit-android.yml na EAS
+        if: ${{ inputs.submeter_para_loja }}
+        run: eas workflow:run .eas/workflows/submit-android.yml --non-interactive --wait

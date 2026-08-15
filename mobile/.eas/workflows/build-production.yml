@@ -1,0 +1,19 @@
+name: Build de producao (Android + iOS)
+
+# Disparo manual, de duas formas:
+#   1) do terminal, dentro de mobile/: eas workflow:run .eas/workflows/build-production.yml
+#   2) pelo GitHub: Actions -> Mobile Deploy (EAS Build + Submit) -> Run workflow
+# (.github/workflows/mobile-deploy.yml, precisa do secret EXPO_TOKEN).
+# Fase 4/7 do plano de CI/CD — ver doc/README-cicd.md.
+
+jobs:
+  build_android:
+    type: build
+    params:
+      platform: android
+      profile: production
+  build_ios:
+    type: build
+    params:
+      platform: ios
+      profile: production

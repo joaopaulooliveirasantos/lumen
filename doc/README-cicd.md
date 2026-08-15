@@ -36,23 +36,54 @@ Recomendado também criar o *environment* `production-backend` (Settings
 → Environments) com *required reviewers*, para exigir uma aprovação
 manual antes do job rodar de verdade.
 
-## CD do mobile (manual, via EAS Workflows)
+## CD do mobile (manual, GitHub Actions aciona EAS Workflows)
 
-Em vez de reimplementar `eas build`/`eas submit` como job do GitHub
-Actions, o build e a submissão do mobile usam
+O build/submit em si continuam definidos como
 [EAS Workflows](https://docs.expo.dev/eas/workflows/introduction/) —
 ferramenta nativa da Expo, já que o projeto usa EAS (`mobile/eas.json`).
+Note que `.eas/workflows/` mora dentro de `mobile/` (mesmo diretório do
+`eas.json`), não na raiz do repo — é assim que o `eas-cli` os localiza.
 
-| Workflow | Como rodar | O que faz |
-|---|---|---|
-| [`.eas/workflows/build-production.yml`](../.eas/workflows/build-production.yml) | `eas workflow:run .eas/workflows/build-production.yml` (do terminal, dentro de `mobile/`) | Build Android + iOS, perfil `production` |
-| [`.eas/workflows/submit-android.yml`](../.eas/workflows/submit-android.yml) | `eas workflow:run .eas/workflows/submit-android.yml` | Submete o `.aab` mais recente pro Play Store (track interno) |
+| Workflow EAS | O que faz |
+|---|---|
+| [`mobile/.eas/workflows/build-production.yml`](../mobile/.eas/workflows/build-production.yml) | Build Android + iOS, perfil `production` |
+| [`mobile/.eas/workflows/submit-android.yml`](../mobile/.eas/workflows/submit-android.yml) | Submete o `.aab` mais recente pro Play Store (track interno) |
 
-Os dois usam a sessão já autenticada do EAS CLI local — não precisam de
-token adicional pra esse uso manual. O submit usa o mesmo
-`serviceAccountKeyPath` já configurado em `mobile/eas.json`. Submissão
-iOS fica de fora por enquanto (exigiria credenciais da App Store Connect
-que o projeto ainda não tem).
+Dá pra rodar os dois direto do terminal (`cd mobile && eas workflow:run
+.eas/workflows/build-production.yml`, sessão do EAS CLI local já
+autenticada) **ou**, agora, pelo botão **Actions → Mobile Deploy (EAS
+Build + Submit) → Run workflow** no GitHub — usando
+[`.github/workflows/mobile-deploy.yml`](../.github/workflows/mobile-deploy.yml).
+Esse workflow só autentica e aciona os EAS Workflows acima (que rodam na
+infraestrutura da própria EAS) — não faz build/submit dentro do runner
+do GitHub. Tem uma opção (`submeter_para_loja`) pra também rodar o
+submit logo depois do build, na mesma execução.
+
+**Segredo necessário no GitHub** (Settings → Secrets and variables →
+Actions), antes da primeira execução:
+- `EXPO_TOKEN` (secret) — um Access Token da sua conta Expo (expo.dev →
+  Account Settings → Access Tokens → Create), **não** é a mesma coisa
+  que a sua senha; ele só autentica o `eas-cli` a agir em seu nome.
+
+**Pré-requisito único para o submit funcionar via GitHub/EAS Workflows**
+(diferente do build): o `serviceAccountKeyPath` em `mobile/eas.json`
+aponta pra um arquivo local (fora do repo) que só existe na sua máquina
+— isso funciona pra `eas submit` rodado localmente, mas não pra quando o
+submit roda na infraestrutura da EAS (via EAS Workflows, seja disparado
+do terminal ou do GitHub Actions). Para esses casos, a própria EAS
+precisa ter a chave já cadastrada nas credenciais do projeto — suba ela
+uma vez com `eas credentials` (fluxo interativo: escolha Android →
+production → "Google Service Account") ou pelo painel do projeto em
+expo.dev → *Credentials*. Depois de cadastrada lá, tanto `eas
+workflow:run submit-android.yml` quanto o botão no GitHub passam a
+funcionar sem precisar de mais nenhum segredo (a chave não precisa virar
+segredo do GitHub). Submissão iOS fica de fora por enquanto (exigiria
+credenciais da App Store Connect que o projeto ainda não tem).
+
+Recomendado também criar o *environment* `production-mobile` (Settings
+→ Environments) com *required reviewers*, mesmo padrão do
+`production-backend` — dá uma trava de aprovação manual antes do build
+(e principalmente do submit) rodar de verdade.
 
 ### EAS Update (OTA) — não implementado ainda
 
@@ -68,8 +99,11 @@ e execução autenticada do dono do projeto.
 
 - **Branch protection** na `main`: exigir `backend-ci`/`mobile-ci`
   verdes antes de merge (Settings → Branches).
-- **Environments** `production-backend` e `store-submit` com required
-  reviewers (ver acima).
+- **Environments** `production-backend` e `production-mobile` com
+  required reviewers (ver acima).
+- Criar o secret `EXPO_TOKEN` e, se for usar o submit via GitHub/EAS
+  Workflows, cadastrar o Google Service Account nas credenciais do
+  projeto na EAS (`eas credentials`) — ver seção acima.
 
 ## Decisões em aberto
 
@@ -78,3 +112,8 @@ e execução autenticada do dono do projeto.
 - Vale incluir EAS Update nesta fase ou deixar para depois?
 - Vale automatizar `submit-android.yml` também via gatilho automático
   (ex.: tag de release) ou manter sempre manual?
+- Vale usar o app nativo do Expo no GitHub (Account Settings >
+  Connections, com Build Triggers configurados no painel expo.dev) em
+  vez do botão no GitHub Actions? Ficou de fora por exigir vincular a
+  conta GitHub à Expo via OAuth (só o dono da conta pode fazer) e por
+  deixar a configuração de gatilhos fora do repo (não versionada).

@@ -1,0 +1,18 @@
+name: Submit Android (Play Store, track interno)
+
+# Disparo manual, de duas formas (mesmas do build-production.yml):
+#   1) do terminal, dentro de mobile/: eas workflow:run .eas/workflows/submit-android.yml
+#   2) pelo GitHub: Actions -> Mobile Deploy (EAS Build + Submit) -> Run workflow,
+#      marcando a opcao "submeter_para_loja".
+# Publicacao e irreversivel — nao automatizar via push/PR (ver decisao
+# em aberto na secao 11 do plano de CI/CD). Quando rodado pela EAS (terminal
+# ou GitHub Actions), usa a credencial Android cadastrada nas Credentials do
+# projeto na EAS (eas credentials) — nao o serviceAccountKeyPath local de
+# mobile/eas.json, que so vale para "eas submit" rodado nesta maquina.
+
+jobs:
+  submit_android:
+    type: submit
+    params:
+      platform: android
+      profile: production
