@@ -7,7 +7,7 @@ import type { ThemePalette } from "../types/theme";
 type Props = {
   plan: ReadingPlan;
   theme: ThemePalette;
-  size: "carrossel" | "lista";
+  size: "carrossel" | "lista" | "compacto";
   statusInfo?: PlanStatusInfo;
   onPress: () => void;
 };
@@ -60,7 +60,11 @@ export function ReadingPlanCard({ plan, theme, size, statusInfo, onPress }: Prop
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${plan.titulo}, ${plan.duracaoDias} dias`}
-      style={[styles.listaRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+      style={[
+        styles.listaRow,
+        size === "compacto" && styles.compactoRow,
+        { backgroundColor: theme.cardBackground, borderColor: theme.border },
+      ]}
       onPress={onPress}
     >
       <Image source={plan.capa.imagem} style={styles.listaIcon} resizeMode="cover" />
@@ -132,4 +136,5 @@ const styles = StyleSheet.create({
   listaSub: { marginTop: 2, fontSize: 12 },
   listaStatus: { marginTop: 4, fontSize: 11, fontWeight: "700" },
   chevron: { paddingHorizontal: 8, fontSize: 20 },
+  compactoRow: { width: 280, marginRight: 12, marginBottom: 0 },
 });

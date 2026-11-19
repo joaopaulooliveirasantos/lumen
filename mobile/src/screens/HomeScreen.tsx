@@ -296,7 +296,7 @@ function ReadingPlansCarousel({
           <ReadingPlanCard
             plan={item}
             theme={theme}
-            size="carrossel"
+            size="compacto"
             statusInfo={getPlanStatus(item, readingPlanProgress[item.id])}
             onPress={() => onOpenReadingPlan(item.id)}
           />

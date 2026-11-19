@@ -130,22 +130,16 @@ export function ReadingPlansScreen({
           <Text allowFontScaling style={[styles.sectionLabel, { color: theme.mutedText }]}>
             Em destaque
           </Text>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={destaquePlans}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.carrosselList}
-            renderItem={({ item }) => (
-              <ReadingPlanCard
-                plan={item}
-                theme={theme}
-                size="carrossel"
-                statusInfo={getPlanStatus(item, progress[item.id])}
-                onPress={() => openPlan(item)}
-              />
-            )}
-          />
+          {destaquePlans.map((item) => (
+            <ReadingPlanCard
+              key={item.id}
+              plan={item}
+              theme={theme}
+              size="lista"
+              statusInfo={getPlanStatus(item, progress[item.id])}
+              onPress={() => openPlan(item)}
+            />
+          ))}
 
           <Pressable
             accessibilityRole="button"
@@ -475,7 +469,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   destaquesContent: { padding: 14, paddingBottom: 28 },
-  carrosselList: { paddingRight: 12, paddingBottom: 4 },
   verTodosBtn: {
     marginTop: 20,
     minHeight: 48,

@@ -2,7 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../state/AuthContext";
 import { AppIcon, type AppIconName } from "./AppIcon";
-import { BRAND_GOLD, BRAND_GOLD_SOFT, ICON_INACTIVE_OPACITY } from "../theme/brand";
+import { BRAND_GOLD, ICON_INACTIVE_OPACITY } from "../theme/brand";
 import type { ThemePalette } from "../types/theme";
 
 export type TabName = "home" | "liturgia" | "biblia" | "oracoes" | "perfil";
@@ -62,7 +62,8 @@ export function BottomTabBar({ activeTab, onTabPress, theme }: Props) {
                 ]}
               />
             ) : (
-              <View style={[styles.iconWrap, isActive && { backgroundColor: BRAND_GOLD_SOFT }]}>
+              // accent e sempre #RRGGBB; sufixo "33" = ~20% de opacidade.
+              <View style={[styles.iconWrap, isActive && { backgroundColor: `${theme.accent}33` }]}>
                 <AppIcon
                   name={tab.icon}
                   size={20}
