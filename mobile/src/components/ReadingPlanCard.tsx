@@ -56,15 +56,27 @@ export function ReadingPlanCard({ plan, theme, size, statusInfo, onPress }: Prop
     );
   }
 
+  if (size === "compacto") {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${plan.titulo}, ${plan.duracaoDias} dias`}
+        style={[styles.compactoRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+        onPress={onPress}
+      >
+        <Image source={plan.capa.imagem} style={styles.compactoIcon} resizeMode="cover" />
+        <Text allowFontScaling numberOfLines={2} style={[styles.compactoTitle, { color: theme.titleText }]}>
+          {plan.titulo}
+        </Text>
+      </Pressable>
+    );
+  }
+
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${plan.titulo}, ${plan.duracaoDias} dias`}
-      style={[
-        styles.listaRow,
-        size === "compacto" && styles.compactoRow,
-        { backgroundColor: theme.cardBackground, borderColor: theme.border },
-      ]}
+      style={[styles.listaRow, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
       onPress={onPress}
     >
       <Image source={plan.capa.imagem} style={styles.listaIcon} resizeMode="cover" />
@@ -136,5 +148,16 @@ const styles = StyleSheet.create({
   listaSub: { marginTop: 2, fontSize: 12 },
   listaStatus: { marginTop: 4, fontSize: 11, fontWeight: "700" },
   chevron: { paddingHorizontal: 8, fontSize: 20 },
-  compactoRow: { width: 280, marginRight: 12, marginBottom: 0 },
+  compactoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: 190,
+    minHeight: 56,
+    marginRight: 10,
+    padding: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  compactoIcon: { width: 36, height: 36, borderRadius: 10, marginRight: 10 },
+  compactoTitle: { flex: 1, fontWeight: "700", fontSize: 13 },
 });

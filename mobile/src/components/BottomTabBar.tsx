@@ -2,7 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../state/AuthContext";
 import { AppIcon, type AppIconName } from "./AppIcon";
-import { BRAND_GOLD, ICON_INACTIVE_OPACITY } from "../theme/brand";
+import { ICON_INACTIVE_OPACITY } from "../theme/brand";
 import type { ThemePalette } from "../types/theme";
 
 export type TabName = "home" | "liturgia" | "biblia" | "oracoes" | "perfil";
@@ -57,7 +57,7 @@ export function BottomTabBar({ activeTab, onTabPress, theme }: Props) {
                 source={{ uri: avatarUrl }}
                 style={[
                   styles.avatarIcon,
-                  { borderColor: isActive ? BRAND_GOLD : "transparent" },
+                  { borderColor: isActive ? theme.accent : "transparent" },
                   !isActive && { opacity: ICON_INACTIVE_OPACITY },
                 ]}
               />
@@ -67,7 +67,7 @@ export function BottomTabBar({ activeTab, onTabPress, theme }: Props) {
                 <AppIcon
                   name={tab.icon}
                   size={20}
-                  color={isActive ? BRAND_GOLD : theme.mutedText}
+                  color={isActive ? theme.accent : theme.mutedText}
                   style={!isActive && { opacity: ICON_INACTIVE_OPACITY }}
                 />
               </View>
@@ -75,7 +75,7 @@ export function BottomTabBar({ activeTab, onTabPress, theme }: Props) {
             <Text
               style={[
                 styles.label,
-                { color: isActive ? BRAND_GOLD : theme.mutedText },
+                { color: isActive ? theme.accent : theme.mutedText },
                 isActive && styles.activeLabel,
               ]}
               numberOfLines={1}

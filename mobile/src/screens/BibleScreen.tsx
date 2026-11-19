@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
@@ -53,7 +54,8 @@ export function BibleScreen({ theme, settings, initialSelection, onInitialSelect
   const [markComment, setMarkComment] = useState("");
 
   const fs = settings.fontScale;
-
+  const { width: windowWidth } = useWindowDimensions();
+  const bookCols = windowWidth >= 600 ? 4 : 3;
   useEffect(() => {
     void getBookmarks().then(setBookmarks);
   }, []);
@@ -355,10 +357,11 @@ export function BibleScreen({ theme, settings, initialSelection, onInitialSelect
           )
         ) : (
           <FlatList
-            key="list-livros"
+            key={`grid-livros-${bookCols}`}
             data={books}
+            numColumns={bookCols}
             keyExtractor={(item) => item.nome}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={styles.bookGrid}
             renderItem={({ item, index }) => {
               const isGospel = testament === "novoTestamento" && GOSPEL_BOOKS.includes(item.nome);
               return (
@@ -366,7 +369,7 @@ export function BibleScreen({ theme, settings, initialSelection, onInitialSelect
                   accessibilityRole="button"
                   accessibilityLabel={isGospel ? `${item.nome}, Evangelho` : item.nome}
                   style={[
-                    styles.row,
+                    styles.bookCell,
                     { backgroundColor: theme.cardBackground, borderColor: theme.border },
                     isGospel && {
                       borderColor: theme.accent,
@@ -376,34 +379,18 @@ export function BibleScreen({ theme, settings, initialSelection, onInitialSelect
                   ]}
                   onPress={() => selectBook(item)}
                 >
-                  <View style={[styles.rowIndex, { backgroundColor: theme.accent }]}>
-                    {isGospel ? (
-                      <AppIcon name="cross" size={15} color="#FFFFFF" />
-                    ) : (
-                      <Text style={styles.rowIndexText}>{index + 1}</Text>
-                    )}
-                  </View>
-                  <View style={styles.rowBody}>
-                    <View style={styles.rowTitleLine}>
-                      <Text
-                        allowFontScaling
-                        style={[styles.rowTitle, { color: theme.titleText, fontSize: 15 * fs }]}
-                      >
-                        {item.nome}
-                      </Text>
-                      {isGospel ? (
-                        <View style={[styles.gospelBadge, { backgroundColor: theme.accent }]}>
-                          <Text allowFontScaling style={styles.gospelBadgeText}>
-                            Evangelho
-                          </Text>
-                        </View>
-                      ) : null}
-                    </View>
-                    <Text allowFontScaling style={[styles.rowSub, { color: theme.mutedText, fontSize: 12 * fs }]}>
-                      {item.capitulos.length} {item.capitulos.length === 1 ? "capítulo" : "capítulos"}
-                    </Text>
-                  </View>
-                  <Text style={[styles.chevron, { color: theme.mutedText }]}>{"›"}</Text>
+                  {isGospel ? (
+                    <AppIcon name="cross" size={13} color={theme.accent} />
+                  ) : (
+                    <Text style={[styles.bookIndex, { color: theme.accent }]}>{index + 1}</Text>
+                  )}
+                  <Text
+                    allowFontScaling
+                    numberOfLines={3}
+                    style={[styles.bookName, { color: theme.titleText, fontSize: 13 * fs }]}
+                  >
+                    {item.nome}
+                  </Text>
                 </Pressable>
               );
             }}
@@ -683,28 +670,27 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   rowAccent: { width: 4, alignSelf: "stretch" },
-  rowIndex: {
-    width: 40,
-    alignSelf: "stretch",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rowIndexText: { color: "#FFFFFF", fontWeight: "700", fontSize: 13 },
   rowBody: { flex: 1, paddingHorizontal: 12, paddingVertical: 10 },
-  rowTitleLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
   rowTitle: { fontWeight: "600" },
-  gospelBadge: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  gospelBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 9,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
   rowSub: { marginTop: 2 },
   rowComment: { marginTop: 4, fontStyle: "italic" },
   chevron: { paddingHorizontal: 12, fontSize: 20 },
   chapterGrid: { padding: 12, gap: 8 },
+  bookGrid: { padding: 8, paddingBottom: 24 },
+  bookCell: {
+    flex: 1,
+    margin: 4,
+    minHeight: 72,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    gap: 4,
+  },
+  bookIndex: { fontSize: 11, fontWeight: "700" },
+  bookName: { fontWeight: "600", textAlign: "center" },
   chapterCell: {
     flex: 1,
     margin: 4,
