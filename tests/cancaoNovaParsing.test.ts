@@ -100,6 +100,17 @@ describe("parseSaintStory", () => {
     expect(() => parseSaintStory('<h1 class="entry-title"><span>Santo X</span></h1>')).toThrow();
   });
 
+  it("tolera bloco de compartilhar com aspas duplas e apendice em <h3><b>", () => {
+    const html = `<h1 class="entry-title"><span>Santa X</span></h1><div class="entry-content content-santo"><ul id="share-buttons" style="display:none"><li><a href="x"></a></li></ul><p><strong>Origens</strong></p><p>Texto.</p><h3><b>Outros santos e beatos celebrados em 17 de novembro</b></h3><ul><li>Outro santo</li></ul></div></article>`;
+
+    const result = parseSaintStory(html);
+
+    expect(result.paragrafos).toEqual([
+      { tipo: "titulo", texto: "Origens" },
+      { tipo: "texto", texto: "Texto." },
+    ]);
+  });
+
   it("codifica acentos no nome do arquivo da imagem (o servidor de imagens devolve 404 para a url crua)", () => {
     const html = `<h1 class="entry-title"><span>Santa X</span></h1><div class="entry-content content-santo"><p><img src="https://img.cancaonova.com/cnimages/São-João-1.jpg" /></p><p><strong>Origens</strong></p><p>Texto.</p></div></article>`;
 

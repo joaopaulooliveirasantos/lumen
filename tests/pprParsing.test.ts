@@ -58,6 +58,12 @@ describe("parseReadingSection", () => {
 
     expect(result.texto).toBe("Naquele tempo, Jesus disse.\n\nE os discípulos ouviram.");
   });
+
+  it("aceita atributos adicionais apos data-liturgy-target no corpo", () => {
+    const chunk = `<div class="reading-title" data-liturgy-target="gospelTitle">Leitura do Livro do profeta Isaías<span class="reading-reference" style="margin-left: 8px;">Is 1,1-3</span></div><div class="reading-body primeira leitura" data-liturgy-target="readingBody" data-reading-type="first_reading"><p>1Assim diz o Senhor.</p></div>`;
+
+    expect(parseReadingSection(chunk).texto).toBe("Assim diz o Senhor.");
+  });
 });
 
 describe("parsePsalmSection", () => {

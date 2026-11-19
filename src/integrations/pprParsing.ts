@@ -42,7 +42,7 @@ export function parseReadingSection(chunkHtml: string): ReadingSection {
     throw new Error("Titulo/referencia da leitura nao encontrados no conteudo do Padre Paulo Ricardo.");
   }
 
-  const bodyMatch = chunkHtml.match(/data-liturgy-target="readingBody">([\s\S]*)$/);
+  const bodyMatch = chunkHtml.match(/data-liturgy-target="readingBody"[^>]*>([\s\S]*)$/);
   if (!bodyMatch) {
     throw new Error("Corpo da leitura nao encontrado no conteudo do Padre Paulo Ricardo.");
   }
@@ -73,7 +73,7 @@ export function parsePsalmSection(chunkHtml: string): PsalmSection {
     throw new Error("Refrao/referencia do salmo nao encontrados no conteudo do Padre Paulo Ricardo.");
   }
 
-  const bodyMatch = chunkHtml.match(/data-liturgy-target="readingBody">([\s\S]*)$/);
+  const bodyMatch = chunkHtml.match(/data-liturgy-target="readingBody"[^>]*>([\s\S]*)$/);
   if (!bodyMatch) {
     throw new Error("Corpo do salmo nao encontrado no conteudo do Padre Paulo Ricardo.");
   }
@@ -105,7 +105,7 @@ export interface MeditationSection {
 
 export function parseMeditationSection(chunkHtml: string): MeditationSection | null {
   const titleMatch = chunkHtml.match(/reading-title"[^>]*>([^<]*)</);
-  const bodyMatch = chunkHtml.match(/data-liturgy-target="readingBody">([\s\S]*)$/);
+  const bodyMatch = chunkHtml.match(/data-liturgy-target="readingBody"[^>]*>([\s\S]*)$/);
   if (!titleMatch || !bodyMatch) {
     return null;
   }

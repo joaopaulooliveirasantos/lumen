@@ -42,7 +42,7 @@ export interface ParsedSaintStory {
 // "Outros santos e beatos celebrados em <dia>" (mais fontes e credito de
 // edicao). Cortar exatamente nesse paragrafo evita incluir esse apendice
 // no texto exibido no app.
-const APPENDIX_MARKER = /<p>\s*<strong>\s*Outros santos/i;
+const APPENDIX_MARKER = /<(?:p|h[1-6])[^>]*>\s*<(?:strong|b)>\s*Outros santos/i;
 
 export function parseSaintStory(detailHtml: string): ParsedSaintStory {
   const titleMatch = detailHtml.match(/<h1 class="entry-title">\s*<span>([\s\S]*?)<\/span>/);
@@ -60,7 +60,7 @@ export function parseSaintStory(detailHtml: string): ParsedSaintStory {
   }
 
   let content = contentMatch[1]
-    .replace(/<ul id='share-buttons'[\s\S]*?<\/ul>/g, "")
+    .replace(/<ul id=['"]share-buttons['"][\s\S]*?<\/ul>/g, "")
     .replace(/<input[^>]*>/g, "");
 
   // A busca e restrita ao dominio de fotos (img.cancaonova.com) em vez de
@@ -74,7 +74,9 @@ export function parseSaintStory(detailHtml: string): ParsedSaintStory {
   const imagemUrl = imageMatch ? encodeURI(decodeEntities(imageMatch[1])) : null;
 
   const appendixMatch = content.match(APPENDIX_MARKER);
-  const listIndex = content.indexOf("<ul");
+  // Ignora <ul> que apareca antes do primeiro paragrafo (ex.: bloco de compartilhar com marcacao diferente).
+  const firstParagraph = Math.max(content.indexOf("<p"), 0);
+  const listIndex = content.indexOf("<ul", firstParagraph);
   const bioHtml =
     appendixMatch?.index !== undefined
       ? content.slice(0, appendixMatch.index)
