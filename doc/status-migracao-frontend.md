@@ -20,8 +20,9 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-17` | Gerado pelo run `44661959913` com o carregador das Bíblias e o novo teste de Diagnóstico (mesmo SHA1). Publicado na trilha interna e validado no aparelho (era cache da Play Store a demora em aparecer) |
 | AAB `lumen-web-aab-18` | Gerado pelo run `44667880258` com a Fase 4: ícone e splash da marca, componentes, galeria (mesmo SHA1). 5,1 MB, dos quais cerca de 2 MB são as splash em PNG. Publicado na trilha interna (2026-11-20) |
 | AAB `lumen-web-aab-19` | Gerado pelo run `44670477537` com a Fase 5: login obrigatório (mesmo SHA1). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-19\app-release.aab`. Publicado na trilha interna e validado no aparelho (login, cadastro, Google, exclusão) |
-| AAB `lumen-web-aab-20` | Gerado pelo run `44676595284` com a Fase 6: todas as telas migradas (mesmo SHA1). 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-20\app-release.aab`. **Aguardando envio à trilha interna e teste no aparelho** |
-| Próximo `versionCode` livre | 21 |
+| AAB `lumen-web-aab-20` | Gerado pelo run `44676595284` com a Fase 6: todas as telas migradas (mesmo SHA1). 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-20\app-release.aab`. Validado no aparelho em 2026-11-20 |
+| AAB `lumen-web-aab-21` | Gerado pelo run `44763530195` com as Fases 7 e 8 (barras do sistema, teclado, ferramentas de teste escondidas). Mesmo SHA1, 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-21\app-release.aab`. **Aguardando envio à trilha interna e teste no aparelho** |
+| Próximo `versionCode` livre | 22 |
 
 ## O que já foi feito
 
@@ -175,10 +176,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=21 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=22 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-21              # baixar o AAB
+gh run download <id> -n lumen-web-aab-22              # baixar o AAB
 ```
 
 Dicas de ambiente:
