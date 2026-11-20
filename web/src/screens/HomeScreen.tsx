@@ -1,4 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
+import { Icon } from "../components/Icon";
+import { Alert, Button, Card, HeroCard, Spinner } from "../components/ui";
 import { formatReadableDate } from "../services/date";
 import { loadLiturgy } from "../services/liturgy";
 import type { DailyLiturgyPayload } from "../types/liturgy";
@@ -42,24 +44,41 @@ export function HomeScreen({ date, onLiturgyLoaded }: Props) {
 
   return (
     <section class="screen">
-      <p class="muted">{formatReadableDate(date)}</p>
-      {loading ? <p class="muted">Carregando liturgia…</p> : null}
-      {error ? (
-        <div class="card">
-          <p>{error}</p>
-          <button type="button" class="primary-button" onClick={() => setAttempt((n) => n + 1)}>
-            Tentar novamente
-          </button>
+      <HeroCard>
+        <Icon name="cross" size={26} class="loading-cross" />
+        <p style={{ margin: "8px 0 2px", fontSize: "1.2rem", fontWeight: 900, letterSpacing: "0.2em" }}>LUMEN</p>
+        <p class="muted">{formatReadableDate(date)}</p>
+        {payload ? <p style={{ margin: "6px 0 0", fontWeight: 700 }}>{payload.liturgia}</p> : null}
+      </HeroCard>
+
+      {loading ? (
+        <div class="row" style={{ justifyContent: "center", padding: "16px" }}>
+          <Spinner label="Carregando liturgia" />
         </div>
       ) : null}
+
+      {error ? (
+        <Alert
+          tone="error"
+          title="Não foi possível carregar a liturgia"
+          action={
+            <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
+              Tentar novamente
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      ) : null}
+
       {payload ? (
-        <div class="card">
-          <h1 class="title">{payload.liturgia}</h1>
+        <Card>
           <p class="muted">Cor litúrgica: {payload.cor}</p>
           <p class="muted">Evangelho: {payload.evangelho.referencia}</p>
-          {offline ? <p class="muted">Exibindo versão salva no aparelho.</p> : null}
-        </div>
+        </Card>
       ) : null}
+
+      {payload && offline ? <Alert tone="info">Exibindo versão salva no aparelho.</Alert> : null}
     </section>
   );
 }

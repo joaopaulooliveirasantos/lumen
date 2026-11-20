@@ -82,7 +82,19 @@ Migração `0002_profile_phone.sql`:
 4. **Perfil:** sair, editar telefone e excluir conta (Edge Function).
 5. **Publicação:** política de privacidade, termos, formulário da Play, conta de teste, build e envio para a trilha interna.
 
-## Decisões em aberto
+## Decisões fechadas (2026-11-20)
+
+| # | Tema | Decisão |
+|---|---|---|
+| 1 | Senha | **E-mail + senha**, com "Esqueci minha senha" |
+| 2 | Telefone | **Obrigatório, sem verificação por SMS** (só validação de formato) |
+| 3 | Telefone no Google | **Obrigatório**, na tela "Completar cadastro" |
+| 4 | Telefone único | **Não** (sem SMS, um número digitado errado bloquearia o dono real) |
+| 5 | Termos de uso | Já existem: [Termos-de-Uso.md](Termos-de-Uso.md) |
+| 6 | Usuários atuais | **Na hora**: a primeira abertura da versão nova já pede login ou completar cadastro; os dados locais continuam no aparelho |
+| 7 | iOS | Fora do escopo; sem "Entrar com Apple" |
+
+## Decisões em aberto (histórico, todas fechadas acima)
 
 1. **Senha:** o cadastro por e-mail continua com senha, como hoje? A alternativa é entrar por código enviado ao e-mail, sem senha. Recomendação: manter a senha.
 2. **Telefone:** só um dado de contato, sem verificação (sugestão), ou verificado por SMS? O SMS exige um provedor pago como o Twilio e gera custo por usuário.

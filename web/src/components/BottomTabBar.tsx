@@ -3,11 +3,11 @@ import { Icon, type IconName } from "./Icon";
 export type TabName = "home" | "liturgia" | "biblia" | "oracoes" | "perfil";
 
 const TABS: { name: TabName; label: string; icon: IconName }[] = [
-  { name: "home", label: "Home", icon: "home" },
-  { name: "liturgia", label: "Liturgia Diária", icon: "liturgia" },
-  { name: "biblia", label: "Bíblia", icon: "biblia" },
-  { name: "oracoes", label: "Orações", icon: "oracoes" },
-  { name: "perfil", label: "Perfil", icon: "perfil" },
+  { name: "home", label: "Home", icon: "church" },
+  { name: "liturgia", label: "Liturgia Diária", icon: "book" },
+  { name: "biblia", label: "Bíblia", icon: "bible" },
+  { name: "oracoes", label: "Orações", icon: "prayingHands" },
+  { name: "perfil", label: "Perfil", icon: "person" },
 ];
 
 type Props = {

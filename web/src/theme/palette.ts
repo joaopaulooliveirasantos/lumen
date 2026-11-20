@@ -1,5 +1,6 @@
 import type { ReadingMode } from "../types/settings";
 import type { ThemePalette } from "../types/theme";
+import { shadeColor } from "../services/color";
 
 export function liturgicColorHex(color: string): string {
   const normalized = color.toLowerCase();
@@ -65,6 +66,8 @@ export function applyTheme(palette: ThemePalette, fontScale: number, root: HTMLE
     "--button-bg": palette.buttonBackground,
     "--accent": palette.accent,
     "--accent-soft": `${palette.accent}33`,
+    "--accent-light": shadeColor(palette.accent, 18),
+    "--accent-dark": shadeColor(palette.accent, -24),
     "--font-scale": String(fontScale),
   };
   for (const [name, value] of Object.entries(vars)) {

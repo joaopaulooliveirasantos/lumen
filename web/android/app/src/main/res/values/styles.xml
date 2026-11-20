@@ -16,7 +16,10 @@
     </style>
 
 
+    <!-- Splash: fundo creme da marca (#F3ECDA), o mesmo do ícone adaptável. No Android 12+ o sistema
+         mostra o ícone sobre essa cor; o splash.png cobre a transição até o WebView carregar. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
         <item name="android:background">@drawable/splash</item>
     </style>
 </resources>

@@ -1,10 +1,10 @@
 # Status da migração do frontend (React Native → Preact + Vite + Capacitor)
 
-Atualizado em 2026-11-19 (Fase 1 concluída; Fase 3 publicada na VPS, falta o teste no aparelho). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
+Atualizado em 2026-11-20 (Fases 1 a 3 concluídas; Fase 4 implementada, falta conferir o build 18 no aparelho). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
 
 ## Resumo
 
-As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está implementada e publicada na VPS; falta rodar o teste "Bíblia da VPS" do AAB 17 no aparelho. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
+As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está implementada: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. As decisões do login (Fase 5) foram fechadas em 2026-11-20. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
 
 ## Estado do repositório
 
@@ -17,8 +17,8 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | `lumen/app.json` (raiz) | Não rastreado e **não é meu**; deixado de fora de todos os commits |
 | AAB `lumen-web-aab-15` | Gerado pelo run `44650160994` (build sem plugins nativos). Não enviado à Play Store |
 | AAB `lumen-web-aab-16` | Gerado pelo run `44655899497` **com os plugins nativos** (3,2 MB, mesmo SHA1 `C3:33:…:22:8F`). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-16\app-release.aab`. Publicado na trilha interna e validado no aparelho |
-| AAB `lumen-web-aab-17` | Gerado pelo run `44661959913` com o carregador das Bíblias e o novo teste de Diagnóstico (mesmo SHA1). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-17\app-release.aab`. **Aguardando envio à trilha interna** |
-| Próximo `versionCode` livre | 18 |
+| AAB `lumen-web-aab-17` | Gerado pelo run `44661959913` com o carregador das Bíblias e o novo teste de Diagnóstico (mesmo SHA1). Publicado na trilha interna e validado no aparelho (era cache da Play Store a demora em aparecer) |
+| Próximo `versionCode` livre | 18 (Fase 4) |
 
 ## O que já foi feito
 
@@ -67,18 +67,26 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 
 ## O que ainda falta
 
-### Fechar a Fase 3
-1. ~~Deploy na VPS~~: feito com `bash scripts/deploy-biblias.sh`.
-2. ~~Build 17~~: run `44661959913`.
-3. **Enviar o AAB 17 à trilha interna** e rodar no aparelho o teste "Bíblia da VPS" duas vezes: com rede e em modo avião (deve continuar OK, lendo do cache).
-
-### Fase 4: design system
-- Ícones definitivos (os atuais são aproximações), cards, tela de carregamento e ícone do app (hoje o padrão do Capacitor).
+### Fase 4: design system (implementada; falta conferir o build 18 no aparelho)
+- **Ícone do app e splash**: os builds 15 a 17 saíam com o ícone padrão do Capacitor. Agora usam o Chi-Rho dourado do app RN.
+  - [web/scripts/generate-android-icons.mjs](../web/scripts/generate-android-icons.mjs) (Node puro, sem dependências) gera, a partir de `web/assets/icon-only.png` e `icon-foreground.png`, os mipmaps (legado, redondo e camada do ícone adaptável) e as splash em todas as densidades.
+  - Fundo creme `#F3ECDA` no ícone adaptável e na splash (`windowSplashScreenBackground`).
+  - Para trocar a arte: substituir os PNGs em `web/assets/` e rodar `node scripts/generate-android-icons.mjs` na pasta `web`.
+- **Ícones SVG** em [Icon.tsx](../web/src/components/Icon.tsx): os 23 nomes do `AppIcon` do RN, mais 12 novos para login e navegação, e o logotipo do Google para o botão de login. A barra inferior usa os mesmos ícones do RN (igreja, livro, Bíblia, mãos em oração, pessoa).
+- **Componentes** em [ui.tsx](../web/src/components/ui.tsx):
+  - `Button` (primary, secondary, ghost e danger, com estado de carregamento), `IconButton`;
+  - `TextField` (ícone, dica, erro, mostrar/ocultar senha), `Checkbox`;
+  - `Card`, `HeroCard` (gradiente na cor litúrgica), `ListRow`, `SectionTitle`, `Chip`, `ScreenHeader`;
+  - `Alert`, `EmptyState`, `Spinner`.
+  - Mais o [LoadingScreen](../web/src/components/LoadingScreen.tsx), igual ao do RN (gradiente, cruz dourada pulsante, "LUMEN"), mostrado na abertura do app.
+- **Tokens** em `styles.css` (espaçamento, raios, sombras, cores da marca e de estado). O modo escuro ganha cores de estado próprias via `data-mode` no `<html>`, e `--accent-light` e `--accent-dark` vêm do `shadeColor` (sem `color-mix`, por compatibilidade com WebViews antigas).
+- **Galeria** no Perfil (chip "Componentes"): mostra todos os componentes e ícones e troca o modo de leitura e a cor litúrgica só como prévia, sem salvar. A Home já usa `HeroCard`, `Alert` e `Spinner`.
+- **Dev**: `?tab=perfil` na URL abre direto numa aba. Para capturar telas sem abrir o navegador: `msedge --headless=new --window-size=600,2600 --screenshot=...`. O Edge headless impõe cerca de 500 px de largura mínima, então capturas mais estreitas saem cortadas.
 
 ### Fase 5: login e portão de entrada (no novo frontend)
 - Telas de boas-vindas/login, criar conta (nome, e-mail, telefone, senha), Google, completar cadastro e recuperar senha.
 - Migração `0002_profile_phone.sql` no Supabase, SMTP próprio, exclusão de conta (Edge Function) e política de privacidade. Só Android, sem "Entrar com Apple".
-- Decisões do plano de login ainda em aberto: senha ou código por e-mail, telefone verificado por SMS ou não, telefone único, termos de uso e tolerância para usuários atuais.
+- **Decisões fechadas (2026-11-20)**, detalhadas no plano de login: e-mail + senha; telefone obrigatório sem SMS (também para o Google); telefone não precisa ser único; termos de uso já existem; usuários atuais precisam entrar já na primeira abertura.
 
 ### Fase 6: telas, da mais simples para a mais complexa
 Orações, Configurações, Perfil, Liturgia, Santo do dia, Home completa, Planos de leitura, Terço e Bíblia (a de maior volume). Os testes de Diagnóstico viram serviços reais (lembrete nas Configurações, player de TTS, etc.).
