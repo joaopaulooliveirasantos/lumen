@@ -22,14 +22,11 @@ export function ReadingPlanCard({ plan, size, statusInfo, onPress }: Props) {
   if (size === "carrossel") {
     const badge = statusInfo ? progressLabel(statusInfo, plan.duracaoDias) : null;
     return (
-      <button type="button" class="plan-carousel" aria-label={label} onClick={onPress} style={{ backgroundColor: plan.capa.corBase }}>
-        <img src={plan.capa.imagem} alt="" loading="lazy" />
-        <span class="plan-carousel-shade" />
-        {badge ? <span class="plan-badge">{badge}</span> : null}
-        <span class="plan-carousel-body">
-          <span class="plan-carousel-title">{plan.titulo}</span>
-          <span class="plan-carousel-days">{plan.duracaoDias} dias</span>
-        </span>
+      <button type="button" class="plan-carousel" aria-label={label} onClick={onPress}>
+        {/* Mesmo tamanho do ícone da lista "Todos os planos" (48×48). */}
+        <img src={plan.capa.imagem} alt="" width={48} height={48} loading="lazy" style={{ backgroundColor: plan.capa.corBase }} />
+        <span class="plan-carousel-title">{plan.titulo}</span>
+        <span class={badge ? "plan-carousel-days plan-carousel-progress" : "plan-carousel-days"}>{badge ?? `${plan.duracaoDias} dias`}</span>
       </button>
     );
   }
