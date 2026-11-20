@@ -16,19 +16,21 @@ function Hero({ onOpenCalendar }: { onOpenCalendar: () => void }) {
   const { day, monthAbbr, year } = getDateParts(selectedDate);
   return (
     <div class="hero home-hero">
-      <button type="button" class="icon-btn hero-calendar" aria-label="Escolher outra data" onClick={onOpenCalendar}>
-        <Icon name="calendar" size={18} />
-      </button>
-      <div class="home-hero-brand">
-        <Icon name="cross" size={14} class="loading-cross" />
-        <span>LUMEN</span>
-      </div>
-      <div class="home-hero-date">
-        <span class="home-hero-day">{day}</span>
-        <span class="home-hero-month-year">
-          <span>{monthAbbr}</span>
-          <span>{year}</span>
-        </span>
+      <div class="home-hero-top">
+        <div class="home-hero-date">
+          <span class="home-hero-day">{day}</span>
+          <span class="home-hero-month-year">
+            <span>{monthAbbr}</span>
+            <span>{year}</span>
+          </span>
+        </div>
+        <div class="home-hero-brand">
+          <Icon name="cross" size={14} class="loading-cross" />
+          <span>LUMEN</span>
+        </div>
+        <button type="button" class="icon-btn hero-calendar" aria-label="Escolher outra data" onClick={onOpenCalendar}>
+          <Icon name="calendar" size={18} />
+        </button>
       </div>
       {liturgy ? <p class="home-hero-liturgy">{liturgy.liturgia}</p> : null}
       {liturgyOffline ? <p class="home-hero-offline">Exibindo conteúdo salvo offline</p> : null}
