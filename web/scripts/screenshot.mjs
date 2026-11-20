@@ -23,7 +23,7 @@ const opt = (name, fallback) => {
   return i > -1 ? args[i + 1] : fallback;
 };
 const clicks = args.flatMap((a, i) => (a === "--click" ? [args[i + 1]] : []));
-const wait = Number(opt("--wait", 12000)); // o 1º carregamento no dev server é lento
+const wait = Number(opt("--wait", 20000)); // o 1º carregamento no dev server é lento
 const width = Number(opt("--width", 412));
 const height = Number(opt("--height", 900));
 const full = args.includes("--full");

@@ -1,5 +1,6 @@
 import termsSource from "../../../../doc/Termos-de-Uso.md?raw";
 import privacySource from "../../../../doc/Politica-de-Privacidade.md?raw";
+import { useEffect } from "preact/hooks";
 import { Markdown } from "../../components/Markdown";
 import { IconButton } from "../../components/ui";
 
@@ -10,6 +11,12 @@ export type LegalDoc = "termos" | "privacidade";
 const SOURCES: Record<LegalDoc, string> = { termos: termsSource, privacidade: privacySource };
 
 export function LegalScreen({ doc, onClose }: { doc: LegalDoc; onClose: () => void }) {
+  // Esc (e o botão "voltar" do Android, que o App traduz em Esc) fecha o texto.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   return (
     <div class="overlay-screen" role="dialog" aria-modal="true">
       <div class="overlay-bar">

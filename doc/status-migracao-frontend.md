@@ -1,10 +1,10 @@
 # Status da migração do frontend (React Native → Preact + Vite + Capacitor)
 
-Atualizado em 2026-11-20 (Fases 1 a 4 concluídas; Fase 5 implementada no app, falta configurar o Supabase e testar o build 19). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
+Atualizado em 2026-11-20 (Fases 1 a 5 concluídas; Fase 6 implementada, falta testar o build 20 no aparelho). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
 
 ## Resumo
 
-As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está concluída: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. A **Fase 5 (login obrigatório)** está implementada no app (telas, portão de entrada, perfil com telefone, exclusão de conta, textos legais), com a migração SQL e a Edge Function prontas no repositório. **Antes de enviar o build 19 à trilha interna, é preciso configurar o Supabase** (ver "Fechar a Fase 5"). O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
+As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está concluída: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. A **Fase 5 (login obrigatório)** está concluída: Supabase configurado e build 19 validado no aparelho (2026-11-20). A **Fase 6 (telas)** está implementada: todas as telas do RN foram migradas (Home, Liturgia, Bíblia, Orações, Perfil, Configurações, Santo do dia, Planos de leitura e Terço); falta testar o build 20 no aparelho. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
 
 ## Estado do repositório
 
@@ -19,7 +19,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-16` | Gerado pelo run `44655899497` **com os plugins nativos** (3,2 MB, mesmo SHA1 `C3:33:…:22:8F`). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-16\app-release.aab`. Publicado na trilha interna e validado no aparelho |
 | AAB `lumen-web-aab-17` | Gerado pelo run `44661959913` com o carregador das Bíblias e o novo teste de Diagnóstico (mesmo SHA1). Publicado na trilha interna e validado no aparelho (era cache da Play Store a demora em aparecer) |
 | AAB `lumen-web-aab-18` | Gerado pelo run `44667880258` com a Fase 4: ícone e splash da marca, componentes, galeria (mesmo SHA1). 5,1 MB, dos quais cerca de 2 MB são as splash em PNG. Publicado na trilha interna (2026-11-20) |
-| AAB `lumen-web-aab-19` | Gerado pelo run `44670477537` com a Fase 5: login obrigatório (mesmo SHA1). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-19\app-release.aab`. **Só enviar à trilha interna depois de configurar o Supabase** |
+| AAB `lumen-web-aab-19` | Gerado pelo run `44670477537` com a Fase 5: login obrigatório (mesmo SHA1). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-19\app-release.aab`. Publicado na trilha interna e validado no aparelho (login, cadastro, Google, exclusão) |
 | Próximo `versionCode` livre | 20 |
 
 ## O que já foi feito
@@ -85,7 +85,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 - **Galeria** no Perfil (chip "Componentes"): mostra todos os componentes e ícones e troca o modo de leitura e a cor litúrgica só como prévia, sem salvar. A Home já usa `HeroCard`, `Alert` e `Spinner`.
 - **Dev**: `?tab=perfil` na URL abre direto numa aba. Para capturar telas sem abrir o navegador: `msedge --headless=new --window-size=600,2600 --screenshot=...`. O Edge headless impõe cerca de 500 px de largura mínima, então capturas mais estreitas saem cortadas.
 
-### Fase 5: login e portão de entrada (implementada no app; falta o Supabase)
+### Fase 5: login e portão de entrada (concluída)
 - **Decisões (2026-11-20)**: e-mail + senha; telefone obrigatório sem SMS (também para quem entra pelo Google); telefone não precisa ser único; login exigido já na primeira abertura; sem Apple.
 - **Núcleo** [web/src/auth/account.ts](../web/src/auth/account.ts):
   - perfil (nome, telefone, aceite dos termos) com cópia local, para quem já entrou continuar usando o app offline;
@@ -105,7 +105,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 - **Testes**: 26 novos (65 no total), cobrindo telefone, mensagens, portão, links de retorno, perfil com cache offline, cadastro e textos legais.
 - **Dev**: `?auth=criar|esqueci|verifique-email` abre direto naquela etapa.
 
-### Fechar a Fase 5 (no painel do Supabase, nesta ordem, **antes** de enviar o build 19)
+### Configuração do Supabase da Fase 5 (feita em 2026-11-20; referência para outros ambientes)
 1. **SQL Editor**: colar e executar `supabase/migrations/0002_profile_phone.sql`. Sem isso, salvar o telefone falha e ninguém passa da tela "Completar cadastro".
 2. **Authentication > URL Configuration > Redirect URLs**: adicionar `lumen://email-confirmed` e `lumen://reset-password` (o `lumen://oauth-callback` já existe).
 3. **Edge Functions > Deploy a new function > Via Editor**: nome `delete-account`, colar `supabase/functions/delete-account/index.ts` e manter "Verify JWT" ligado.
@@ -113,11 +113,30 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 5. **SMTP próprio** (Authentication > Emails > SMTP Settings, ex.: Resend): o SMTP padrão do Supabase envia só poucos e-mails por hora. Pode ficar para antes do lançamento amplo.
 6. Instalar o build 19 e testar: criar conta por e-mail (confirmar pelo link), entrar, esqueci a senha, Google (vai pedir o telefone), editar telefone, sair, excluir uma conta de teste.
 
-### Fase 6: telas, da mais simples para a mais complexa
-Orações, Configurações, Perfil, Liturgia, Santo do dia, Home completa, Planos de leitura, Terço e Bíblia (a de maior volume). Os testes de Diagnóstico viram serviços reais (lembrete nas Configurações, player de TTS, etc.).
+### Fase 6: telas (implementada; falta testar o build 20 no aparelho)
+- **Estado global** [state/AppState.tsx](../web/src/state/AppState.tsx), equivalente ao `App.tsx` do RN: configurações salvas a cada mudança, data selecionada, liturgia com cache e pré-carga dos 7 dias seguintes, santo do dia, históricos (liturgia lida e terço rezado), progresso dos planos, aba ativa, telas sobrepostas (Terço, Planos, Santo do dia), atalho para abrir a Bíblia numa referência e avisos rápidos (toast).
+- **Telas** em `web/src/screens/`:
+  - **Home**: data e liturgia no topo, carrossel de planos, progresso da semana, santo do dia, resumo do Evangelho e entrada do Terço.
+  - **Liturgia**: abas das leituras, aclamações, calendário, Amém e player de leitura em voz alta (TTS). O player avança sozinho de faixa e divide textos acima do limite de 4.000 caracteres do Android (homilias passam disso). Também tem escolha de voz, copiar, compartilhar e A−/A+.
+  - **Bíblia**: grades de livros, capítulos e versículos montadas só com o índice (aparecem na hora, offline). O texto é baixado na leitura. Tem seleção de versículos (copiar, compartilhar, marcar com comentário), marcados, detalhe do marcado e navegação entre capítulos (novo).
+  - **Orações**: categorias, leitura, copiar e compartilhar.
+  - **Perfil**: conta, Sobre, versão e acesso temporário a Diagnóstico e Componentes.
+  - **Configurações**: tema, tamanho do texto com prévia, tradução da Bíblia com **download offline e progresso** (novo), lembrete diário com horário.
+  - **Santo do dia**, **Planos de leitura** (destaques, busca, detalhe, leitura do dia com versículos da VPS e Catecismo) e **Terço** (mistério sugerido pelo dia, 79 passos com TTS).
+- **Comportamento novo em relação ao RN**:
+  - o tamanho do texto vale só para os textos de leitura;
+  - o botão "voltar" do Android fecha folhas e telas sobrepostas, depois volta à Home, depois sai do app;
+  - os trechos dos planos sem rede e sem cache mostram aviso com sugestão de baixar a Bíblia.
+- **Componentes novos**: `PageHeader`, `FontScaleControls`, `Sheet` e `DatePickerSheet`, `LiturgyPlayer` e `VoiceSheet`, `PrayerPlayer`, `ReadingPlanCard` e `Switch`. Módulos nativos novos: [speech.ts](../web/src/native/speech.ts) (fila de fala com cancelamento) e [share.ts](../web/src/native/share.ts).
+- **Testes**: 72 no total (faixas da liturgia, divisão do texto para TTS, referências dos planos, tamanho do texto).
+- **Dev**:
+  - `?semLogin` pula o portão de login (só no modo dev; some do build de produção);
+  - [scripts/screenshot.mjs](../web/scripts/screenshot.mjs) captura telas pelo DevTools Protocol, com cliques (`--click "texto"`), página inteira (`--full`) e `--eval`. Exemplo: `node scripts/screenshot.mjs "http://localhost:5173/?semLogin&tab=biblia" biblia.png --click "Novo"`. O 1º carregamento no dev server é lento, por isso a espera padrão é de 20 s.
+- **Visto no backend (não é do app)**: em 2026-11-20 a API devolveu `santos: []` para o santo do dia, mas a história do santo existia ("Cristo Rei"). O cartão do santo some da Home nesses dias, como no RN.
 
 ### Fases 7 a 10
-- Paridade e qualidade: checklist de funcionalidades contra o RN, desempenho, acessibilidade e modos de leitura.
+- **Fase 7 (camada nativa)**: quase toda feita nas Fases 1 e 6 (notificações, TTS, OAuth, armazenamento seguro, compartilhar, copiar, botão voltar). Faltam a cor da barra de status e o comportamento do teclado.
+- **Fase 8 (paridade e qualidade)**: checklist de funcionalidades contra o RN, desempenho, acessibilidade e modos de leitura (sobretudo escuro e sépia nas telas novas). Também tirar Diagnóstico e Componentes do Perfil antes do lançamento.
 - Publicação: envio automático à trilha interna pelo CI, política de privacidade e formulário de Segurança dos dados da Play Console, conta de teste para o revisor, lançamento em etapas.
 - Desativar o React Native (`lumen/mobile`) depois de a nova versão estar estável em produção.
 

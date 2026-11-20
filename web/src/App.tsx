@@ -1,4 +1,5 @@
 import { useEffect } from "preact/hooks";
+import { App as CapApp } from "@capacitor/app";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { BottomTabBar, type TabName } from "./components/BottomTabBar";
 import { BRAND_GREEN, LoadingScreen } from "./components/LoadingScreen";
@@ -6,7 +7,7 @@ import { AuthScreen } from "./screens/auth/AuthScreen";
 import { CompleteProfileScreen, NewPasswordScreen, ProfileErrorScreen } from "./screens/auth/GateScreens";
 import { HomeScreen } from "./screens/HomeScreen";
 import { LiturgyScreen } from "./screens/LiturgyScreen";
-import { PlaceholderScreen } from "./screens/PlaceholderScreen";
+import { BibleScreen } from "./screens/BibleScreen";
 import { PrayersScreen } from "./screens/PrayersScreen";
 import { SaintStoryScreen } from "./screens/SaintStoryScreen";
 import { ReadingPlansScreen } from "./screens/ReadingPlansScreen";
@@ -63,6 +64,21 @@ function MainApp() {
   const { activeTab, setActiveTab, toast, overlay, openOverlay } = useAppState();
   const closeOverlay = () => openOverlay(null);
 
+  // Botão "voltar" do Android: fecha a tela sobreposta, depois volta à Home, depois sai do app.
+  useEffect(() => {
+    let remove: (() => void) | undefined;
+    void CapApp.addListener("backButton", () => {
+      if (document.querySelector(".sheet-backdrop, .overlay-screen")) {
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+      } else if (overlay) openOverlay(null);
+      else if (activeTab !== "home") setActiveTab("home");
+      else void CapApp.exitApp();
+    })
+      .then((h) => (remove = () => void h.remove()))
+      .catch(() => undefined);
+    return () => remove?.();
+  }, [overlay, activeTab]);
+
   return (
     <div class="app">
       <main class="app-content" key={overlay ? overlay.kind : activeTab}>
@@ -71,7 +87,7 @@ function MainApp() {
         {overlay?.kind === "rosary" ? <RosaryScreen onExit={closeOverlay} /> : null}
         {!overlay && activeTab === "home" ? <HomeScreen /> : null}
         {!overlay && activeTab === "liturgia" ? <LiturgyScreen /> : null}
-        {!overlay && activeTab === "biblia" ? <PlaceholderScreen title="Bíblia" /> : null}
+        {!overlay && activeTab === "biblia" ? <BibleScreen /> : null}
         {!overlay && activeTab === "oracoes" ? <PrayersScreen /> : null}
         {!overlay && activeTab === "perfil" ? <ProfileScreen /> : null}
       </main>
