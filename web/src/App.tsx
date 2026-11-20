@@ -1,26 +1,19 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect } from "preact/hooks";
 import { AuthProvider, useAuth } from "./auth/AuthProvider";
 import { BottomTabBar, type TabName } from "./components/BottomTabBar";
 import { BRAND_GREEN, LoadingScreen } from "./components/LoadingScreen";
-import { Chip } from "./components/ui";
-import { AccountSection } from "./screens/AccountSection";
 import { AuthScreen } from "./screens/auth/AuthScreen";
 import { CompleteProfileScreen, NewPasswordScreen, ProfileErrorScreen } from "./screens/auth/GateScreens";
-import { ComponentGalleryScreen } from "./screens/ComponentGalleryScreen";
-import { DiagnosticsScreen } from "./screens/DiagnosticsScreen";
 import { HomeScreen } from "./screens/HomeScreen";
+import { LiturgyScreen } from "./screens/LiturgyScreen";
 import { PlaceholderScreen } from "./screens/PlaceholderScreen";
-import { formatIsoDate } from "./services/date";
-import { loadUserSettings } from "./storage/userSettings";
+import { PrayersScreen } from "./screens/PrayersScreen";
+import { ProfileScreen } from "./screens/ProfileScreen";
+import { AppStateProvider, useAppState } from "./state/AppState";
 import { applyTheme, getThemePalette, liturgicColorHex } from "./theme/palette";
-import { defaultUserSettings, type ReadingMode, type UserSettings } from "./types/settings";
-import type { DailyLiturgyPayload } from "./types/liturgy";
 
 const DEFAULT_ACCENT = "#2E7D32";
 const TAB_NAMES: TabName[] = ["home", "liturgia", "biblia", "oracoes", "perfil"];
-
-type ProfileView = "componentes" | "diagnostico";
-type ThemePreview = { mode: ReadingMode; accent: string | null } | null;
 
 /** Em dev, `?tab=perfil` abre direto numa aba (útil para capturas e testes manuais). */
 function initialTab(): TabName {
@@ -32,88 +25,55 @@ function initialTab(): TabName {
 export function App() {
   return (
     <AuthProvider>
-      <Root />
+      <AppStateProvider initialTab={initialTab()}>
+        <Root />
+      </AppStateProvider>
     </AuthProvider>
   );
 }
 
 function Root() {
   const auth = useAuth();
-  const [settings, setSettings] = useState<UserSettings>(defaultUserSettings);
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
-  const [payload, setPayload] = useState<DailyLiturgyPayload | null>(null);
-  const [preview, setPreview] = useState<ThemePreview>(null);
+  const app = useAppState();
+  const accent = app.liturgy ? liturgicColorHex(app.liturgy.cor) : DEFAULT_ACCENT;
 
   useEffect(() => {
-    void loadUserSettings()
-      .then(setSettings)
-      .finally(() => setSettingsLoaded(true));
-  }, []);
+    applyTheme(getThemePalette(app.settings.readingMode, accent), app.settings.fontScale);
+    document.documentElement.dataset.mode = app.settings.readingMode;
+  }, [app.settings.readingMode, app.settings.fontScale, accent]);
 
-  const accent = preview?.accent ?? (payload ? liturgicColorHex(payload.cor) : DEFAULT_ACCENT);
-  const readingMode = preview?.mode ?? settings.readingMode;
-
-  useEffect(() => {
-    applyTheme(getThemePalette(readingMode, accent), settings.fontScale);
-    document.documentElement.dataset.mode = readingMode;
-  }, [readingMode, accent, settings.fontScale]);
+  // Só em dev: ?semLogin pula o portão para capturas das telas internas (removido do build de produção).
+  const skipGate = import.meta.env.DEV && new URLSearchParams(window.location.search).has("semLogin");
+  if (skipGate && app.ready) return <MainApp />;
 
   // Portão de entrada (doc/planejamento-login-obrigatorio.md).
-  if (!settingsLoaded || auth.status === "loading") return <LoadingScreen accent={BRAND_GREEN} />;
+  if (!app.ready || auth.status === "loading") return <LoadingScreen accent={BRAND_GREEN} message="Preparando sua leitura..." />;
   if (auth.status === "signedOut") return <AuthScreen />;
   if (auth.status === "recovery") return <NewPasswordScreen />;
   if (auth.status === "profileError") return <ProfileErrorScreen />;
   if (auth.status === "needsProfile") return <CompleteProfileScreen />;
 
-  return (
-    <MainApp
-      readingMode={readingMode}
-      accent={accent}
-      onLiturgyLoaded={setPayload}
-      onPreview={(mode, previewAccent) => setPreview({ mode, accent: previewAccent ?? preview?.accent ?? null })}
-    />
-  );
+  return <MainApp />;
 }
 
-type MainProps = {
-  readingMode: ReadingMode;
-  accent: string;
-  onLiturgyLoaded: (payload: DailyLiturgyPayload | null) => void;
-  onPreview: (mode: ReadingMode, accent: string | null) => void;
-};
-
-function MainApp({ readingMode, accent, onLiturgyLoaded, onPreview }: MainProps) {
-  const [activeTab, setActiveTab] = useState<TabName>(initialTab);
-  const [profileView, setProfileView] = useState<ProfileView>("componentes");
-  const today = useMemo(() => formatIsoDate(new Date()), []);
+function MainApp() {
+  const { activeTab, setActiveTab, toast } = useAppState();
 
   return (
     <div class="app">
-      <main class="app-content">
-        {activeTab === "home" ? <HomeScreen date={today} onLiturgyLoaded={onLiturgyLoaded} /> : null}
-        {activeTab === "liturgia" ? <PlaceholderScreen title="Liturgia Diária" /> : null}
+      <main class="app-content" key={activeTab}>
+        {activeTab === "home" ? <HomeScreen /> : null}
+        {activeTab === "liturgia" ? <LiturgyScreen /> : null}
         {activeTab === "biblia" ? <PlaceholderScreen title="Bíblia" /> : null}
-        {activeTab === "oracoes" ? <PlaceholderScreen title="Orações" /> : null}
-        {activeTab === "perfil" ? (
-          <>
-            <AccountSection />
-            <div class="row" style={{ padding: "14px 14px 0" }}>
-              <Chip active={profileView === "componentes"} onClick={() => setProfileView("componentes")}>
-                Componentes
-              </Chip>
-              <Chip active={profileView === "diagnostico"} onClick={() => setProfileView("diagnostico")}>
-                Diagnóstico
-              </Chip>
-            </div>
-            {profileView === "componentes" ? (
-              <ComponentGalleryScreen readingMode={readingMode} accent={accent} onPreview={onPreview} />
-            ) : (
-              <DiagnosticsScreen />
-            )}
-          </>
-        ) : null}
+        {activeTab === "oracoes" ? <PrayersScreen /> : null}
+        {activeTab === "perfil" ? <ProfileScreen /> : null}
       </main>
       <BottomTabBar activeTab={activeTab} onTabPress={setActiveTab} />
+      {toast ? (
+        <div class="toast" role="status" aria-live="polite">
+          {toast}
+        </div>
+      ) : null}
     </div>
   );
 }

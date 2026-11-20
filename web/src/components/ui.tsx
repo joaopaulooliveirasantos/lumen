@@ -128,6 +128,28 @@ export function Checkbox(props: { checked: boolean; onChange: (checked: boolean)
   );
 }
 
+/** Chave liga/desliga com rótulo (ex.: lembrete diário). */
+export function Switch(props: { checked: boolean; onChange: (checked: boolean) => void; label: string; description?: string; disabled?: boolean }) {
+  return (
+    <label class={cx("switch-row", props.disabled && "switch-disabled")}>
+      <span class="switch-text">
+        <span class="switch-label">{props.label}</span>
+        {props.description ? <span class="switch-description">{props.description}</span> : null}
+      </span>
+      <input
+        type="checkbox"
+        role="switch"
+        checked={props.checked}
+        disabled={props.disabled}
+        onChange={(e) => props.onChange((e.currentTarget as HTMLInputElement).checked)}
+      />
+      <span class="switch-track" aria-hidden="true">
+        <span class="switch-thumb" />
+      </span>
+    </label>
+  );
+}
+
 // ---- Superfícies ---------------------------------------------------------------------------------
 
 export function Card(props: { children: ComponentChildren; class?: string; onClick?: () => void }) {

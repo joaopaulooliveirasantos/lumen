@@ -19,6 +19,9 @@ import {
   TextField,
 } from "../components/ui";
 import type { ReadingMode } from "../types/settings";
+import { useAppState } from "../state/AppState";
+import { liturgicColorHex } from "../theme/palette";
+import { shadeColor } from "../services/color";
 
 const LITURGIC = [
   { nome: "Verde", hex: "#2E7D32" },
@@ -28,13 +31,17 @@ const LITURGIC = [
   { nome: "Rosa", hex: "#AD1457" },
 ];
 
-type Props = {
-  readingMode: ReadingMode;
-  accent: string;
-  onPreview: (mode: ReadingMode, accent: string | null) => void;
-};
 
-export function ComponentGalleryScreen({ readingMode, accent, onPreview }: Props) {
+
+export function ComponentGalleryScreen() {
+  const { settings, updateSettings, liturgy } = useAppState();
+  const readingMode = settings.readingMode;
+  const [previewAccent, setPreviewAccent] = useState<string | null>(null);
+  const accent = previewAccent ?? (liturgy ? liturgicColorHex(liturgy.cor) : "#2E7D32");
+  // A prévia de cor vale só dentro da galeria: sobrescreve as variáveis no próprio contêiner.
+  const accentVars = previewAccent
+    ? { "--accent": accent, "--accent-soft": accent + "33", "--accent-light": shadeColor(accent, 18), "--accent-dark": shadeColor(accent, -24) }
+    : undefined;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [accepted, setAccepted] = useState(false);
@@ -49,13 +56,13 @@ export function ComponentGalleryScreen({ readingMode, accent, onPreview }: Props
   }, [showSplash]);
 
   return (
-    <section class="screen">
+    <section class="screen" style={accentVars}>
       <ScreenHeader title="Componentes" subtitle="Design system do novo app (Fase 4)" />
 
       <SectionTitle>Modo de leitura</SectionTitle>
       <div class="row">
         {(["claro", "escuro", "sepia"] as const).map((mode) => (
-          <Chip key={mode} active={readingMode === mode} onClick={() => onPreview(mode, null)}>
+          <Chip key={mode} active={readingMode === mode} onClick={() => updateSettings({ readingMode: mode as ReadingMode })}>
             {mode === "sepia" ? "Sépia" : mode[0].toUpperCase() + mode.slice(1)}
           </Chip>
         ))}
@@ -64,7 +71,7 @@ export function ComponentGalleryScreen({ readingMode, accent, onPreview }: Props
       <SectionTitle>Cor litúrgica</SectionTitle>
       <div class="row">
         {LITURGIC.map((c) => (
-          <Chip key={c.hex} active={accent.toLowerCase() === c.hex.toLowerCase()} onClick={() => onPreview(readingMode, c.hex)}>
+          <Chip key={c.hex} active={accent.toLowerCase() === c.hex.toLowerCase()} onClick={() => setPreviewAccent(c.hex)}>
             {c.nome}
           </Chip>
         ))}
