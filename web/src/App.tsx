@@ -8,6 +8,9 @@ import { HomeScreen } from "./screens/HomeScreen";
 import { LiturgyScreen } from "./screens/LiturgyScreen";
 import { PlaceholderScreen } from "./screens/PlaceholderScreen";
 import { PrayersScreen } from "./screens/PrayersScreen";
+import { SaintStoryScreen } from "./screens/SaintStoryScreen";
+import { ReadingPlansScreen } from "./screens/ReadingPlansScreen";
+import { RosaryScreen } from "./screens/RosaryScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { AppStateProvider, useAppState } from "./state/AppState";
 import { applyTheme, getThemePalette, liturgicColorHex } from "./theme/palette";
@@ -57,16 +60,20 @@ function Root() {
 }
 
 function MainApp() {
-  const { activeTab, setActiveTab, toast } = useAppState();
+  const { activeTab, setActiveTab, toast, overlay, openOverlay } = useAppState();
+  const closeOverlay = () => openOverlay(null);
 
   return (
     <div class="app">
-      <main class="app-content" key={activeTab}>
-        {activeTab === "home" ? <HomeScreen /> : null}
-        {activeTab === "liturgia" ? <LiturgyScreen /> : null}
-        {activeTab === "biblia" ? <PlaceholderScreen title="Bíblia" /> : null}
-        {activeTab === "oracoes" ? <PrayersScreen /> : null}
-        {activeTab === "perfil" ? <ProfileScreen /> : null}
+      <main class="app-content" key={overlay ? overlay.kind : activeTab}>
+        {overlay?.kind === "saintStory" ? <SaintStoryScreen onExit={closeOverlay} /> : null}
+        {overlay?.kind === "plans" ? <ReadingPlansScreen initialPlanId={overlay.planId} onExit={closeOverlay} /> : null}
+        {overlay?.kind === "rosary" ? <RosaryScreen onExit={closeOverlay} /> : null}
+        {!overlay && activeTab === "home" ? <HomeScreen /> : null}
+        {!overlay && activeTab === "liturgia" ? <LiturgyScreen /> : null}
+        {!overlay && activeTab === "biblia" ? <PlaceholderScreen title="Bíblia" /> : null}
+        {!overlay && activeTab === "oracoes" ? <PrayersScreen /> : null}
+        {!overlay && activeTab === "perfil" ? <ProfileScreen /> : null}
       </main>
       <BottomTabBar activeTab={activeTab} onTabPress={setActiveTab} />
       {toast ? (

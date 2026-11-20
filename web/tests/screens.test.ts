@@ -59,3 +59,15 @@ describe("tamanho do texto", () => {
     expect(clampFontScale(2)).toBe(1.5);
   });
 });
+
+import { formatReference } from "../src/services/readingPlans";
+
+describe("referências dos planos", () => {
+  it("formata capítulo, versículos e intervalos entre capítulos", () => {
+    expect(formatReference({ livro: "Gênesis", capituloInicio: 1 })).toBe("Gênesis 1");
+    expect(formatReference({ livro: "Gênesis", capituloInicio: 1, capituloFim: 3 })).toBe("Gênesis 1–3");
+    expect(formatReference({ livro: "João", capituloInicio: 3, versiculoInicio: 16 })).toBe("João 3,16");
+    expect(formatReference({ livro: "João", capituloInicio: 3, versiculoInicio: 16, versiculoFim: 18 })).toBe("João 3,16-18");
+    expect(formatReference({ livro: "Mateus", capituloInicio: 5, versiculoInicio: 1, capituloFim: 7, versiculoFim: 29 })).toBe("Mateus 5,1–7,29");
+  });
+});

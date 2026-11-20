@@ -78,3 +78,27 @@ export function getPlanStatus(plan: ReadingPlan, progress: ReadingPlanProgress |
 
   return { status: "em-andamento", diasConcluidos, proximoDia };
 }
+
+/** "João 3,16-18", "Gênesis 1–3", "Mateus 5,1–7,29" (mesmo formato do RN). */
+export function formatReference(ref: BibleReference): string {
+  const capituloFim = ref.capituloFim ?? ref.capituloInicio;
+  if (capituloFim !== ref.capituloInicio) {
+    const inicio = ref.versiculoInicio !== undefined ? `${ref.capituloInicio},${ref.versiculoInicio}` : `${ref.capituloInicio}`;
+    const fim = ref.versiculoFim !== undefined ? `${capituloFim},${ref.versiculoFim}` : `${capituloFim}`;
+    return `${ref.livro} ${inicio}–${fim}`;
+  }
+  if (ref.versiculoInicio === undefined) return `${ref.livro} ${ref.capituloInicio}`;
+  if (ref.versiculoFim === undefined || ref.versiculoFim === ref.versiculoInicio) return `${ref.livro} ${ref.capituloInicio},${ref.versiculoInicio}`;
+  return `${ref.livro} ${ref.capituloInicio},${ref.versiculoInicio}-${ref.versiculoFim}`;
+}
+
+export const CATEGORY_LABELS: Record<string, string> = {
+  liturgico: "Tempo Litúrgico",
+  evangelho: "Evangelhos",
+  tematico: "Temático",
+  sapiencial: "Sabedoria",
+  catequetico: "Catequese",
+  mariano: "Mariano",
+  familia: "Família",
+  "biblia-anual": "Bíblia em 1 Ano",
+};
