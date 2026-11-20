@@ -2275,3 +2275,270 @@ button.list-row:active {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ---- Orações ---- */
+.prayer-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.prayer-search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.prayer-search-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 42px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--card-bg);
+  color: var(--title);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.prayer-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.prayer-search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.prayer-search-clear {
+  position: absolute;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 17px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.prayer-empty {
+  text-align: center;
+  padding: 24px 8px;
+}
+
+.prayer-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 18px;
+}
+
+/* Cruz grande e translúcida ao fundo do destaque. */
+.prayer-hero::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: -14px;
+  width: 120px;
+  height: 160px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) center 0 / 22px 100% no-repeat,
+    linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12)) 0 42px / 100% 22px no-repeat;
+  pointer-events: none;
+}
+
+.prayer-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.prayer-hero-title {
+  margin: 4px 0 0;
+  font-size: 1.3rem;
+  font-weight: 900;
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
+}
+
+.prayer-hero-excerpt {
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  opacity: 0.92;
+  position: relative;
+  z-index: 1;
+}
+
+.prayer-hero .btn {
+  position: relative;
+  z-index: 1;
+  min-height: 40px;
+  border: 0;
+  background: #fff;
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.prayer-chips {
+  gap: 8px;
+}
+
+.prayer-chips .chip {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.prayer-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.prayer-section-icon,
+.prayer-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--tone-soft);
+  color: var(--tone);
+}
+
+.prayer-section-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+}
+
+.prayer-section-title {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--title);
+}
+
+.prayer-section-count {
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--tone-soft);
+  color: var(--tone);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.prayer-row {
+  align-items: center;
+}
+
+.prayer-row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.prayer-row-kicker {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.prayer-row-excerpt {
+  margin-top: 1px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prayer-sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 18px 24px;
+  border-top: 4px solid var(--tone);
+}
+
+.prayer-sheet-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--tone-soft);
+  color: var(--tone);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.prayer-sheet-title {
+  margin: 12px 0 0;
+  font-size: calc(1.4rem * var(--font-scale));
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--title);
+}
+
+.prayer-ornament {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 16px;
+  color: var(--tone);
+}
+
+.prayer-ornament span {
+  width: 48px;
+  height: 1px;
+  background: var(--tone);
+  opacity: 0.5;
+}
+
+.prayer-sheet-text {
+  align-self: stretch;
+  font-size: calc(1.05rem * var(--font-scale));
+  line-height: 1.8;
+}
+
+.prayer-more-title {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* No modo escuro, as cores das categorias ficam mais claras para manter o contraste. */
+:root[data-mode="escuro"] .prayer-section-icon,
+:root[data-mode="escuro"] .prayer-row-icon,
+:root[data-mode="escuro"] .prayer-section-count,
+:root[data-mode="escuro"] .prayer-row-kicker,
+:root[data-mode="escuro"] .prayer-sheet-kicker,
+:root[data-mode="escuro"] .prayer-ornament {
+  filter: brightness(1.7) saturate(0.85);
+}
