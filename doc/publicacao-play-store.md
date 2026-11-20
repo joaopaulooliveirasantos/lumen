@@ -13,8 +13,8 @@ Pacote: `com.joaopaulosantos.lumen`. Assinatura de upload: SHA1 `C3:33:81:45:6C:
 | Termos de Uso | `doc/Termos-de-Uso.md` (embutido no app) | Pronto. Revisar o texto |
 | SMTP próprio no Supabase | Supabase › Authentication › SMTP | Configurado em 2026-11-20 (Resend com domínio próprio). Conferir o limite de e-mails por hora em Authentication › Rate Limits e acompanhar os envios em Resend › Logs |
 | HTTPS na VPS | Nginx + Certbot | Feito em 2026-11-20: `https://api.lumenliturgia.com.br`, certificado do Let's Encrypt com renovação automática. O app usa esse endereço a partir do build 23. O HTTP pelo IP continua ativo para os builds antigos |
-| Conta de teste para o revisor | Play Console › Acesso ao app | **Pendente** (seção 3) |
-| Formulário de Segurança dos dados | Play Console › Conteúdo do app | **Pendente** (seção 4) |
+| Conta de teste para o revisor | Play Console › Acesso ao app | Feito em 2026-11-20 |
+| Formulário de Segurança dos dados | Play Console › Conteúdo do app | Feito em 2026-11-20 |
 
 ## 2. Envio pelo CI (opcional, recomendado)
 
@@ -78,7 +78,7 @@ Respostas conforme o que o app faz hoje (conferido no código em 2026-11-20):
 
 ## 5. Lançamento
 
-1. **Trilha interna**: AAB testado no aparelho (feito até o build 22).
+1. **Trilha interna**: AAB testado no aparelho (feito até o build 23).
 2. ~~Publicar a política e a página de exclusão na VPS~~ (feito em 2026-11-20). Conferir `https://api.lumenliturgia.com.br/privacy-policy` e `/excluir-conta`.
 3. Preencher as seções 3 e 4 na Play Console.
 4. **Produção em etapas**: promover o último AAB da trilha interna para produção com 10% (Play Console › Produção › Criar versão › "Adicionar da biblioteca"), ou gerar um novo pelo CI com `track=production`.
