@@ -2016,56 +2016,410 @@ button.list-row:active {
 }
 
 /* ---- Terço ---- */
+/* A cor do grupo de mistérios (--tone, --tone-soft, --tone-rgb) vem do style da tela. */
 .rosary-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 18px 20px;
   text-align: center;
+  background: linear-gradient(150deg, rgba(var(--tone-rgb), 0.78), rgb(var(--tone-rgb)) 55%, rgba(0, 0, 0, 0.25)), rgb(var(--tone-rgb));
 }
 
-.rosary-ornament {
+/* Contas de terço decorativas no fundo do destaque. */
+.rosary-hero::before {
+  content: "";
+  position: absolute;
+  right: -75px;
+  top: -75px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 3px dotted rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+}
+
+.rosary-hero-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.rosary-hero-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  width: 54px;
+  height: 54px;
+  margin: 6px 0 2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.08);
 }
 
-.rosary-ornament span {
-  width: 40px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.7);
-}
-
-.rosary-title {
-  margin: 8px 0 2px;
-  font-size: 1.4rem;
+.rosary-hero-title {
+  margin: 4px 0 0;
+  font-size: 1.35rem;
   font-weight: 900;
-  letter-spacing: 0.3em;
+}
+
+.rosary-hero-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.92;
+}
+
+.rosary-hero-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0.85;
 }
 
 .rosary-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.rosary-section-title {
   margin: 6px 0 0;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.rosary-progress {
+.mystery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mystery-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
+  padding: 14px 12px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.rosary-progress .muted {
+.mystery-tile-selected {
+  border-color: var(--tone);
+  background: linear-gradient(180deg, var(--tone-soft), transparent 70%), var(--card-bg);
+  box-shadow: 0 4px 12px rgba(var(--tone-rgb), 0.18);
+}
+
+.mystery-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: var(--tone-soft);
+  color: var(--tone);
+}
+
+.mystery-tile-selected .mystery-tile-icon {
+  background: var(--tone);
+  color: #fff;
+}
+
+.mystery-tile-name {
+  font-weight: 800;
+  color: var(--title);
+}
+
+.mystery-tile-days {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.mystery-tile-today {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--tone-soft);
+  color: var(--tone);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mystery-list {
   margin: 0;
-  font-size: 0.78rem;
+  padding: 6px 14px;
+  list-style: none;
+}
+
+.mystery-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.mystery-item + .mystery-item {
+  border-top: 1px solid var(--border);
+}
+
+.mystery-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--tone-soft);
+  color: var(--tone);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.mystery-text {
+  padding-top: 3px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--body);
+}
+
+.rosary-screen .rosary-start {
+  background: var(--tone);
+  border-color: var(--tone);
+  color: #fff;
+}
+
+.rosary-track {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+}
+
+.rosary-track-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--tone);
+}
+
+.rosary-track-head .muted {
+  font-weight: 600;
+}
+
+.rosary-track-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--tone-soft);
+  overflow: hidden;
+}
+
+.rosary-track-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--tone);
+  transition: width 0.25s ease;
+}
+
+.rosary-mysteries {
+  display: flex;
+  justify-content: space-between;
+}
+
+.rm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.rm-done {
+  border-color: var(--tone);
+  background: var(--tone);
+  color: #fff;
+}
+
+.rm-current {
+  border-color: var(--tone);
+  color: var(--tone);
+  box-shadow: 0 0 0 3px var(--tone-soft);
+}
+
+.rosary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 18px 22px;
+  border-top: 4px solid var(--tone);
+}
+
+.rosary-card-title {
+  margin: 0;
+  font-size: calc(1.3rem * var(--font-scale));
+  font-weight: 900;
+  color: var(--title);
+  text-align: center;
+}
+
+.rosary-card .reading-text {
+  align-self: stretch;
+  margin-top: 6px;
+  font-size: calc(1.05rem * var(--font-scale));
+  line-height: 1.8;
+}
+
+.beads {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0 6px;
+}
+
+.bead {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--tone-rgb), 0.35);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.bead-done {
+  border-color: var(--tone);
+  background: var(--tone);
+}
+
+.bead-current {
+  border-color: var(--tone);
+  background: var(--tone-soft);
+  transform: scale(1.35);
+  box-shadow: 0 0 0 3px var(--tone-soft);
 }
 
 .repeat-badge {
   display: inline-block;
-  margin: -4px 0 10px;
+  margin: 4px 0;
   padding: 3px 10px;
   border-radius: var(--radius-pill);
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--tone-soft, var(--accent-soft));
+  color: var(--tone, var(--accent));
   font-size: 0.78rem;
   font-weight: 800;
+}
+
+.mystery-announce {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 20px 24px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--tone-soft), transparent 60%), var(--card-bg);
+  border-top: 4px solid var(--tone);
+}
+
+.mystery-announce-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--tone);
+  color: #fff;
+  box-shadow: 0 0 0 6px var(--tone-soft);
+}
+
+.mystery-announce-kicker {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.mystery-announce-text {
+  margin: 0;
+  font-size: calc(1.25rem * var(--font-scale));
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--title);
+}
+
+.mystery-announce-hint {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* Botões do topo e da barra de leitura na cor do mistério escolhido. */
+.rosary-screen .page-header .icon-btn,
+.rosary-screen .player-btn,
+.rosary-screen .font-btn {
+  color: var(--tone);
+}
+
+.rosary-screen .page-header .icon-btn {
+  background: var(--tone-soft);
+}
+
+.rosary-screen .player-main {
+  background: var(--tone);
+  color: #fff;
+}
+
+.rosary-screen .player-btn:disabled {
+  color: var(--border);
+}
+
+.rosary-screen .amen-burst {
+  color: var(--tone);
+}
+
+/* Modo escuro: cores dos mistérios mais claras para manter o contraste do texto e dos ícones. */
+:root[data-mode="escuro"] .mystery-tile-icon,
+:root[data-mode="escuro"] .mystery-tile-today,
+:root[data-mode="escuro"] .mystery-num,
+:root[data-mode="escuro"] .rosary-track-head,
+:root[data-mode="escuro"] .rm-current,
+:root[data-mode="escuro"] .mystery-announce-kicker {
+  filter: brightness(1.6) saturate(0.85);
 }
 
 /* ---- Bíblia ---- */
