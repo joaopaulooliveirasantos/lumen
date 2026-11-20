@@ -36,7 +36,7 @@ jobs:
       run:
         working-directory: web
     env:
-      VITE_API_BASE_URL: http://147.15.109.185
+      VITE_API_BASE_URL: https://api.lumenliturgia.com.br
       VITE_SUPABASE_URL: https://ccdppkqnduvnfuxgdvry.supabase.co
       VITE_SUPABASE_ANON_KEY: sb_publishable_iZU34cOvPxyNTbeCvcf-QQ_eJEpbm4E
       VERSION_CODE: ${{ inputs.version_code }}

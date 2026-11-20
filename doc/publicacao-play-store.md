@@ -12,7 +12,7 @@ Pacote: `com.joaopaulosantos.lumen`. Assinatura de upload: SHA1 `C3:33:81:45:6C:
 | Página de exclusão de conta sem o app (exigência da Play) | `src/static/excluir-conta.html`, servida em `/excluir-conta` | Publicada na VPS em 2026-11-20 |
 | Termos de Uso | `doc/Termos-de-Uso.md` (embutido no app) | Pronto. Revisar o texto |
 | SMTP próprio no Supabase | Supabase › Authentication › SMTP | Configurado em 2026-11-20 (Resend com domínio próprio). Conferir o limite de e-mails por hora em Authentication › Rate Limits e acompanhar os envios em Resend › Logs |
-| HTTPS na VPS | Nginx + Certbot | **Pendente**, depende de um domínio apontando para `147.15.109.185`. Não bloqueia a Play (o app não envia dados pessoais à VPS), mas é recomendado. Ao trocar, atualizar `VITE_API_BASE_URL` no workflow e as URLs da Play Console |
+| HTTPS na VPS | Nginx + Certbot | Feito em 2026-11-20: `https://api.lumenliturgia.com.br`, certificado do Let's Encrypt com renovação automática. O app usa esse endereço a partir do build 23. O HTTP pelo IP continua ativo para os builds antigos |
 | Conta de teste para o revisor | Play Console › Acesso ao app | **Pendente** (seção 3) |
 | Formulário de Segurança dos dados | Play Console › Conteúdo do app | **Pendente** (seção 4) |
 
@@ -55,8 +55,8 @@ Respostas conforme o que o app faz hoje (conferido no código em 2026-11-20):
 
 **Coleta e compartilhamento**
 - O app coleta ou compartilha dados do usuário? **Sim.**
-- Todos os dados são criptografados em trânsito? **Sim.** Os dados pessoais só vão ao Supabase, por HTTPS. A VPS (HTTP) recebe apenas a data da liturgia e serve textos públicos, sem dados do usuário.
-- O usuário pode pedir a exclusão dos dados? **Sim.** URL de exclusão de conta: `http://147.15.109.185/excluir-conta` (trocar pelo domínio com HTTPS quando houver).
+- Todos os dados são criptografados em trânsito? **Sim.** Os dados pessoais só vão ao Supabase, por HTTPS. A VPS (também HTTPS a partir do build 23) recebe apenas a data da liturgia e serve textos públicos, sem dados do usuário.
+- O usuário pode pedir a exclusão dos dados? **Sim.** URL de exclusão de conta: `https://api.lumenliturgia.com.br/excluir-conta`.
 
 **Tipos de dados coletados** (nenhum é compartilhado: o Supabase e o Google atuam como provedores de serviço, o que a Play não conta como compartilhamento)
 
@@ -71,7 +71,7 @@ Respostas conforme o que o app faz hoje (conferido no código em 2026-11-20):
 - **Não declarar**: localização, contatos, atividade no app, histórico de navegação, IDs do dispositivo, diagnósticos ou registros de falhas. Não há analytics nem SDK de falhas. Preferências, histórico de leitura, versículos marcados e progresso ficam só no aparelho, e dados que não saem do aparelho não contam como coletados.
 
 **Outras seções da Play Console**
-- Política de privacidade: `http://147.15.109.185/privacy-policy`.
+- Política de privacidade: `https://api.lumenliturgia.com.br/privacy-policy`.
 - Anúncios: **não** contém anúncios.
 - Público-alvo: manter o atual (o app não é direcionado a crianças).
 - Exclusão de conta: a mesma URL `/excluir-conta`, e "Sim, os usuários podem excluir a conta no app".
@@ -79,7 +79,7 @@ Respostas conforme o que o app faz hoje (conferido no código em 2026-11-20):
 ## 5. Lançamento
 
 1. **Trilha interna**: AAB testado no aparelho (feito até o build 22).
-2. ~~Publicar a política e a página de exclusão na VPS~~ (feito em 2026-11-20). Conferir `http://147.15.109.185/privacy-policy` e `/excluir-conta`.
+2. ~~Publicar a política e a página de exclusão na VPS~~ (feito em 2026-11-20). Conferir `https://api.lumenliturgia.com.br/privacy-policy` e `/excluir-conta`.
 3. Preencher as seções 3 e 4 na Play Console.
 4. **Produção em etapas**: promover o último AAB da trilha interna para produção com 10% (Play Console › Produção › Criar versão › "Adicionar da biblioteca"), ou gerar um novo pelo CI com `track=production`.
 5. Acompanhar por 2 a 3 dias: Play Console › Qualidade (falhas e ANRs), avaliações e o e-mail de contato. Subir para 50% e depois para 100%.

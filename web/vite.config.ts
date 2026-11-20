@@ -6,7 +6,7 @@ import { defineConfig, type Plugin } from "vite";
 import preact from "@preact/preset-vite";
 
 // Em dev o navegador chama "/api" no mesmo origin; o proxy evita CORS (a API da VPS não envia cabeçalhos CORS).
-const apiTarget = process.env.VITE_DEV_API_TARGET ?? "http://147.15.109.185";
+const apiTarget = process.env.VITE_DEV_API_TARGET ?? "https://api.lumenliturgia.com.br";
 
 // BIBLE_LOCAL=1 serve /biblias a partir de ../dist-biblias (gerado por scripts/bible/build-bible-assets.mjs),
 // para testar sem depender do deploy na VPS. Sem a variável, /biblias vai pelo proxy como /api.

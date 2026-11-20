@@ -107,7 +107,7 @@ A variável `LITURGY_PROVIDER` escolhe a fonte de liturgia + santo do dia:
 
 ### 4.8 Deploy
 
-VPS Oracle Cloud (`147.15.109.185`), sem domínio/HTTPS ainda. `Internet → Nginx :80 → Node (systemd, :3333)`. Deploy via [scripts/deploy-vps.sh](../scripts/deploy-vps.sh) (idempotente, cobre setup inicial e redeploy). Sem CI/CD — deploy é manual. Detalhes completos em [README-deploy-vps.md](README-deploy-vps.md) e [README-backend-fase1.md](README-backend-fase1.md).
+VPS Oracle Cloud (`147.15.109.185`, domínio `api.lumenliturgia.com.br` com HTTPS do Let's Encrypt; HTTP pelo IP mantido para builds antigos). `Internet → Nginx :80/:443 → Node (systemd, :3333)`. Deploy via [scripts/deploy-vps.sh](../scripts/deploy-vps.sh) (idempotente, cobre setup inicial e redeploy). Sem CI/CD — deploy é manual. Detalhes completos em [README-deploy-vps.md](README-deploy-vps.md) e [README-backend-fase1.md](README-backend-fase1.md).
 
 ## 5. Mobile — arquitetura e funcionamento
 

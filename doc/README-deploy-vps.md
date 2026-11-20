@@ -6,6 +6,12 @@ Vercel usado anteriormente.
 ## Servidor
 
 - **IP:** 147.15.109.185
+- **Domínio:** `api.lumenliturgia.com.br` (registro A no registro.br), com HTTPS do Let's Encrypt.
+  - Certificado emitido com `sudo certbot certonly --webroot -w /var/www/letsencrypt -d api.lumenliturgia.com.br`.
+  - O `certbot.timer` renova sozinho; o gancho `/etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh` recarrega o Nginx.
+  - Teste da renovação: `sudo certbot renew --dry-run`.
+  - O HTTP pelo IP continua ativo para os builds do app anteriores ao 23.
+- **Outro site na mesma VPS:** `sites-available/lider` (www.liderinstrumentacao.com.br, com HTTPS próprio). Não remover; a config do Lumen declara `server_name api.lumenliturgia.com.br` para não pegar o certificado dele.
 - **Provedor:** Oracle Cloud Infrastructure (OCI)
 - **SO:** Ubuntu 24.04 LTS (arm64)
 - **Usuario SSH:** `ubuntu` (nao usar `root`, o login e bloqueado)
