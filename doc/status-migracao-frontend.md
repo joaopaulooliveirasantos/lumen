@@ -22,7 +22,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-19` | Gerado pelo run `44670477537` com a Fase 5: login obrigatório (mesmo SHA1). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-19\app-release.aab`. Publicado na trilha interna e validado no aparelho (login, cadastro, Google, exclusão) |
 | AAB `lumen-web-aab-20` | Gerado pelo run `44676595284` com a Fase 6: todas as telas migradas (mesmo SHA1). 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-20\app-release.aab`. Validado no aparelho em 2026-11-20 |
 | AAB `lumen-web-aab-21` | Gerado pelo run `44763530195` com as Fases 7 e 8 (barras do sistema, teclado, ferramentas de teste escondidas). Mesmo SHA1, 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-21\app-release.aab`. Validado no aparelho em 2026-11-20 |
-| AAB `lumen-web-aab-22` | Fase 9: migração dos dados do app RN e teste "Dados do app antigo" no Diagnóstico. Run `44772723480`, mesmo SHA1. Cópia local em `C:SERSJPOSRDOWNLOADSuMEN-AAB-22PP-RELEASE.AAB`. **Aguardando envio à trilha interna e teste no aparelho** |
+| AAB `lumen-web-aab-22` | Fase 9: migração dos dados do app RN e teste "Dados do app antigo" no Diagnóstico. Run `44772723480`, mesmo SHA1. Cópia local em `C:UsersjposrDownloadslumen-aab-22app-release.aab`. **Aguardando envio à trilha interna e teste no aparelho** |
 | Próximo `versionCode` livre | 23 |
 
 ## O que já foi feito
