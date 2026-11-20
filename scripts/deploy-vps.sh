@@ -126,29 +126,22 @@ sudo systemctl enable "$SERVICE_NAME"
 sudo systemctl restart "$SERVICE_NAME"
 REMOTE_SYSTEMD
 
-echo "==> Configurando Nginx (reverse proxy :80 -> :3333)..."
+echo "==> Configurando Nginx (reverse proxy :80 -> :3333 e /biblias estático)..."
+# A config vive em scripts/nginx/lumen-backend.conf, compartilhada com scripts/deploy-biblias.sh.
+$SCP "$REPO_ROOT/scripts/nginx/lumen-backend.conf" "$VPS_USER@$VPS_HOST:/tmp/lumen-backend.conf"
 $SSH "$VPS_USER@$VPS_HOST" bash -s <<'REMOTE_NGINX'
 set -euo pipefail
 
-sudo tee /etc/nginx/sites-available/lumen-backend > /dev/null <<'CONF'
-server {
-    listen 80 default_server;
-    server_name _;
-
-    location / {
-        proxy_pass http://127.0.0.1:3333;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-CONF
-
+sudo mkdir -p /var/www/lumen-static/biblias
+sudo cp /etc/nginx/sites-available/lumen-backend /tmp/lumen-backend.conf.previous 2>/dev/null || true
+sudo mv /tmp/lumen-backend.conf /etc/nginx/sites-available/lumen-backend
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo ln -sf /etc/nginx/sites-available/lumen-backend /etc/nginx/sites-enabled/lumen-backend
-sudo nginx -t
+if ! sudo nginx -t; then
+  echo "Config do Nginx inválida; restaurando a anterior."
+  sudo cp /tmp/lumen-backend.conf.previous /etc/nginx/sites-available/lumen-backend
+  exit 1
+fi
 sudo systemctl enable nginx
 sudo systemctl reload nginx
 REMOTE_NGINX

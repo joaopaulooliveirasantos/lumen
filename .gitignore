@@ -26,3 +26,6 @@ node_modules
 # Keystores
 *.jks
 *.keystore
+
+# Bíblias geradas (scripts/bible/build-bible-assets.mjs)
+dist-biblias/

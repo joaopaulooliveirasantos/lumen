@@ -5,6 +5,7 @@ import { Share } from "@capacitor/share";
 import { fetchDailyLiturgy } from "../services/api";
 import { formatIsoDate } from "../services/date";
 import { getDailyCache, saveDailyCache } from "../storage/liturgyCache";
+import { getBibleDownloadStatus, getBibleIndex, loadBibleBook } from "../services/bible";
 import { kv } from "../storage/kv";
 import { isNative, platform } from "../native/platform";
 import { disableDailyReminder, scheduleDailyReminder, scheduleTestNotification } from "../native/notifications";
@@ -83,6 +84,20 @@ export function DiagnosticsScreen() {
           const back = await getDailyCache(date);
           if (back?.payload.liturgia !== payload.liturgia) throw new Error("Leitura diferente da gravada.");
           return `Gravado e lido: ${back.payload.liturgia}`;
+        }}
+      />
+
+      <TestCard
+        title="Bíblia da VPS (livro + cache)"
+        hint="Baixa São João (Pastoral) e lê de novo do IndexedDB. Rode de novo em modo avião: deve continuar OK."
+        run={async () => {
+          const started = performance.now();
+          const index = await getBibleIndex("paulus");
+          const book = await loadBibleBook("paulus", "São João");
+          if (!book) throw new Error("Livro não encontrado no índice.");
+          const ms = Math.round(performance.now() - started);
+          const status = await getBibleDownloadStatus("paulus");
+          return `versão=${index.versao} ${book.nome}: ${book.capitulos.length} capítulos em ${ms} ms\n${status.baixados}/${status.total} livros no aparelho`;
         }}
       />
 
