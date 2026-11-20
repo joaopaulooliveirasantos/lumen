@@ -26,6 +26,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-23` | Fase 9: API em HTTPS (`https://api.lumenliturgia.com.br`), sem tráfego sem criptografia. Run `44820239391`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-23\lumen-web-aab-23\app-release.aab`. Validado no aparelho (2026-11-20). Versão para a produção |
 | AAB `lumen-web-aab-24` | Home: hero compacto (data, marca e calendário numa linha; dia litúrgico abaixo) e planos em destaque menores. Run `44827745559`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-24\lumen-web-aab-24\app-release.aab`. **Aguardando teste no aparelho** |
 | AAB `lumen-web-aab-25` | Planos em destaque com ícone 48×48, barra da liturgia numa linha e tela de Orações redesenhada (oração do dia, busca, filtros, leitura em voz alta). Run `44835666668`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-25\lumen-web-aab-25\app-release.aab`. **Aguardando teste no aparelho** |
+| AAB `lumen-web-aab-26` | Tudo do 25 mais a tela do Terço redesenhada (cores por grupo de mistérios, contas da dezena, anúncio do mistério). Run `44839530722`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-26\lumen-web-aab-26\app-release.aab`. **Aguardando envio à Play e teste no aparelho** |
 | Próximo `versionCode` livre | 23 |
 
 ## O que já foi feito
@@ -196,10 +197,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=26 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=27 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-26              # baixar o AAB
+gh run download <id> -n lumen-web-aab-27              # baixar o AAB
 ```
 
 Dicas de ambiente:
