@@ -19,7 +19,8 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-16` | Gerado pelo run `44655899497` **com os plugins nativos** (3,2 MB, mesmo SHA1 `C3:33:…:22:8F`). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-16\app-release.aab`. Publicado na trilha interna e validado no aparelho |
 | AAB `lumen-web-aab-17` | Gerado pelo run `44661959913` com o carregador das Bíblias e o novo teste de Diagnóstico (mesmo SHA1). Publicado na trilha interna e validado no aparelho (era cache da Play Store a demora em aparecer) |
 | AAB `lumen-web-aab-18` | Gerado pelo run `44667880258` com a Fase 4: ícone e splash da marca, componentes, galeria (mesmo SHA1). 5,1 MB, dos quais cerca de 2 MB são as splash em PNG. Publicado na trilha interna (2026-11-20) |
-| Próximo `versionCode` livre | 19 (Fase 5) |
+| AAB `lumen-web-aab-19` | Gerado pelo run `44670477537` com a Fase 5: login obrigatório (mesmo SHA1). Cópia local em `C:SERSJPOSRDOWNLOADSuMEN-AAB-19PP-RELEASE.AAB`. **Só ENVIAR à TRILHA INTERNA DEPOIS DE CONFIGURAR O SUPABASE** |
+| PRóXIMO `VERSIONCODE` LIVRE | 20 |
 
 ## O que já foi feito
 
@@ -142,10 +143,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=19 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=20 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-19              # baixar o AAB
+gh run download <id> -n lumen-web-aab-20              # baixar o AAB
 ```
 
 Dicas de ambiente:
