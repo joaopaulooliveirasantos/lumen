@@ -1,10 +1,10 @@
 # Status da migração do frontend (React Native → Preact + Vite + Capacitor)
 
-Atualizado em 2026-11-19 (Fase 1 concluída; Fase 3 implementada, aguardando deploy na VPS). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
+Atualizado em 2026-11-19 (Fase 1 concluída; Fase 3 publicada na VPS, falta o teste no aparelho). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
 
 ## Resumo
 
-As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está implementada e testada localmente; falta publicar os arquivos e a nova config do Nginx na VPS. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
+As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está implementada e publicada na VPS; falta rodar o teste "Bíblia da VPS" do AAB 17 no aparelho. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
 
 ## Estado do repositório
 
@@ -12,11 +12,13 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 |---|---|
 | `8d4dea2`, `5570311` | Em `origin/main` (Capacitor, workflow de build, correção do `versionCode`) |
 | `127b243`, `e0ad730` | Em `origin/main` (plugins nativos, tela de Diagnóstico, este arquivo) |
-| Fase 3 (Bíblias) | **Ainda não commitada**: gerador, config do Nginx, deploy, carregador, testes |
+| `d83ea41`, seguinte | Em `origin/main`: Fase 3 (gerador, config do Nginx, deploy, carregador, testes) e correção do teste para o CI |
+| VPS | Bíblias publicadas em `/var/www/lumen-static/biblias` e Nginx com `/biblias/` (2026-11-19). Conferido: gzip (Gênesis 220 KB → 63 KB), cache imutável, 404 para arquivo inexistente e `/api` inalterada |
 | `lumen/app.json` (raiz) | Não rastreado e **não é meu**; deixado de fora de todos os commits |
 | AAB `lumen-web-aab-15` | Gerado pelo run `44650160994` (build sem plugins nativos). Não enviado à Play Store |
 | AAB `lumen-web-aab-16` | Gerado pelo run `44655899497` **com os plugins nativos** (3,2 MB, mesmo SHA1 `C3:33:…:22:8F`). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-16\app-release.aab`. Publicado na trilha interna e validado no aparelho |
-| Próximo `versionCode` livre | 17 (o RN publicou até 14; 15 e 16 existem como artefatos do GitHub) |
+| AAB `lumen-web-aab-17` | Gerado pelo run `44661959913` com o carregador das Bíblias e o novo teste de Diagnóstico (mesmo SHA1). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-17\app-release.aab`. **Aguardando envio à trilha interna** |
+| Próximo `versionCode` livre | 18 |
 
 ## O que já foi feito
 
@@ -45,7 +47,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 - **Validação no aparelho (2026-11-19)**: AAB 16 instalado pela trilha interna por cima do RN (pacote, assinatura e `versionCode` aceitos) e todos os testes de Diagnóstico OK, inclusive o login Google pelo deep link.
 - **Decisão**: o app novo é instalado pela trilha interna. Uma correção crítica no RN, se necessária, sai pelo EAS com `versionCode` 17 ou maior.
 
-### Bíblias na VPS (Fase 3, implementada; falta o deploy)
+### Bíblias na VPS (Fase 3, publicada; falta o teste no aparelho)
 - **Gerador** [scripts/bible/build-bible-assets.mjs](../scripts/bible/build-bible-assets.mjs) (Node puro, sem dependências): valida cada tradução (46 + 27 livros, capítulos em sequência, versículos não vazios) e gera em `lumen/dist-biblias/biblias/` (no `.gitignore`):
   - `manifest.json`: traduções e versão atual (cache `no-cache`);
   - `<traducao>/<versao>/index.json`: livros, testamento e versículos por capítulo;
@@ -66,8 +68,9 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 ## O que ainda falta
 
 ### Fechar a Fase 3
-1. **Deploy na VPS**: `bash scripts/deploy-biblias.sh` (Git Bash). Conferir `manifest: HTTP 200` e o Gênesis com gzip no final.
-2. **Build 17** e rodar no aparelho o teste "Bíblia da VPS" duas vezes: com rede e em modo avião.
+1. ~~Deploy na VPS~~: feito com `bash scripts/deploy-biblias.sh`.
+2. ~~Build 17~~: run `44661959913`.
+3. **Enviar o AAB 17 à trilha interna** e rodar no aparelho o teste "Bíblia da VPS" duas vezes: com rede e em modo avião (deve continuar OK, lendo do cache).
 
 ### Fase 4: design system
 - Ícones definitivos (os atuais são aproximações), cards, tela de carregamento e ícone do app (hoje o padrão do Capacitor).
@@ -107,10 +110,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=17 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=18 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-17              # baixar o AAB
+gh run download <id> -n lumen-web-aab-18              # baixar o AAB
 ```
 
 Dicas de ambiente:
