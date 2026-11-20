@@ -28,7 +28,7 @@ Não vendemos nem compartilhamos dados pessoais com terceiros para fins de publi
 Você pode, a qualquer momento:
 - Consultar e corrigir seu nome e telefone no Perfil do app.
 - Excluir sua conta pelo app (Perfil, Excluir conta). A exclusão apaga a conta e o perfil (nome, e-mail, telefone) de forma definitiva.
-- Solicitar informações ou a exclusão pelo contato abaixo.
+- Solicitar informações ou a exclusão pelo contato abaixo, inclusive sem o app instalado (instruções em http://147.15.109.185/excluir-conta).
 
 ## Retenção
 Os dados da conta são mantidos enquanto a conta existir e apagados quando ela é excluída. As preferências locais permanecem no aparelho até você desinstalar o app ou limpar os dados dele.

@@ -1,10 +1,10 @@
 # Status da migração do frontend (React Native → Preact + Vite + Capacitor)
 
-Atualizado em 2026-11-20 (Fases 1 a 5 concluídas; Fase 6 implementada, falta testar o build 20 no aparelho). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
+Atualizado em 2026-11-20 (Fases 1 a 8 concluídas; Fase 9 em andamento, com o roteiro em [publicacao-play-store.md](publicacao-play-store.md)). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
 
 ## Resumo
 
-As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está concluída: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. A **Fase 5 (login obrigatório)** está concluída: Supabase configurado e build 19 validado no aparelho (2026-11-20). A **Fase 6 (telas)** está concluída: todas as telas do RN foram migradas e o build 20 foi validado no aparelho (2026-11-20). As **Fases 7 (camada nativa)** e **8 (paridade e qualidade)** estão implementadas: barras do sistema, teclado, revisão de paridade, modos de leitura, acessibilidade e ferramentas de teste escondidas; falta testar o build 21 no aparelho. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
+As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está concluída: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. A **Fase 5 (login obrigatório)** está concluída: Supabase configurado e build 19 validado no aparelho (2026-11-20). A **Fase 6 (telas)** está concluída: todas as telas do RN foram migradas e o build 20 foi validado no aparelho (2026-11-20). As **Fases 7 (camada nativa)** e **8 (paridade e qualidade)** estão implementadas: barras do sistema, teclado, revisão de paridade, modos de leitura, acessibilidade e ferramentas de teste escondidas; build 21 validado no aparelho. A **Fase 9 (publicação)** está em andamento: migração dos dados do RN, página de exclusão de conta, envio pelo CI e roteiro da Play Console prontos; falta testar o build 22 e fazer os passos manuais da Play Console. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
 
 ## Estado do repositório
 
@@ -21,8 +21,9 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-18` | Gerado pelo run `44667880258` com a Fase 4: ícone e splash da marca, componentes, galeria (mesmo SHA1). 5,1 MB, dos quais cerca de 2 MB são as splash em PNG. Publicado na trilha interna (2026-11-20) |
 | AAB `lumen-web-aab-19` | Gerado pelo run `44670477537` com a Fase 5: login obrigatório (mesmo SHA1). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-19\app-release.aab`. Publicado na trilha interna e validado no aparelho (login, cadastro, Google, exclusão) |
 | AAB `lumen-web-aab-20` | Gerado pelo run `44676595284` com a Fase 6: todas as telas migradas (mesmo SHA1). 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-20\app-release.aab`. Validado no aparelho em 2026-11-20 |
-| AAB `lumen-web-aab-21` | Gerado pelo run `44763530195` com as Fases 7 e 8 (barras do sistema, teclado, ferramentas de teste escondidas). Mesmo SHA1, 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-21\app-release.aab`. **Aguardando envio à trilha interna e teste no aparelho** |
-| Próximo `versionCode` livre | 22 |
+| AAB `lumen-web-aab-21` | Gerado pelo run `44763530195` com as Fases 7 e 8 (barras do sistema, teclado, ferramentas de teste escondidas). Mesmo SHA1, 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-21\app-release.aab`. Validado no aparelho em 2026-11-20 |
+| AAB `lumen-web-aab-22` | Fase 9: migração dos dados do app RN e teste "Dados do app antigo" no Diagnóstico. Ver run na seção da Fase 9. **Aguardando envio à trilha interna e teste no aparelho** |
+| Próximo `versionCode` livre | 23 |
 
 ## O que já foi feito
 
@@ -136,13 +137,13 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
   - [scripts/screenshot.mjs](../web/scripts/screenshot.mjs) captura telas pelo DevTools Protocol, com cliques (`--click "texto"`), página inteira (`--full`) e `--eval`. Exemplo: `node scripts/screenshot.mjs "http://localhost:5173/?semLogin&tab=biblia" biblia.png --click "Novo"`. O 1º carregamento no dev server é lento, por isso a espera padrão é de 20 s.
 - **Visto no backend (não é do app)**: em 2026-11-20 a API devolveu `santos: []` para o santo do dia, mas a história do santo existia ("Cristo Rei"). O cartão do santo some da Home nesses dias, como no RN.
 
-### Fase 7: camada nativa (implementada; falta testar o build 21 no aparelho)
+### Fase 7: camada nativa (concluída; build 21 validado no aparelho)
 - Notificações, TTS, OAuth, armazenamento seguro, compartilhar, copiar e botão voltar foram feitos nas Fases 1 e 6.
 - **Barras do sistema** [native/systemBars.ts](../web/src/native/systemBars.ts): o Capacitor 8 desenha o app atrás das barras e escolhia a cor dos ícones pelo tema do *sistema*. Agora segue o fundo do app: ícones claros na tela de carregamento (verde) e no modo escuro, escuros no claro e no sépia. Usa o `SystemBars` do próprio `@capacitor/core` (sem plugin novo).
 - **Teclado** [native/keyboard.ts](../web/src/native/keyboard.ts): `windowSoftInputMode="adjustResize"` explícito no manifesto. Com o teclado aberto, a barra inferior some (`html.keyboard-open`) e o campo focado é rolado para o centro. Detecção sem plugin: campo editável focado e janela mais de 20% menor.
 - **Limitação conhecida**: em WebViews anteriores à versão 140, o Capacitor preenche a área das barras com a cor do tema nativo, não com a do app. O WebView se atualiza pela Play Store, então afeta poucos aparelhos.
 
-### Fase 8: paridade e qualidade (implementada; falta testar o build 21 no aparelho)
+### Fase 8: paridade e qualidade (concluída; build 21 validado no aparelho)
 - **Paridade com o RN**: comparei, por script, todos os textos visíveis das telas e componentes do RN com o app novo. O que sobrou é só diferença de acentuação ou redação, ou recurso reorganizado (ex.: o "Reiniciar plano" virou "Ler de novo", com o mesmo efeito). Nenhuma funcionalidade ficou de fora; o áudio da homilia, o link para a Canção Nova, as tentativas de recarregar e a remoção de marcados existem.
 - **Modos escuro e sépia**: capturas de Home, Liturgia, Bíblia, Orações, Perfil e Configurações nos dois modos, sem problemas de contraste. Em dev, `?modo=escuro|sepia|claro` força o modo sem mexer nas configurações.
 - **Acessibilidade**: auditoria por script nas abas, no login e em Configurações, sem nenhum botão sem nome acessível, campo sem rótulo ou imagem sem `alt`. Com "remover animações" ligado no sistema, o Amém só esmaece e folhas e avisos não deslizam.
@@ -150,8 +151,24 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 - **Ferramentas de teste**: Diagnóstico e Componentes saíram do Perfil. Aparecem em dev ou depois de **tocar 7 vezes na versão** (em "Sobre o Lumen"), até fechar o app.
 - **Testes**: 74 no total.
 
-### Fases 9 e 10
-- **Publicação**: envio automático à trilha interna pelo CI, política de privacidade (publicar `src/static/privacy-policy.html` na VPS), formulário de Segurança dos dados da Play Console, conta de teste para o revisor, SMTP próprio no Supabase, HTTPS na VPS e lançamento em etapas.
+### Fase 9: publicação (em andamento)
+Roteiro completo, com as respostas do formulário de Segurança dos dados: [publicacao-play-store.md](publicacao-play-store.md).
+- **Migração dos dados do RN** (lacuna achada nesta fase): o app novo não lia o que o RN salvou, e quem atualizasse da produção perderia versículos marcados, progresso e configurações.
+  - O plugin nativo [LegacyStoragePlugin.java](../web/android/app/src/main/java/com/joaopaulosantos/lumen/LegacyStoragePlugin.java) lê, só para leitura, o SQLite `RKStorage` do AsyncStorage.
+  - [legacyMigration.ts](../web/src/storage/legacyMigration.ts) copia as mesmas chaves uma única vez, antes de o app abrir, sem sobrescrever o que o app novo já tem.
+  - O lembrete é reagendado sem pedir permissão de novo; se ela não existir, o lembrete fica desligado.
+  - Diagnóstico › "Dados do app antigo (RN)" mostra o que existe e quando foi migrado.
+- **Página de exclusão de conta** exigida pela Play: `src/static/excluir-conta.html`, servida pelo backend em `/excluir-conta` e ligada na política de privacidade. Publicar na VPS junto com a política (`bash scripts/deploy-vps.sh`).
+- **Envio pelo CI**: o workflow ganhou `track` (`nenhuma`, `internal` ou `production` em etapas, com `rollout`) e notas da versão em `web/android/whatsnew/`. Depende do segredo `PLAY_SERVICE_ACCOUNT_JSON`; sem ele, use `track=nenhuma`, que é o padrão.
+- **Pendências do usuário**:
+  - Play Console: conta de teste do revisor, formulário de Segurança dos dados e URL de exclusão;
+  - revisar os textos legais e publicar na VPS;
+  - SMTP próprio no Supabase;
+  - domínio e HTTPS (recomendado);
+  - conta de serviço da Play (opcional).
+- **Testes**: 80 no total.
+
+### Fase 10
 - Desativar o React Native (`lumen/mobile`) depois de a nova versão estar estável em produção.
 
 ## Riscos e pontos de atenção
@@ -176,10 +193,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=22 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=23 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-22              # baixar o AAB
+gh run download <id> -n lumen-web-aab-23              # baixar o AAB
 ```
 
 Dicas de ambiente:

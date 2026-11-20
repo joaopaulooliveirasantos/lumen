@@ -26,10 +26,14 @@ async function ensureChannel(): Promise<void> {
   await LocalNotifications.createChannel({ id: CHANNEL_ID, name: "Lembretes diários", importance: 3 });
 }
 
-export async function scheduleDailyReminder(time: string): Promise<boolean> {
+/** `askPermission: false` só agenda se a permissão já estiver concedida (sem diálogo; usado na migração do RN). */
+export async function scheduleDailyReminder(time: string, { askPermission = true } = {}): Promise<boolean> {
   const parsed = parseTime(time);
   if (!parsed) return false;
-  if (!(await requestNotificationPermission())) return false;
+  const permitted = askPermission
+    ? await requestNotificationPermission()
+    : (await LocalNotifications.checkPermissions()).display === "granted";
+  if (!permitted) return false;
 
   await ensureChannel();
   await LocalNotifications.cancel({ notifications: [{ id: REMINDER_ID }] });

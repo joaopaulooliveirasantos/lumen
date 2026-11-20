@@ -7,6 +7,7 @@ import { formatIsoDate } from "../services/date";
 import { getDailyCache, saveDailyCache } from "../storage/liturgyCache";
 import { getBibleDownloadStatus, getBibleIndex, loadBibleBook } from "../services/bible";
 import { kv } from "../storage/kv";
+import { describeLegacyStorage } from "../storage/legacyMigration";
 import { isNative, platform } from "../native/platform";
 import { disableDailyReminder, scheduleDailyReminder, scheduleTestNotification } from "../native/notifications";
 import { bestPortugueseVoice, listVoices, speak, stopSpeaking } from "../native/tts";
@@ -64,6 +65,12 @@ export function DiagnosticsScreen() {
           const info = await CapApp.getInfo();
           return `${base}\nversão=${info.version} build=${info.build} id=${info.id}`;
         }}
+      />
+
+      <TestCard
+        title="Dados do app antigo (RN)"
+        hint="Mostra o que o app React Native deixou no aparelho e quando foi copiado para o app novo."
+        run={describeLegacyStorage}
       />
 
       <TestCard

@@ -7,7 +7,11 @@ import { getSaintOfDay } from "./serverless/getSaintOfDay";
 import { getSaintStory } from "./serverless/getSaintStory";
 
 const port = Number(process.env.PORT ?? 3333);
-const PRIVACY_POLICY_PATH = join(process.cwd(), "src", "static", "privacy-policy.html");
+// Páginas públicas exigidas pela Play Store: política de privacidade e pedido de exclusão de conta.
+const STATIC_PAGES: Record<string, string> = {
+  "/privacy-policy": "privacy-policy.html",
+  "/excluir-conta": "excluir-conta.html",
+};
 
 const server = createServer(async (req, res) => {
   if (!req.url) {
@@ -18,9 +22,10 @@ const server = createServer(async (req, res) => {
 
   const parsedUrl = new URL(req.url, `http://localhost:${port}`);
 
-  if (req.method === "GET" && parsedUrl.pathname === "/privacy-policy") {
+  const staticPage = STATIC_PAGES[parsedUrl.pathname];
+  if (req.method === "GET" && staticPage) {
     try {
-      const html = await readFile(PRIVACY_POLICY_PATH, "utf-8");
+      const html = await readFile(join(process.cwd(), "src", "static", staticPage), "utf-8");
       res.statusCode = 200;
       res.setHeader("content-type", "text/html; charset=utf-8");
       res.end(html);
