@@ -51,7 +51,8 @@ function serve(data: RawBibleData, id = "paulus") {
     vi.fn(async (url: string) => {
       requests.push(url);
       if (!online) throw new TypeError("Failed to fetch");
-      const body = files.get(url);
+      // Compara só o caminho: no CI, VITE_API_BASE_URL acrescenta o host da VPS.
+      const body = files.get(new URL(url, "http://localhost").pathname);
       return body ? new Response(body, { status: 200 }) : new Response("", { status: 404 });
     }),
   );
