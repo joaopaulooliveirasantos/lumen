@@ -787,3 +787,188 @@ button.list-row:active {
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
 }
+
+/* ==== Telas de entrada (login, cadastro, completar cadastro) ===================================== */
+.auth-screen {
+  min-height: 100%;
+  overflow-y: auto;
+  padding: calc(24px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, var(--brand-cream) 0%, var(--app-bg) 320px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+:root[data-mode="escuro"] .auth-screen {
+  background: linear-gradient(180deg, var(--brand-green-dark) 0%, var(--app-bg) 320px);
+}
+
+.auth-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 12px 0 20px;
+}
+
+.auth-brand-compact {
+  margin: 0 0 14px;
+}
+
+.auth-logo {
+  border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(182, 138, 70, 0.35);
+}
+
+.auth-wordmark {
+  margin: 12px 0 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.32em;
+  color: var(--brand-bronze);
+}
+
+.auth-brand-compact .auth-wordmark {
+  font-size: 1rem;
+  margin-top: 8px;
+}
+
+.auth-tagline {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 20px 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+
+.auth-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--title);
+}
+
+.auth-subtitle {
+  margin: -6px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.auth-forgot {
+  display: flex;
+  justify-content: flex-end;
+  margin: -6px -10px -4px 0;
+}
+
+.auth-switch {
+  margin: 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.auth-legal {
+  margin: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.auth-legal a {
+  color: var(--accent);
+}
+
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.divider-text::before,
+.divider-text::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.btn-danger-text {
+  color: var(--danger);
+}
+
+/* ==== Sobreposição de tela cheia (textos legais) ================================================= */
+.overlay-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  background: var(--app-bg);
+  padding-top: env(safe-area-inset-top);
+}
+
+.overlay-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+}
+
+.overlay-title {
+  font-weight: 700;
+  color: var(--title);
+}
+
+.overlay-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 18px calc(24px + env(safe-area-inset-bottom));
+}
+
+.markdown {
+  color: var(--body);
+  line-height: 1.55;
+}
+
+.markdown h1 {
+  font-size: 1.3rem;
+  color: var(--title);
+  margin: 12px 0 4px;
+}
+
+.markdown h2 {
+  font-size: 1.05rem;
+  color: var(--title);
+  margin: 20px 0 6px;
+}
+
+.markdown p,
+.markdown li {
+  font-size: 0.95rem;
+}
+
+.markdown ul {
+  padding-left: 20px;
+  margin: 6px 0;
+}

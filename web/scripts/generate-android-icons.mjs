@@ -9,6 +9,7 @@
  *   mipmap-<dpi>/ic_launcher_round.png       idem, com máscara circular
  *   mipmap-<dpi>/ic_launcher_foreground.png  camada da frente do ícone adaptável (108 dp)
  *   drawable-(port|land)-<dpi>/splash.png    fundo creme com o emblema redondo no centro
+ * E também web/src/assets/brand/logo.png (240 px, redondo), usado na tela de login.
  * As cores de fundo (ícone adaptável e splash) ficam em values/ic_launcher_background.xml e styles.xml.
  *
  * Uso (na pasta web): node scripts/generate-android-icons.mjs
@@ -239,6 +240,12 @@ function main() {
     write(`mipmap-${dpi}/ic_launcher_foreground.png`, resize(foreground, adaptive, adaptive));
     console.log(`mipmap-${dpi}: ${legacy}px / ${adaptive}px`);
   }
+
+  // Logotipo redondo usado dentro do app (tela de login), em 240 px (3x de 80 dp).
+  const logoPath = join(WEB_ROOT, "src", "assets", "brand", "logo.png");
+  mkdirSync(dirname(logoPath), { recursive: true });
+  writeFileSync(logoPath, encodePng(circleMask(resize(icon, 240, 240))));
+  console.log("src/assets/brand/logo.png: 240px");
 
   for (const [dir, [w, h]] of Object.entries(SPLASH_SIZES)) {
     const size = Math.round(Math.min(w, h) * 0.42);

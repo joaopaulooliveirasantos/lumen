@@ -1,6 +1,6 @@
 # Planejamento: login obrigatório no Lumen
 
-Status: planejamento (nada implementado). Data: 2026-11-19.
+Status: **implementado no novo frontend** (`lumen/web`) em 2026-11-20; falta aplicar a migração, as URLs de redirecionamento e a Edge Function no Supabase. Detalhes e passos em [status-migracao-frontend.md](status-migracao-frontend.md) (Fase 5). Data do plano: 2026-11-19.
 
 > Atualização: a tela de login será construída **no novo frontend** (Preact + Vite + Capacitor), e não no React Native, e somente para Android, sem "Entrar com Apple". Ver [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md).
 

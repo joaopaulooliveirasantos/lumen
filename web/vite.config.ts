@@ -38,6 +38,8 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    // Os textos legais vêm de ../doc (import "?raw"); o dev server precisa poder ler a pasta pai.
+    fs: { allow: [".."] },
     proxy: {
       "/api": { target: apiTarget, changeOrigin: true },
       ...(useLocalBibles ? {} : { "/biblias": { target: apiTarget, changeOrigin: true } }),

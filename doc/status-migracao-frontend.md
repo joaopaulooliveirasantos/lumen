@@ -1,10 +1,10 @@
 # Status da migração do frontend (React Native → Preact + Vite + Capacitor)
 
-Atualizado em 2026-11-20 (Fases 1 a 3 concluídas; Fase 4 implementada, falta conferir o build 18 no aparelho). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
+Atualizado em 2026-11-20 (Fases 1 a 4 concluídas; Fase 5 implementada no app, falta configurar o Supabase e testar o build 19). Plano completo e decisões: [planejamento-migracao-frontend.md](planejamento-migracao-frontend.md). Login obrigatório: [planejamento-login-obrigatorio.md](planejamento-login-obrigatorio.md).
 
 ## Resumo
 
-As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está implementada: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. As decisões do login (Fase 5) foram fechadas em 2026-11-20. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
+As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está concluída: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. A **Fase 5 (login obrigatório)** está implementada no app (telas, portão de entrada, perfil com telefone, exclusão de conta, textos legais), com a migração SQL e a Edge Function prontas no repositório. **Antes de enviar o build 19 à trilha interna, é preciso configurar o Supabase** (ver "Fechar a Fase 5"). O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
 
 ## Estado do repositório
 
@@ -18,8 +18,8 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-15` | Gerado pelo run `44650160994` (build sem plugins nativos). Não enviado à Play Store |
 | AAB `lumen-web-aab-16` | Gerado pelo run `44655899497` **com os plugins nativos** (3,2 MB, mesmo SHA1 `C3:33:…:22:8F`). Cópia local em `C:\Users\jposr\Downloads\lumen-aab-16\app-release.aab`. Publicado na trilha interna e validado no aparelho |
 | AAB `lumen-web-aab-17` | Gerado pelo run `44661959913` com o carregador das Bíblias e o novo teste de Diagnóstico (mesmo SHA1). Publicado na trilha interna e validado no aparelho (era cache da Play Store a demora em aparecer) |
-| AAB `lumen-web-aab-18` | Gerado pelo run `44667880258` com a Fase 4: ícone e splash da marca, componentes, galeria (mesmo SHA1). 5,1 MB, dos quais cerca de 2 MB são as splash em PNG. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-18\app-release.aab`. **Aguardando envio à trilha interna** |
-| Próximo `versionCode` livre | 19 |
+| AAB `lumen-web-aab-18` | Gerado pelo run `44667880258` com a Fase 4: ícone e splash da marca, componentes, galeria (mesmo SHA1). 5,1 MB, dos quais cerca de 2 MB são as splash em PNG. Publicado na trilha interna (2026-11-20) |
+| Próximo `versionCode` livre | 19 (Fase 5) |
 
 ## O que já foi feito
 
@@ -84,10 +84,33 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 - **Galeria** no Perfil (chip "Componentes"): mostra todos os componentes e ícones e troca o modo de leitura e a cor litúrgica só como prévia, sem salvar. A Home já usa `HeroCard`, `Alert` e `Spinner`.
 - **Dev**: `?tab=perfil` na URL abre direto numa aba. Para capturar telas sem abrir o navegador: `msedge --headless=new --window-size=600,2600 --screenshot=...`. O Edge headless impõe cerca de 500 px de largura mínima, então capturas mais estreitas saem cortadas.
 
-### Fase 5: login e portão de entrada (no novo frontend)
-- Telas de boas-vindas/login, criar conta (nome, e-mail, telefone, senha), Google, completar cadastro e recuperar senha.
-- Migração `0002_profile_phone.sql` no Supabase, SMTP próprio, exclusão de conta (Edge Function) e política de privacidade. Só Android, sem "Entrar com Apple".
-- **Decisões fechadas (2026-11-20)**, detalhadas no plano de login: e-mail + senha; telefone obrigatório sem SMS (também para o Google); telefone não precisa ser único; termos de uso já existem; usuários atuais precisam entrar já na primeira abertura.
+### Fase 5: login e portão de entrada (implementada no app; falta o Supabase)
+- **Decisões (2026-11-20)**: e-mail + senha; telefone obrigatório sem SMS (também para quem entra pelo Google); telefone não precisa ser único; login exigido já na primeira abertura; sem Apple.
+- **Núcleo** [web/src/auth/account.ts](../web/src/auth/account.ts):
+  - perfil (nome, telefone, aceite dos termos) com cópia local, para quem já entrou continuar usando o app offline;
+  - regra do portão: `deriveAuthStatus` decide entre `loading`, `signedOut`, `recovery`, `profileError`, `needsProfile` e `ready`;
+  - cadastro com o metadata lido pelo trigger, detecção de e-mail já cadastrado, recuperação de senha, exclusão de conta e leitura dos links de retorno do e-mail.
+- **Estado** [AuthProvider.tsx](../web/src/auth/AuthProvider.tsx): sessão, perfil e deep links `lumen://email-confirmed` e `lumen://reset-password` (também com o app fechado, via `getLaunchUrl`). Sair usa `scope: "local"` para funcionar sem rede.
+- **Telas** em `web/src/screens/auth/`:
+  - entrar / criar conta (Google em destaque, máscara de telefone, aceite dos termos);
+  - esqueci a senha, verifique seu e-mail (com reenvio), nova senha, completar cadastro e falha ao carregar o perfil;
+  - textos legais abertos dentro do app (renderizados de `doc/*.md`, funcionam offline).
+- **Perfil**: seção Conta ([AccountSection.tsx](../web/src/screens/AccountSection.tsx)) com nome, e-mail e telefone, editar, termos, política, sair e **excluir conta** (com confirmação).
+- **Utilitários**: [phone.ts](../web/src/services/phone.ts) (DDDs válidos, celular e fixo, internacional com `+`, E.164) e [authErrors.ts](../web/src/services/authErrors.ts) (erros do Supabase em português e validações).
+- **Supabase (no repositório, ainda não aplicado)**:
+  - [0002_profile_phone.sql](../supabase/migrations/0002_profile_phone.sql): colunas `phone` (E.164, sem unicidade), `terms_accepted_at`, `profile_completed_at` e `updated_at`; policy de insert; `WITH CHECK` no update; trigger novo.
+  - Edge Function [delete-account](../supabase/functions/delete-account/index.ts).
+- **Textos legais** reescritos para o login obrigatório (telefone, exclusão pelo app, LGPD, sem Apple): [Termos-de-Uso.md](Termos-de-Uso.md), [Politica-de-Privacidade.md](Politica-de-Privacidade.md) e a página pública `src/static/privacy-policy.html`, ainda não publicada na VPS (publicar junto com o lançamento do login, via `scripts/deploy-vps.sh`). **Revisar o texto antes de publicar.**
+- **Testes**: 26 novos (65 no total), cobrindo telefone, mensagens, portão, links de retorno, perfil com cache offline, cadastro e textos legais.
+- **Dev**: `?auth=criar|esqueci|verifique-email` abre direto naquela etapa.
+
+### Fechar a Fase 5 (no painel do Supabase, nesta ordem, **antes** de enviar o build 19)
+1. **SQL Editor**: colar e executar `supabase/migrations/0002_profile_phone.sql`. Sem isso, salvar o telefone falha e ninguém passa da tela "Completar cadastro".
+2. **Authentication > URL Configuration > Redirect URLs**: adicionar `lumen://email-confirmed` e `lumen://reset-password` (o `lumen://oauth-callback` já existe).
+3. **Edge Functions > Deploy a new function > Via Editor**: nome `delete-account`, colar `supabase/functions/delete-account/index.ts` e manter "Verify JWT" ligado.
+4. **Authentication > Sign In / Providers > Email**: conferir se "Confirm email" está ligado (recomendado). O app trata os dois casos.
+5. **SMTP próprio** (Authentication > Emails > SMTP Settings, ex.: Resend): o SMTP padrão do Supabase envia só poucos e-mails por hora. Pode ficar para antes do lançamento amplo.
+6. Instalar o build 19 e testar: criar conta por e-mail (confirmar pelo link), entrar, esqueci a senha, Google (vai pedir o telefone), editar telefone, sair, excluir uma conta de teste.
 
 ### Fase 6: telas, da mais simples para a mais complexa
 Orações, Configurações, Perfil, Liturgia, Santo do dia, Home completa, Planos de leitura, Terço e Bíblia (a de maior volume). Os testes de Diagnóstico viram serviços reais (lembrete nas Configurações, player de TTS, etc.).

@@ -1,30 +1,29 @@
 # Termos de Uso - Lumen Liturgia
 
-Ultima atualizacao: 2026-08-05
+Última atualização: 2026-11-20
 
 ## Uso do Aplicativo
-O Lumen oferece conteudo de liturgia diaria e reflexoes para apoio espiritual.
-O app nao substitui orientacao pastoral individual.
+O Lumen oferece conteúdo de liturgia diária, leitura da Bíblia, orações e reflexões para apoio espiritual. O app não substitui orientação pastoral individual.
 
-## Conta de Usuario
-O cadastro/login e opcional. Ao criar uma conta (por e-mail/senha, Google
-ou Apple), o usuario e responsavel por:
-- Manter a confidencialidade de sua senha e credenciais de acesso.
-- Fornecer informacoes verdadeiras no cadastro.
-- Comunicar imediatamente qualquer uso nao autorizado de sua conta.
+## Conta de Usuário
+Para usar o Lumen é preciso ter uma conta, criada com e-mail e senha ou com uma conta Google. No cadastro pedimos nome, e-mail e telefone.
 
-O usuario pode solicitar a exclusao de sua conta e dos dados associados a
-qualquer momento pelo contato informado na Politica de Privacidade.
+Ao criar uma conta, você se compromete a:
+- Fornecer informações verdadeiras no cadastro.
+- Manter a confidencialidade da sua senha.
+- Comunicar imediatamente qualquer uso não autorizado da sua conta.
 
-## Responsabilidades do Usuario
-- Utilizar o app de forma licita e respeitosa.
-- Verificar conectividade para atualizacao do conteudo diario.
+Você pode excluir sua conta e os dados associados a ela a qualquer momento, pelo próprio app (Perfil, Excluir conta) ou pelo contato informado na Política de Privacidade.
 
-## Conteudo
-As leituras e reflexoes podem ser provenientes de fontes externas e estao sujeitas a indisponibilidade temporaria.
+## Responsabilidades do Usuário
+- Utilizar o app de forma lícita e respeitosa.
+- Manter conexão com a internet para atualizar o conteúdo diário e baixar os livros da Bíblia.
+
+## Conteúdo
+As leituras e reflexões podem vir de fontes externas e estão sujeitas a indisponibilidade temporária.
 
 ## Disponibilidade
-Empenhamos esforcos para manter o servico funcional, inclusive com suporte offline, sem garantia absoluta de disponibilidade continua.
+Nos esforçamos para manter o serviço funcionando, inclusive com uso offline do conteúdo já baixado, sem garantia absoluta de disponibilidade contínua.
 
-## Alteracoes
-Estes termos podem ser atualizados conforme evolucao do app.
+## Alterações
+Estes termos podem ser atualizados conforme o app evoluir. Mudanças relevantes serão informadas no app.

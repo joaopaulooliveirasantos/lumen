@@ -1,52 +1,38 @@
-# Politica de Privacidade - Lumen Liturgia
+# Política de Privacidade - Lumen Liturgia
 
-Ultima atualizacao: 2026-08-05
+Última atualização: 2026-11-20
 
 ## Dados Coletados
-O aplicativo Lumen nao exige cadastro obrigatorio para uso da liturgia diaria
-— toda a experiencia principal (leituras, terco, oracoes, Biblia) funciona
-sem conta.
+Para usar o Lumen é preciso criar uma conta. Coletamos:
+- **Nome, e-mail e telefone**, informados no cadastro. O telefone é usado apenas como dado de contato da conta. Não enviamos SMS nem o usamos para publicidade.
+- **Senha**, quando o cadastro é feito por e-mail. Ela é gerenciada pelo nosso provedor de autenticação (Supabase) e nunca é armazenada ou vista por nós em texto puro.
+- **Nome, e-mail e foto de perfil**, quando o login é feito com uma conta Google, conforme as permissões que você concede ao Google.
+- **Data de aceite** destes termos e da conclusão do cadastro.
 
-O app oferece, opcionalmente, criacao de conta e login, usados hoje apenas
-para identificar o usuario (nenhuma funcionalidade do app depende de conta
-ativa nesta versao). Se o usuario optar por se cadastrar ou entrar, coletamos:
-- **E-mail e senha**, quando o cadastro/login e feito por e-mail. A senha e
-  gerenciada pelo nosso provedor de autenticacao (Supabase) e nunca e
-  armazenada ou vista por nos em texto puro.
-- **Nome, e-mail e foto de perfil**, quando o login e feito via Google ou
-  Apple, conforme as permissoes concedidas pelo usuario a esses provedores.
-- Esses dados ficam armazenados no banco do nosso provedor de
-  autenticacao (Supabase), associados a um identificador unico de conta.
+Esses dados ficam no banco do nosso provedor de autenticação (Supabase), associados a um identificador único de conta.
 
-As preferencias locais (modo de leitura, tamanho da fonte, horario de
-lembrete, historico de leitura, progresso do terco e marcadores da Biblia)
-continuam armazenadas apenas no dispositivo, independentemente de o
-usuario estar logado ou nao.
+As preferências locais (modo de leitura, tamanho da fonte, horário do lembrete, histórico de leitura, progresso nos planos e no terço, marcadores da Bíblia e livros da Bíblia baixados) ficam apenas no seu aparelho.
 
-## Notificacoes
-Quando habilitado pelo usuario, o app agenda notificacoes locais no proprio aparelho para lembrar da leitura diaria.
-Nao enviamos notificacoes remotas nesta versao.
+## Notificações
+Quando você habilita o lembrete, o app agenda notificações locais no próprio aparelho para lembrar da leitura diária. Não enviamos notificações remotas.
 
 ## Dados de Uso
-Nesta versao, nao ha coleta de analytics pessoais implementada.
+Nesta versão, não coletamos dados de uso (analytics).
 
 ## Compartilhamento
-Nao vendemos nem compartilhamos dados pessoais com terceiros para fins de
-publicidade. Os unicos terceiros envolvidos sao os provedores tecnicos que
-processam o cadastro/login em nosso nome, quando o usuario opta por criar
-conta:
-- **Supabase** (autenticacao e banco de dados da conta).
-- **Google** e **Apple**, apenas quando o usuario escolhe entrar com essas
-  contas (eles compartilham conosco nome/e-mail conforme a permissao dada
-  pelo proprio usuario na tela de login).
+Não vendemos nem compartilhamos dados pessoais com terceiros para fins de publicidade. Os únicos terceiros envolvidos são os provedores técnicos que processam a conta em nosso nome:
+- **Supabase** (autenticação e banco de dados da conta).
+- **Google**, apenas quando você escolhe entrar com sua conta Google.
 
-## Retencao
-As preferencias locais persistem no aparelho ate que o usuario desinstale
-o app ou limpe os dados. Dados de conta (e-mail, nome) persistem enquanto
-a conta existir. A exclusao de conta sob demanda ainda esta sendo
-implementada; ate la, solicitacoes de exclusao podem ser feitas pelo
-contato abaixo.
+## Seus Direitos (LGPD)
+Você pode, a qualquer momento:
+- Consultar e corrigir seu nome e telefone no Perfil do app.
+- Excluir sua conta pelo app (Perfil, Excluir conta). A exclusão apaga a conta e o perfil (nome, e-mail, telefone) de forma definitiva.
+- Solicitar informações ou a exclusão pelo contato abaixo.
+
+## Retenção
+Os dados da conta são mantidos enquanto a conta existir e apagados quando ela é excluída. As preferências locais permanecem no aparelho até você desinstalar o app ou limpar os dados dele.
 
 ## Contato
-Duvidas sobre privacidade ou solicitacoes de exclusao de conta:
+Dúvidas sobre privacidade ou solicitações sobre seus dados:
 jposrj@gmail.com
