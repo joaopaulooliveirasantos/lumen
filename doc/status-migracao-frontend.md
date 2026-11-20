@@ -24,6 +24,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-21` | Gerado pelo run `44763530195` com as Fases 7 e 8 (barras do sistema, teclado, ferramentas de teste escondidas). Mesmo SHA1, 5,8 MB. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-21\app-release.aab`. Validado no aparelho em 2026-11-20 |
 | AAB `lumen-web-aab-22` | Fase 9: migração dos dados do app RN e teste "Dados do app antigo" no Diagnóstico. Run `44772723480`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-22\app-release.aab`. Publicado na trilha interna e validado no aparelho (2026-11-20) |
 | AAB `lumen-web-aab-23` | Fase 9: API em HTTPS (`https://api.lumenliturgia.com.br`), sem tráfego sem criptografia. Run `44820239391`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-23\lumen-web-aab-23\app-release.aab`. Validado no aparelho (2026-11-20). Versão para a produção |
+| AAB `lumen-web-aab-24` | Home: hero compacto (data, marca e calendário numa linha; dia litúrgico abaixo) e planos em destaque menores. Run `44827745559`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-24\lumen-web-aab-24\app-release.aab`. **Aguardando teste no aparelho** |
 | Próximo `versionCode` livre | 23 |
 
 ## O que já foi feito
@@ -194,10 +195,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=24 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=25 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-24              # baixar o AAB
+gh run download <id> -n lumen-web-aab-25              # baixar o AAB
 ```
 
 Dicas de ambiente:
