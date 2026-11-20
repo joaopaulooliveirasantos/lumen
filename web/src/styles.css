@@ -1,0 +1,125 @@
+:root {
+  --app-bg: #f4f8f5;
+  --card-bg: #ffffff;
+  --border: #dde7df;
+  --title: #1f2937;
+  --body: #111827;
+  --muted: #4b5563;
+  --button-text: #ffffff;
+  --button-bg: #1e5c35;
+  --accent: #2e7d32;
+  --accent-soft: #2e7d3233;
+  --font-scale: 1;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: calc(16px * var(--font-scale));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--body);
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: env(safe-area-inset-top);
+}
+
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.screen {
+  padding: 14px;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: 1.2rem;
+  color: var(--title);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 4px 0;
+}
+
+.primary-button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.tab-bar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--card-bg);
+  padding: 6px 0 calc(4px + env(safe-area-inset-bottom));
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+}
+
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 26px;
+  border-radius: 13px;
+  opacity: 0.48;
+}
+
+.tab-label {
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.tab-active {
+  color: var(--accent);
+}
+
+.tab-active .tab-icon {
+  background: var(--accent-soft);
+  opacity: 1;
+}
+
+.tab-active .tab-label {
+  font-weight: 700;
+}
