@@ -8,8 +8,8 @@ Pacote: `com.joaopaulosantos.lumen`. Assinatura de upload: SHA1 `C3:33:81:45:6C:
 
 | Item | Onde | Estado |
 |---|---|---|
-| Política de privacidade atualizada (login obrigatório, telefone, LGPD) | `src/static/privacy-policy.html`, servida em `/privacy-policy` | Pronta no repositório. **Publicar na VPS** junto com o lançamento (`bash scripts/deploy-vps.sh`) |
-| Página de exclusão de conta sem o app (exigência da Play) | `src/static/excluir-conta.html`, servida em `/excluir-conta` | Pronta no repositório. Publicar junto com a política |
+| Política de privacidade atualizada (login obrigatório, telefone, LGPD) | `src/static/privacy-policy.html`, servida em `/privacy-policy` | Publicada na VPS em 2026-11-20 |
+| Página de exclusão de conta sem o app (exigência da Play) | `src/static/excluir-conta.html`, servida em `/excluir-conta` | Publicada na VPS em 2026-11-20 |
 | Termos de Uso | `doc/Termos-de-Uso.md` (embutido no app) | Pronto. Revisar o texto |
 | SMTP próprio no Supabase | Supabase › Authentication › SMTP | **Pendente.** O SMTP padrão do Supabase envia poucos e-mails por hora; com o cadastro obrigatório, confirmações e recuperações de senha podem travar. Sugestão: Resend (plano gratuito), com um domínio próprio |
 | HTTPS na VPS | Nginx + Certbot | **Pendente**, depende de um domínio apontando para `147.15.109.185`. Não bloqueia a Play (o app não envia dados pessoais à VPS), mas é recomendado. Ao trocar, atualizar `VITE_API_BASE_URL` no workflow e as URLs da Play Console |
@@ -78,8 +78,8 @@ Respostas conforme o que o app faz hoje (conferido no código em 2026-11-20):
 
 ## 5. Lançamento
 
-1. **Trilha interna**: AAB testado no aparelho (feito até o build 21).
-2. Publicar a política e a página de exclusão na VPS: `bash scripts/deploy-vps.sh`. Conferir `http://147.15.109.185/privacy-policy` e `/excluir-conta`.
+1. **Trilha interna**: AAB testado no aparelho (feito até o build 22).
+2. ~~Publicar a política e a página de exclusão na VPS~~ (feito em 2026-11-20). Conferir `http://147.15.109.185/privacy-policy` e `/excluir-conta`.
 3. Preencher as seções 3 e 4 na Play Console.
 4. **Produção em etapas**: promover o último AAB da trilha interna para produção com 10% (Play Console › Produção › Criar versão › "Adicionar da biblioteca"), ou gerar um novo pelo CI com `track=production`.
 5. Acompanhar por 2 a 3 dias: Play Console › Qualidade (falhas e ANRs), avaliações e o e-mail de contato. Subir para 50% e depois para 100%.
