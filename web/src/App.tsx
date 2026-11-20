@@ -15,6 +15,9 @@ import { RosaryScreen } from "./screens/RosaryScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { AppStateProvider, useAppState } from "./state/AppState";
 import { applyTheme, getThemePalette, liturgicColorHex } from "./theme/palette";
+import { setSystemBarsForBackground } from "./native/systemBars";
+import { useKeyboardAwareness } from "./native/keyboard";
+import type { ReadingMode } from "./types/settings";
 
 const DEFAULT_ACCENT = "#2E7D32";
 const TAB_NAMES: TabName[] = ["home", "liturgia", "biblia", "oracoes", "perfil"];
@@ -24,6 +27,13 @@ function initialTab(): TabName {
   if (!import.meta.env.DEV) return "home";
   const tab = new URLSearchParams(window.location.search).get("tab") as TabName | null;
   return tab && TAB_NAMES.includes(tab) ? tab : "home";
+}
+
+/** Em dev, `?modo=escuro` (ou sepia/claro) força o modo de leitura sem alterar as configurações salvas. */
+function devReadingMode(): ReadingMode | null {
+  if (!import.meta.env.DEV) return null;
+  const mode = new URLSearchParams(window.location.search).get("modo");
+  return mode === "claro" || mode === "escuro" || mode === "sepia" ? mode : null;
 }
 
 export function App() {
@@ -41,13 +51,24 @@ function Root() {
   const app = useAppState();
   const accent = app.liturgy ? liturgicColorHex(app.liturgy.cor) : DEFAULT_ACCENT;
 
+  const mode = devReadingMode() ?? app.settings.readingMode;
+  const palette = getThemePalette(mode, accent);
+  useKeyboardAwareness();
   useEffect(() => {
-    applyTheme(getThemePalette(app.settings.readingMode, accent), app.settings.fontScale);
-    document.documentElement.dataset.mode = app.settings.readingMode;
-  }, [app.settings.readingMode, app.settings.fontScale, accent]);
+    applyTheme(palette, app.settings.fontScale);
+    document.documentElement.dataset.mode = mode;
+  }, [mode, app.settings.fontScale, accent]);
 
   // Só em dev: ?semLogin pula o portão para capturas das telas internas (removido do build de produção).
   const skipGate = import.meta.env.DEV && new URLSearchParams(window.location.search).has("semLogin");
+  const loading = !(skipGate && app.ready) && (!app.ready || auth.status === "loading");
+
+  // Ícones das barras do sistema: claros sobre a tela de carregamento (verde) e no modo escuro.
+  useEffect(() => {
+    if (loading) setSystemBarsForBackground(true, BRAND_GREEN);
+    else setSystemBarsForBackground(mode === "escuro", palette.appBackground);
+  }, [loading, mode, palette.appBackground]);
+
   if (skipGate && app.ready) return <MainApp />;
 
   // Portão de entrada (doc/planejamento-login-obrigatorio.md).

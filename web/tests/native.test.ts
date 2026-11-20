@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { extractAuthCode, OAUTH_REDIRECT } from "../src/native/oauth";
 import { parseTime } from "../src/native/notifications";
 import { mapVoices } from "../src/native/tts";
+import { isEditable, keyboardLikelyOpen } from "../src/native/keyboard";
 
 describe("oauth", () => {
   it("extrai o code do deep link", () => {
@@ -31,5 +32,24 @@ describe("mapVoices", () => {
       { voiceURI: "b", name: "B", lang: "pt-BR" },
     ]);
     expect(mapped[1]).toEqual({ index: 1, voice: { identifier: "b", name: "B", language: "pt-BR" } });
+  });
+});
+
+describe("teclado", () => {
+  it("considera editáveis só campos de texto que aceitam digitação", () => {
+    const text = document.createElement("input");
+    const checkbox = Object.assign(document.createElement("input"), { type: "checkbox" });
+    const readOnly = Object.assign(document.createElement("input"), { readOnly: true });
+    expect(isEditable(text)).toBe(true);
+    expect(isEditable(document.createElement("textarea"))).toBe(true);
+    expect(isEditable(checkbox)).toBe(false);
+    expect(isEditable(readOnly)).toBe(false);
+    expect(isEditable(document.createElement("button"))).toBe(false);
+    expect(isEditable(null)).toBe(false);
+  });
+
+  it("detecta o teclado pela queda de mais de 20% na altura", () => {
+    expect(keyboardLikelyOpen(500, 800)).toBe(true);
+    expect(keyboardLikelyOpen(760, 800)).toBe(false);
   });
 });

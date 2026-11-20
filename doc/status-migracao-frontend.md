@@ -4,7 +4,7 @@ Atualizado em 2026-11-20 (Fases 1 a 5 concluídas; Fase 6 implementada, falta te
 
 ## Resumo
 
-As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está concluída: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. A **Fase 5 (login obrigatório)** está concluída: Supabase configurado e build 19 validado no aparelho (2026-11-20). A **Fase 6 (telas)** está implementada: todas as telas do RN foram migradas (Home, Liturgia, Bíblia, Orações, Perfil, Configurações, Santo do dia, Planos de leitura e Terço); falta testar o build 20 no aparelho. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
+As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluídas: o AAB 16 foi instalado pela trilha interna por cima do app RN e **todos os testes da tela de Diagnóstico deram OK no celular**. A **Fase 3 (Bíblias na VPS)** está concluída: publicada na VPS e validada no aparelho com o AAB 17. A **Fase 4 (design system)** está concluída: ícone e splash da marca, ícones SVG, componentes e galeria no Perfil. A **Fase 5 (login obrigatório)** está concluída: Supabase configurado e build 19 validado no aparelho (2026-11-20). A **Fase 6 (telas)** está concluída: todas as telas do RN foram migradas e o build 20 foi validado no aparelho (2026-11-20). As **Fases 7 (camada nativa)** e **8 (paridade e qualidade)** estão implementadas: barras do sistema, teclado, revisão de paridade, modos de leitura, acessibilidade e ferramentas de teste escondidas; falta testar o build 21 no aparelho. O novo app vive em `lumen/web`. O React Native (`lumen/mobile`) fica **congelado para novos recursos**; na trilha interna ele já foi substituído pelo novo app (versionCode 16).
 
 ## Estado do repositório
 
@@ -114,14 +114,14 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 5. **SMTP próprio** (Authentication > Emails > SMTP Settings, ex.: Resend): o SMTP padrão do Supabase envia só poucos e-mails por hora. Pode ficar para antes do lançamento amplo.
 6. Instalar o build 19 e testar: criar conta por e-mail (confirmar pelo link), entrar, esqueci a senha, Google (vai pedir o telefone), editar telefone, sair, excluir uma conta de teste.
 
-### Fase 6: telas (implementada; falta testar o build 20 no aparelho)
+### Fase 6: telas (concluída; build 20 validado no aparelho em 2026-11-20)
 - **Estado global** [state/AppState.tsx](../web/src/state/AppState.tsx), equivalente ao `App.tsx` do RN: configurações salvas a cada mudança, data selecionada, liturgia com cache e pré-carga dos 7 dias seguintes, santo do dia, históricos (liturgia lida e terço rezado), progresso dos planos, aba ativa, telas sobrepostas (Terço, Planos, Santo do dia), atalho para abrir a Bíblia numa referência e avisos rápidos (toast).
 - **Telas** em `web/src/screens/`:
   - **Home**: data e liturgia no topo, carrossel de planos, progresso da semana, santo do dia, resumo do Evangelho e entrada do Terço.
   - **Liturgia**: abas das leituras, aclamações, calendário, Amém e player de leitura em voz alta (TTS). O player avança sozinho de faixa e divide textos acima do limite de 4.000 caracteres do Android (homilias passam disso). Também tem escolha de voz, copiar, compartilhar e A−/A+.
   - **Bíblia**: grades de livros, capítulos e versículos montadas só com o índice (aparecem na hora, offline). O texto é baixado na leitura. Tem seleção de versículos (copiar, compartilhar, marcar com comentário), marcados, detalhe do marcado e navegação entre capítulos (novo).
   - **Orações**: categorias, leitura, copiar e compartilhar.
-  - **Perfil**: conta, Sobre, versão e acesso temporário a Diagnóstico e Componentes.
+  - **Perfil**: conta, Sobre e versão. Diagnóstico e Componentes ficam escondidos (ver Fase 8).
   - **Configurações**: tema, tamanho do texto com prévia, tradução da Bíblia com **download offline e progresso** (novo), lembrete diário com horário.
   - **Santo do dia**, **Planos de leitura** (destaques, busca, detalhe, leitura do dia com versículos da VPS e Catecismo) e **Terço** (mistério sugerido pelo dia, 79 passos com TTS).
 - **Comportamento novo em relação ao RN**:
@@ -135,10 +135,22 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
   - [scripts/screenshot.mjs](../web/scripts/screenshot.mjs) captura telas pelo DevTools Protocol, com cliques (`--click "texto"`), página inteira (`--full`) e `--eval`. Exemplo: `node scripts/screenshot.mjs "http://localhost:5173/?semLogin&tab=biblia" biblia.png --click "Novo"`. O 1º carregamento no dev server é lento, por isso a espera padrão é de 20 s.
 - **Visto no backend (não é do app)**: em 2026-11-20 a API devolveu `santos: []` para o santo do dia, mas a história do santo existia ("Cristo Rei"). O cartão do santo some da Home nesses dias, como no RN.
 
-### Fases 7 a 10
-- **Fase 7 (camada nativa)**: quase toda feita nas Fases 1 e 6 (notificações, TTS, OAuth, armazenamento seguro, compartilhar, copiar, botão voltar). Faltam a cor da barra de status e o comportamento do teclado.
-- **Fase 8 (paridade e qualidade)**: checklist de funcionalidades contra o RN, desempenho, acessibilidade e modos de leitura (sobretudo escuro e sépia nas telas novas). Também tirar Diagnóstico e Componentes do Perfil antes do lançamento.
-- Publicação: envio automático à trilha interna pelo CI, política de privacidade e formulário de Segurança dos dados da Play Console, conta de teste para o revisor, lançamento em etapas.
+### Fase 7: camada nativa (implementada; falta testar o build 21 no aparelho)
+- Notificações, TTS, OAuth, armazenamento seguro, compartilhar, copiar e botão voltar foram feitos nas Fases 1 e 6.
+- **Barras do sistema** [native/systemBars.ts](../web/src/native/systemBars.ts): o Capacitor 8 desenha o app atrás das barras e escolhia a cor dos ícones pelo tema do *sistema*. Agora segue o fundo do app: ícones claros na tela de carregamento (verde) e no modo escuro, escuros no claro e no sépia. Usa o `SystemBars` do próprio `@capacitor/core` (sem plugin novo).
+- **Teclado** [native/keyboard.ts](../web/src/native/keyboard.ts): `windowSoftInputMode="adjustResize"` explícito no manifesto. Com o teclado aberto, a barra inferior some (`html.keyboard-open`) e o campo focado é rolado para o centro. Detecção sem plugin: campo editável focado e janela mais de 20% menor.
+- **Limitação conhecida**: em WebViews anteriores à versão 140, o Capacitor preenche a área das barras com a cor do tema nativo, não com a do app. O WebView se atualiza pela Play Store, então afeta poucos aparelhos.
+
+### Fase 8: paridade e qualidade (implementada; falta testar o build 21 no aparelho)
+- **Paridade com o RN**: comparei, por script, todos os textos visíveis das telas e componentes do RN com o app novo. O que sobrou é só diferença de acentuação ou redação, ou recurso reorganizado (ex.: o "Reiniciar plano" virou "Ler de novo", com o mesmo efeito). Nenhuma funcionalidade ficou de fora; o áudio da homilia, o link para a Canção Nova, as tentativas de recarregar e a remoção de marcados existem.
+- **Modos escuro e sépia**: capturas de Home, Liturgia, Bíblia, Orações, Perfil e Configurações nos dois modos, sem problemas de contraste. Em dev, `?modo=escuro|sepia|claro` força o modo sem mexer nas configurações.
+- **Acessibilidade**: auditoria por script nas abas, no login e em Configurações, sem nenhum botão sem nome acessível, campo sem rótulo ou imagem sem `alt`. Com "remover animações" ligado no sistema, o Amém só esmaece e folhas e avisos não deslizam.
+- **Desempenho**: JS de 78 kB e CSS de 6 kB (gzip); o restante são as capas dos planos e o logo, empacotados no APK.
+- **Ferramentas de teste**: Diagnóstico e Componentes saíram do Perfil. Aparecem em dev ou depois de **tocar 7 vezes na versão** (em "Sobre o Lumen"), até fechar o app.
+- **Testes**: 74 no total.
+
+### Fases 9 e 10
+- **Publicação**: envio automático à trilha interna pelo CI, política de privacidade (publicar `src/static/privacy-policy.html` na VPS), formulário de Segurança dos dados da Play Console, conta de teste para o revisor, SMTP próprio no Supabase, HTTPS na VPS e lançamento em etapas.
 - Desativar o React Native (`lumen/mobile`) depois de a nova versão estar estável em produção.
 
 ## Riscos e pontos de atenção

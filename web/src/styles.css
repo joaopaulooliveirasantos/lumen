@@ -655,6 +655,11 @@ button.list-row:active {
   padding: 6px 0 calc(4px + env(safe-area-inset-bottom));
 }
 
+/* Teclado aberto (native/keyboard.ts): a barra inferior some para não ficar colada no teclado. */
+.keyboard-open .tab-bar {
+  display: none;
+}
+
 .tab {
   flex: 1;
   display: flex;
@@ -1556,6 +1561,27 @@ button.list-row:active {
   100% {
     opacity: 0;
     transform: scale(1.15);
+  }
+}
+
+/* Movimento reduzido (acessibilidade do sistema): só esmaece, sem crescer nem deslizar. */
+@keyframes amen-fade {
+  0%,
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amen-burst {
+    animation-name: amen-fade;
+  }
+  .sheet,
+  .toast {
+    animation: fade-in 0.15s ease;
   }
 }
 
