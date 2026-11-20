@@ -11,7 +11,7 @@ Pacote: `com.joaopaulosantos.lumen`. Assinatura de upload: SHA1 `C3:33:81:45:6C:
 | Política de privacidade atualizada (login obrigatório, telefone, LGPD) | `src/static/privacy-policy.html`, servida em `/privacy-policy` | Publicada na VPS em 2026-11-20 |
 | Página de exclusão de conta sem o app (exigência da Play) | `src/static/excluir-conta.html`, servida em `/excluir-conta` | Publicada na VPS em 2026-11-20 |
 | Termos de Uso | `doc/Termos-de-Uso.md` (embutido no app) | Pronto. Revisar o texto |
-| SMTP próprio no Supabase | Supabase › Authentication › SMTP | **Pendente.** O SMTP padrão do Supabase envia poucos e-mails por hora; com o cadastro obrigatório, confirmações e recuperações de senha podem travar. Sugestão: Resend (plano gratuito), com um domínio próprio |
+| SMTP próprio no Supabase | Supabase › Authentication › SMTP | Configurado em 2026-11-20 (Resend com domínio próprio). Conferir o limite de e-mails por hora em Authentication › Rate Limits e acompanhar os envios em Resend › Logs |
 | HTTPS na VPS | Nginx + Certbot | **Pendente**, depende de um domínio apontando para `147.15.109.185`. Não bloqueia a Play (o app não envia dados pessoais à VPS), mas é recomendado. Ao trocar, atualizar `VITE_API_BASE_URL` no workflow e as URLs da Play Console |
 | Conta de teste para o revisor | Play Console › Acesso ao app | **Pendente** (seção 3) |
 | Formulário de Segurança dos dados | Play Console › Conteúdo do app | **Pendente** (seção 4) |

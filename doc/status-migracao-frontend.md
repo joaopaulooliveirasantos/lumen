@@ -113,7 +113,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 2. **Authentication > URL Configuration > Redirect URLs**: adicionar `lumen://email-confirmed` e `lumen://reset-password` (o `lumen://oauth-callback` já existe).
 3. **Edge Functions > Deploy a new function > Via Editor**: nome `delete-account`, colar `supabase/functions/delete-account/index.ts` e manter "Verify JWT" ligado.
 4. **Authentication > Sign In / Providers > Email**: conferir se "Confirm email" está ligado (recomendado). O app trata os dois casos.
-5. **SMTP próprio** (Authentication > Emails > SMTP Settings, ex.: Resend): o SMTP padrão do Supabase envia só poucos e-mails por hora. Pode ficar para antes do lançamento amplo.
+5. **SMTP próprio**: Resend com domínio próprio, configurado em 2026-11-20.
 6. Instalar o build 19 e testar: criar conta por e-mail (confirmar pelo link), entrar, esqueci a senha, Google (vai pedir o telefone), editar telefone, sair, excluir uma conta de teste.
 
 ### Fase 6: telas (concluída; build 20 validado no aparelho em 2026-11-20)
@@ -162,9 +162,9 @@ Roteiro completo, com as respostas do formulário de Segurança dos dados: [publ
 - **Envio pelo CI**: o workflow ganhou `track` (`nenhuma`, `internal` ou `production` em etapas, com `rollout`) e notas da versão em `web/android/whatsnew/`. Depende do segredo `PLAY_SERVICE_ACCOUNT_JSON`; sem ele, use `track=nenhuma`, que é o padrão.
 - **Pendências do usuário**:
   - Play Console: conta de teste do revisor, formulário de Segurança dos dados e URL de exclusão;
-  - revisar os textos legais e publicar na VPS;
-  - SMTP próprio no Supabase;
-  - domínio e HTTPS (recomendado);
+  - ~~revisar os textos legais e publicar na VPS~~ (feito em 2026-11-20);
+  - ~~SMTP próprio no Supabase~~ (Resend com domínio próprio, configurado em 2026-11-20);
+  - HTTPS na VPS (domínio já registrado; recomendado);
   - conta de serviço da Play (opcional).
 - **Testes**: 80 no total.
 
