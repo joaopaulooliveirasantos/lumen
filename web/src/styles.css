@@ -123,3 +123,64 @@ body {
 .tab-active .tab-label {
   font-weight: 700;
 }
+
+.diag-card {
+  margin-top: 10px;
+}
+
+.diag-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.diag-title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  color: var(--title);
+}
+
+.diag-badge {
+  min-width: 44px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--border);
+  color: var(--muted);
+}
+
+.diag-ok {
+  background: #1b5e20;
+  color: #fff;
+}
+
+.diag-fail {
+  background: #b71c1c;
+  color: #fff;
+}
+
+.diag-output {
+  margin: 10px 0 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--app-bg);
+  color: var(--body);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diag-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--body);
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+}

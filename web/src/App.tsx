@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { BottomTabBar, type TabName } from "./components/BottomTabBar";
 import { HomeScreen } from "./screens/HomeScreen";
+import { DiagnosticsScreen } from "./screens/DiagnosticsScreen";
 import { PlaceholderScreen } from "./screens/PlaceholderScreen";
 import { formatIsoDate } from "./services/date";
 import { loadUserSettings } from "./storage/userSettings";
@@ -33,7 +34,7 @@ export function App() {
         {activeTab === "liturgia" ? <PlaceholderScreen title="Liturgia Diária" /> : null}
         {activeTab === "biblia" ? <PlaceholderScreen title="Bíblia" /> : null}
         {activeTab === "oracoes" ? <PlaceholderScreen title="Orações" /> : null}
-        {activeTab === "perfil" ? <PlaceholderScreen title="Perfil" /> : null}
+        {activeTab === "perfil" ? <DiagnosticsScreen /> : null}
       </main>
       <BottomTabBar activeTab={activeTab} onTabPress={setActiveTab} />
     </div>
