@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+<!--@include partials/head.html-->
+    <title>Página não encontrada | {{appName}}</title>
+    <meta name="description" content="A página procurada não existe." />
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href="{{url}}/404.html" />
+    <meta property="og:url" content="{{url}}/404.html" />
+    <meta property="og:title" content="Página não encontrada | {{appName}}" />
+    <meta property="og:description" content="A página procurada não existe." />
+  </head>
+  <body>
+<!--@include partials/header.html-->
+    <main id="conteudo" class="legal">
+      <article class="wrap narrow legal-body">
+<div class="notfound"><img src="/src/assets/logo.webp" width="96" height="96" alt="" /><h1>Página não encontrada</h1><p>O endereço pode ter mudado ou não existir mais.</p><a class="btn-solid" href="/">Voltar ao início</a></div>
+      </article>
+    </main>
+<!--@include partials/footer.html-->
+  </body>
+</html>
