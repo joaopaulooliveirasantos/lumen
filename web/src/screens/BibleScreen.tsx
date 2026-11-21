@@ -6,6 +6,7 @@ import { Icon } from "../components/Icon";
 import { FontScaleControls, PageHeader } from "../components/PageHeader";
 import { Sheet } from "../components/Sheet";
 import { Alert, Button, Card, EmptyState, Spinner } from "../components/ui";
+import { BOOK_SECTIONS, bookAbbreviation, bookNumber } from "../data/bibleBooks";
 import { bibleTranslations } from "../data/bibleTranslations";
 import { copyText, shareText } from "../native/share";
 import { BibleUnavailableError, getBibleIndex, loadBibleBook, type BibleIndexBook, type Testament } from "../services/bible";
@@ -17,7 +18,6 @@ import type { VerseBookmark } from "../types/bookmark";
 type View = "livros" | "capitulos" | "versiculos" | "leitura" | "marcado";
 type Tab = Testament | "marcados";
 
-const GOSPELS = ["São Mateus", "São Marcos", "São Lucas", "São João"];
 const bookmarkId = (t: Testament, livro: string, cap: number, v: number) => `${t}:${livro}:${cap}:${v}`;
 
 export function BibleScreen() {
@@ -215,21 +215,105 @@ export function BibleScreen() {
           <Spinner label="Carregando livros" />
         </div>
       ) : (
-        <div class="book-grid">
-          {books
-            .filter((b) => b.testamento === tab)
-            .map((b, i) => {
-              const gospel = GOSPELS.includes(b.nome);
-              return (
-                <button key={b.slug} type="button" class={gospel ? "book-cell book-gospel" : "book-cell"} aria-label={gospel ? `${b.nome}, Evangelho` : b.nome} onClick={() => (setBook(b), setView("capitulos"))}>
-                  {gospel ? <Icon name="cross" size={13} class="text-accent" /> : <span class="book-index">{i + 1}</span>}
-                  <span class="book-name">{b.nome}</span>
-                </button>
-              );
-            })}
-        </div>
+        <BookBrowser books={books} testament={tab} onOpen={(b) => (setBook(b), setView("capitulos"))} />
       )}
     </section>
+  );
+}
+
+// ---- Navegação pelos livros: seções com cor, sigla em cada botão e busca ---------------------------
+
+function sectionStyle(tone: string): Record<string, string> {
+  return { "--tone": `rgb(${tone})`, "--tone-soft": `rgba(${tone}, 0.14)` };
+}
+
+const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+function BookButton({ book, tone, onOpen }: { book: BibleIndexBook; tone: string; onOpen: (b: BibleIndexBook) => void }) {
+  const abbr = bookAbbreviation(book.slug);
+  const chapters = book.versiculosPorCapitulo.length;
+  return (
+    <button type="button" class="book-cell" style={sectionStyle(tone)} aria-label={`${book.nome}${abbr ? ` (${abbr})` : ""}, ${chapters} capítulos`} onClick={() => onOpen(book)}>
+      <span class="book-abbr">{abbr ?? book.nome.slice(0, 2)}</span>
+      <span class="book-name">{book.nome}</span>
+      <span class="book-chapters">
+        {chapters} {chapters === 1 ? "capítulo" : "capítulos"}
+      </span>
+    </button>
+  );
+}
+
+export function BookBrowser({ books, testament, onOpen }: { books: BibleIndexBook[]; testament: Testament; onOpen: (b: BibleIndexBook) => void }) {
+  const [query, setQuery] = useState("");
+  const q = normalize(query.trim());
+  const bySlugNumber = new Map(books.map((b) => [bookNumber(b.slug), b]));
+  const toneOf = (b: BibleIndexBook) => BOOK_SECTIONS.find((s) => s.livros.includes(bookNumber(b.slug) ?? -1))?.tone ?? "46, 125, 50";
+
+  // A busca vale para a Bíblia toda (nome ou sigla), não só para o testamento da aba.
+  const results = q ? books.filter((b) => normalize(b.nome).includes(q) || normalize(bookAbbreviation(b.slug) ?? "") === q.replace(/\s+/g, "")) : [];
+  const sections = BOOK_SECTIONS.map((s) => ({ ...s, books: s.livros.map((n) => bySlugNumber.get(n)).filter((b): b is BibleIndexBook => !!b && b.testamento === testament) })).filter(
+    (s) => s.books.length > 0,
+  );
+  // Livros fora do padrão de slug (não deveria acontecer) aparecem no fim, sem seção.
+  const loose = books.filter((b) => b.testamento === testament && bookNumber(b.slug) === null);
+
+  return (
+    <>
+      <div class="prayer-search">
+        <Icon name="search" size={18} class="prayer-search-icon" />
+        <input
+          type="search"
+          class="prayer-search-input"
+          placeholder="Buscar livro ou sigla (ex.: Jo, Salmos)"
+          aria-label="Buscar livro"
+          value={query}
+          onInput={(e) => setQuery((e.currentTarget as HTMLInputElement).value)}
+        />
+        {query ? (
+          <button type="button" class="prayer-search-clear" aria-label="Limpar busca" onClick={() => setQuery("")}>
+            <Icon name="close" size={16} />
+          </button>
+        ) : null}
+      </div>
+
+      {q ? (
+        results.length ? (
+          <div class="book-grid">
+            {results.map((b) => (
+              <BookButton key={b.slug} book={b} tone={toneOf(b)} onOpen={onOpen} />
+            ))}
+          </div>
+        ) : (
+          <p class="muted prayer-empty">Nenhum livro encontrado para “{query.trim()}”.</p>
+        )
+      ) : (
+        <>
+          {sections.map((s) => (
+            <div key={s.id} class="stack" style={sectionStyle(s.tone)}>
+              <div class="prayer-section-head">
+                <span class="prayer-section-icon">
+                  <Icon name={s.icon} size={16} />
+                </span>
+                <h2 class="prayer-section-title">{s.nome}</h2>
+                <span class="prayer-section-count">{s.books.length}</span>
+              </div>
+              <div class="book-grid">
+                {s.books.map((b) => (
+                  <BookButton key={b.slug} book={b} tone={s.tone} onOpen={onOpen} />
+                ))}
+              </div>
+            </div>
+          ))}
+          {loose.length ? (
+            <div class="book-grid">
+              {loose.map((b) => (
+                <BookButton key={b.slug} book={b} tone="46, 125, 50" onOpen={onOpen} />
+              ))}
+            </div>
+          ) : null}
+        </>
+      )}
+    </>
   );
 }
 
