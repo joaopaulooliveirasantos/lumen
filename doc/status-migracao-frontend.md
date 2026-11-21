@@ -27,6 +27,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-24` | Home: hero compacto (data, marca e calendário numa linha; dia litúrgico abaixo) e planos em destaque menores. Run `44827745559`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-24\lumen-web-aab-24\app-release.aab`. **Aguardando teste no aparelho** |
 | AAB `lumen-web-aab-25` | Planos em destaque com ícone 48×48, barra da liturgia numa linha e tela de Orações redesenhada (oração do dia, busca, filtros, leitura em voz alta). Run `44835666668`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-25\lumen-web-aab-25\app-release.aab`. **Aguardando teste no aparelho** |
 | AAB `lumen-web-aab-26` | Tudo do 25 mais a tela do Terço redesenhada (cores por grupo de mistérios, contas da dezena, anúncio do mistério). Run `44839530722`, mesmo SHA1. Cópia local em `C:\Users\jposr\Downloads\lumen-aab-26\lumen-web-aab-26\app-release.aab`. **Aguardando envio à Play e teste no aparelho** |
+| AAB `lumen-web-aab-27` | Igual ao 26 (mesmo código, notas da versão novas). **Primeiro envio automático pelo CI**: run `44844728943` com `track=internal`, publicado na trilha interna (edit `07409142764700923818`). **Aguardando teste no aparelho** |
 | Próximo `versionCode` livre | 23 |
 
 ## O que já foi feito
@@ -169,7 +170,7 @@ Roteiro completo, com as respostas do formulário de Segurança dos dados: [publ
   - ~~revisar os textos legais e publicar na VPS~~ (feito em 2026-11-20);
   - ~~SMTP próprio no Supabase~~ (Resend com domínio próprio, configurado em 2026-11-20);
   - ~~HTTPS na VPS~~ (`api.lumenliturgia.com.br`, 2026-11-20; app usa a partir do build 23);
-  - conta de serviço da Play (opcional).
+  - ~~conta de serviço da Play~~ (configurada em 2026-11-20; o CI envia direto com `track`).
 - **Testes**: 80 no total.
 
 ### Fase 10
@@ -197,10 +198,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=27 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=28 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-27              # baixar o AAB
+gh run download <id> -n lumen-web-aab-28              # baixar o AAB
 ```
 
 Dicas de ambiente:
