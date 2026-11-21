@@ -24,7 +24,8 @@ SSH="ssh -i $SSH_KEY -o ConnectTimeout=15 -o StrictHostKeyChecking=accept-new"
 SCP="scp -i $SSH_KEY -o StrictHostKeyChecking=accept-new"
 
 echo "==> Build do site..."
-(cd "$REPO_ROOT/site" && npm ci --no-audit --no-fund && npm run build)
+# npm ci só quando falta node_modules: no Windows ele falha se um dev server do site estiver aberto.
+(cd "$REPO_ROOT/site" && { [ -d node_modules ] || npm ci --no-audit --no-fund; } && npm run build)
 tar -czf "$TMP_TAR" -C "$REPO_ROOT/site/dist" .
 
 echo "==> Enviando release $RELEASE..."

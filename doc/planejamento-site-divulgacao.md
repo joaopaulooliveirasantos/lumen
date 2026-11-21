@@ -143,3 +143,5 @@ Site institucional em `https://lumenliturgia.com.br`. Ele existe para apresentar
 3. Rodar `bash scripts/deploy-site.sh`, com aprovação, porque mexe na VPS.
 4. Depois do site no ar: redirecionamento 301 de `api.../privacy-policy` e `api.../excluir-conta` para o domínio principal, em `lumen-backend.conf`, e atualização das URLs na Play Console.
 5. Search Console, `assetlinks.json` e, no lançamento, `playLive: true`.
+
+**21/11/2026: fase 3 publicada.** O site está no ar em https://lumenliturgia.com.br, com certificado Let's Encrypt (lumenliturgia.com.br e www) válido até 19/02/2027 e renovação automática. HTTP e www redirecionam com 301. A API (`api.lumenliturgia.com.br` e o acesso pelo IP) e o site `lider` foram conferidos depois do deploy e continuam funcionando. Os itens 2, 4 e 5 da lista acima continuam pendentes.
