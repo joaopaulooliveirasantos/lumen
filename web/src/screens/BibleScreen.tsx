@@ -8,7 +8,8 @@ import { Sheet } from "../components/Sheet";
 import { Alert, Button, Card, EmptyState, Spinner } from "../components/ui";
 import { BOOK_SECTIONS, bookAbbreviation, bookNumber } from "../data/bibleBooks";
 import { bibleTranslations } from "../data/bibleTranslations";
-import { copyText, shareText } from "../native/share";
+import { copyText, shareImage } from "../native/share";
+import { formatVerseList, renderVerseImage } from "../services/verseImage";
 import { BibleUnavailableError, getBibleIndex, loadBibleBook, type BibleIndexBook, type Testament } from "../services/bible";
 import { useAppState } from "../state/AppState";
 import { getBookmarks, removeBookmark, updateBookmarkComment, upsertBookmarks } from "../storage/bookmarks";
@@ -369,6 +370,29 @@ function Reading({ book, chapter, startVerse, marked, bookmarks, onBack, onChang
     return `${book.nome} ${chapter},${range}\n${chosen.map((v) => `${v.versiculo}. ${v.texto}`).join(" ")}`;
   };
 
+  // Compartilha os versículos escolhidos como imagem (services/verseImage.ts).
+  const [sharing, setSharing] = useState(false);
+  async function shareSelection() {
+    if (chosen.length === 0 || sharing) return;
+    setSharing(true);
+    try {
+      const abbreviation = bookAbbreviation(book.slug) ?? book.nome;
+      const translation = bibleTranslations.find((t) => t.id === settings.bibleTranslation)?.nome;
+      const blob = await renderVerseImage({ verses: chosen, abbreviation, bookName: book.nome, chapter, translation });
+      const slug = `${abbreviation}-${chapter}-${formatVerseList(chosen.map((v) => v.versiculo))}`
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/[^\w-]+/g, "-")
+        .toLowerCase();
+      const result = await shareImage(blob, `lumen-${slug}.jpg`, `${book.nome} ${chapter}`);
+      if (result === "downloaded") notify("Imagem salva.");
+    } catch {
+      notify("Não foi possível gerar a imagem.");
+    } finally {
+      setSharing(false);
+    }
+  }
+
   const toggle = (v: number) =>
     setSelected((prev) => {
       const next = new Set(prev);
@@ -447,7 +471,7 @@ function Reading({ book, chapter, startVerse, marked, bookmarks, onBack, onChang
             <Icon name="copy" size={20} />
             Copiar
           </button>
-          <button type="button" onClick={() => void shareText(`${book.nome} ${chapter}`, selectionText()).then((r) => r === "copied" && notify("Texto copiado."), () => undefined)}>
+          <button type="button" disabled={sharing} aria-busy={sharing} onClick={() => void shareSelection()}>
             <Icon name="share" size={20} />
             Compartilhar
           </button>
