@@ -83,6 +83,7 @@ function Root() {
 
 function MainApp() {
   const { activeTab, setActiveTab, toast, overlay, openOverlay } = useAppState();
+  const { profile } = useAuth();
   const closeOverlay = () => openOverlay(null);
 
   // Botão "voltar" do Android: fecha a tela sobreposta, depois volta à Home, depois sai do app.
@@ -112,7 +113,7 @@ function MainApp() {
         {!overlay && activeTab === "oracoes" ? <PrayersScreen /> : null}
         {!overlay && activeTab === "perfil" ? <ProfileScreen /> : null}
       </main>
-      <BottomTabBar activeTab={activeTab} onTabPress={setActiveTab} />
+      <BottomTabBar activeTab={activeTab} onTabPress={setActiveTab} avatarUrl={profile?.avatarUrl ?? null} />
       {toast ? (
         <div class="toast" role="status" aria-live="polite">
           {toast}

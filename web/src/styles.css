@@ -702,6 +702,23 @@ button.list-row:active {
   font-weight: 700;
 }
 
+/* Foto do perfil no lugar do ícone: sempre opaca; na aba ativa ganha um anel na cor do app. */
+.tab-icon-avatar {
+  opacity: 1;
+}
+
+.tab-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 1.5px var(--border);
+}
+
+.tab-active .tab-avatar {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
 /* ==== Diagnóstico (temporário, Fase 1) ============================================================ */
 .diag-card {
   margin-top: 10px;
