@@ -30,6 +30,7 @@ As **Fases 1 (prova de conceito Android)** e **2 (fundação)** estão concluíd
 | AAB `lumen-web-aab-27` | Igual ao 26 (mesmo código, notas da versão novas). **Primeiro envio automático pelo CI**: run `44844728943` com `track=internal`, publicado na trilha interna (edit `07409142764700923818`). **Aguardando teste no aparelho** |
 | AAB `lumen-web-aab-28` | Tudo do 27 mais a navegação da Bíblia redesenhada (seções com cor, siglas CNBB em cada livro, busca por nome ou sigla). Run `44846792613`, enviado pelo CI à trilha interna (edit `04054616810852223535`), mesmo SHA1. **Aguardando teste no aparelho** |
 | AAB `lumen-web-aab-29` | Tudo do 28 mais a foto do perfil (Google) na aba Perfil do menu inferior. Run `44848592707`, enviado pelo CI à trilha interna (edit `16556490030949431005`), mesmo SHA1. **Aguardando teste no aparelho** |
+| AAB `lumen-web-aab-30` | Tudo do 29 mais o compartilhamento de versículos da Bíblia como imagem (1080x1350, fundo do Lumen, referência no padrão CNBB) e notas da versão atualizadas. Run `44938370790`, enviado pelo CI à trilha interna (edit `07404497309129658440`), mesmo SHA1. **Aguardando teste no aparelho** |
 | Próximo `versionCode` livre | 23 |
 
 ## O que já foi feito
@@ -200,10 +201,10 @@ node scripts/bible/build-bible-assets.mjs   # gera dist-biblias/
 bash scripts/deploy-biblias.sh              # gera e publica na VPS
 
 # CI Android
-gh workflow run web-android.yml -f version_code=30 -f version_name=1.1.0   # próximo build
+gh workflow run web-android.yml -f version_code=31 -f version_name=1.1.0   # próximo build
 gh run watch <id>                                     # acompanhar
 gh run view <id> --log-failed                         # erro, se falhar
-gh run download <id> -n lumen-web-aab-30              # baixar o AAB
+gh run download <id> -n lumen-web-aab-31              # baixar o AAB
 ```
 
 Dicas de ambiente:
