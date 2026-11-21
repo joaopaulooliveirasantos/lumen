@@ -25,16 +25,53 @@ O workflow `web-android.yml` tem a opção `track`:
 
 As notas da versão saem de `web/android/whatsnew/whatsnew-pt-BR` (até 500 caracteres).
 
-Configuração (uma vez):
-1. No Google Cloud Console, no projeto ligado à Play Console (ou num projeto novo), ative a **Google Play Android Developer API**.
-2. Crie uma **conta de serviço** e gere uma chave **JSON**.
-3. **Play Console** › Usuários e permissões › Convidar novos usuários: use o e-mail da conta de serviço e dê, só para este app, as permissões de **lançar em trilhas de teste** e **lançar em produção**.
-4. No GitHub, crie o segredo `PLAY_SERVICE_ACCOUNT_JSON` com o conteúdo do JSON. Depois apague o arquivo do computador.
+Configuração (uma vez, cerca de 10 minutos):
 
+**A. Google Cloud: projeto e API**
+1. Abra console.cloud.google.com com a mesma conta Google da Play Console.
+2. No seletor de projetos (topo), crie um projeto novo, por exemplo `lumen-play-ci`. Pode reaproveitar um existente, mas um projeto só para isso é mais fácil de controlar.
+3. Menu › **APIs e serviços › Biblioteca** › busque **Google Play Android Developer API** › **Ativar**.
+
+**B. Conta de serviço e chave JSON**
+1. Menu › **IAM e administrador › Contas de serviço** › **Criar conta de serviço**.
+2. Nome: `github-play-upload`. Clique em **Criar e continuar**.
+3. Nas etapas de papéis e acesso, **não escolha nada** (as permissões são dadas na Play Console) e clique em **Concluir**.
+4. Copie o e-mail da conta criada (algo como `github-play-upload@lumen-play-ci.iam.gserviceaccount.com`).
+5. Abra a conta › aba **Chaves** › **Adicionar chave › Criar nova chave** › **JSON** › **Criar**. O arquivo `.json` é baixado. Ele dá acesso de publicação: não envie por e-mail nem coloque no repositório.
+
+**C. Play Console: permissões**
+1. Play Console › **Usuários e permissões** (menu da esquerda, no nível da conta, fora do app) › **Convidar novos usuários**.
+2. E-mail: o da conta de serviço.
+3. Aba **Permissões do app** › **Adicionar app** › Lumen › marque:
+   - **Lançar apps em trilhas de teste**;
+   - **Gerenciar trilhas de teste e editar listas de testadores**;
+   - **Lançar em produção, excluir dispositivos e usar a Assinatura de apps do Google Play**.
+   Deixe as permissões da conta (aba **Permissões da conta**) desmarcadas.
+4. **Convidar usuário**. A conta de serviço não precisa aceitar o convite.
+5. A permissão pode levar de alguns minutos a 24 horas para valer. Antes disso, o envio falha com "The caller does not have permission".
+
+**D. GitHub: segredo**
+- Pelo terminal (na pasta `lumen`):
+  ```bash
+  gh secret set PLAY_SERVICE_ACCOUNT_JSON < "C:/Users/jposr/Downloads/lumen-play-ci-xxxx.json"
+  ```
+- Ou pelo site: repositório › **Settings › Secrets and variables › Actions › New repository secret**, nome `PLAY_SERVICE_ACCOUNT_JSON`, valor = todo o conteúdo do arquivo.
+- Depois apague o arquivo `.json` do computador (e da lixeira). Se precisar de novo, gere outra chave e exclua a antiga na aba Chaves.
+
+**E. Primeiro envio de teste**
 ```bash
-gh secret set PLAY_SERVICE_ACCOUNT_JSON < chave.json
-gh workflow run web-android.yml -f version_code=22 -f version_name=1.1.0 -f track=internal
+gh workflow run web-android.yml -f version_code=27 -f version_name=1.1.0 -f track=internal
 ```
+- Use sempre um `version_code` maior que o último enviado à Play.
+- `track=internal` publica na trilha interna na hora. `track=production` inicia o lançamento em etapas com `rollout` (padrão `0.1` = 10%); para outro valor, `-f rollout=0.5`.
+- As notas da versão vão junto, de `web/android/whatsnew/whatsnew-pt-BR`.
+- Se falhar, o AAB continua disponível como artefato do run, e dá para enviar manualmente.
+
+**Erros comuns**
+- "The caller does not have permission": a permissão do passo C ainda não valeu ou faltou marcar o app.
+- "Package not found": o `packageName` não bate ou o app não foi escolhido no passo C.3.
+- "APK specifies a version code that has already been used": aumente o `version_code`.
+- "Only releases with status draft may be created on draft app": não se aplica ao Lumen, que já está publicado.
 
 Sem o segredo, os envios com `track` diferente de `nenhuma` falham no último passo, mas o AAB continua disponível como artefato.
 
